@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import axios from 'axios'
+import './App.css'
 const API = import.meta.env.VITE_API_URL || 'http://localhost:8080'
 export default function App(){
   const [name,setName]=useState(''); const [email,setEmail]=useState(''); const [password,setPassword]=useState(''); const [role,setRole]=useState('OWNER'); const [msg,setMsg]=useState('')
