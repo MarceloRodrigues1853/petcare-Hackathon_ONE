@@ -27,10 +27,6 @@ services:
         condition: service_healthy
     environment:
       SPRING_PROFILES_ACTIVE: docker
-      # Opcional: sobrepor URL do DB (já funciona por padrão como está)
-      # SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/petcare?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
-      # SPRING_DATASOURCE_USERNAME: pet
-      # SPRING_DATASOURCE_PASSWORD: pet
     ports:
       - "8080:8080"
     restart: unless-stopped
@@ -40,9 +36,6 @@ services:
     container_name: petcare-frontend
     depends_on:
       - backend
-    environment:
-      # Opcional: se quiser apontar o front pra outra URL da API
-      # VITE_API_URL: http://localhost:8080
     ports:
       - "5173:5173"
     restart: unless-stopped
