@@ -41,6 +41,22 @@ cd `petcare-Hackathon_ONE`
 
 **Backend Swagger** → http://localhost:8080/swagger-ui/index.html
 
+🚀 Se tudo estiver certo
+
+Quando rodar o comando, o **Docker** vai:
+
+**Baixar** a imagem do **MySQL**
+
+**Construir** o backend (**Spring Boot**)
+
+**Construir** o frontend (**React**)
+
+Depois é só acessar:
+
+Frontend: http://localhost:5173
+
+Swagger Backend: http://localhost:8080/swagger-ui/index.html
+
 ### Sem Docker (opcional):
 
 Criar **banco petcare** no **MySQL** (user: **pet**, senha: **pet**).
