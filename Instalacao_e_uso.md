@@ -28,3 +28,19 @@ docker-compose up --build
 
 4) Frontend: 
 `cd frontend && npm install && npm run dev`
+
+🚀 Se tudo estiver certo
+
+Quando rodar o comando, o **Docker** vai:
+
+**Baixar** a imagem do **MySQL**
+
+**Construir** o backend (**Spring Boot**)
+
+**Construir** o frontend (**React**)
+
+Depois é só acessar:
+
+**Frontend**: http://localhost:5173
+
+**Swagger Backend**: http://localhost:8080/swagger-ui/index.html
