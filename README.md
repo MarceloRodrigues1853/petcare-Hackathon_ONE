@@ -69,24 +69,17 @@ Criar seed inicial com usuário admin e dados de teste.
 
 ## 👥 Equipe 2 – Brasil
 
-**Nome**	**GitHub**	**Função**
+**Amanda Prudêncio Souza** - Frontend (UX e Telas)
 
-Amanda Prudêncio Souza	Amanda-psz
-	Full Stack / Tech Lead
+**Tadeu Junior** - Backend (Banco de Dados)
 
-Tadeu Junior	1tjunior1
-	Backend (Auth e Segurança)
+**Taylam Nascimento Santos de Moura** - Backend (Reservas e Agenda)
 
-Taylam Nascimento Santos de Moura	TaylamMoura
-	Backend (Reservas e Agenda)
+**Luiz Eduardo Reis Souza** - Backend (Admin e Relatórios)
 
-Luiz Eduardo Reis Souza	L-edu
-	Backend (Admin e Relatórios)
+**Marcelo Rodrigues** - Full Stack (Integração e Apoio)
 
-Marcelo Rodrigues	(Você)	Full Stack (Integração e Apoio)
-
-Alessandra Cardozo dos Santos	alessandra-cardozo
-	Frontend (UX e Telas)
+**Alessandra Cardozo dos Santos** - Frontend (UX e Telas)
 
 ## 🌿 Organização das Branches
 
