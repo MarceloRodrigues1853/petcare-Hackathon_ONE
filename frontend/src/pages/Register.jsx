@@ -9,6 +9,7 @@ export default function Register(){
   const [email,setEmail] = useState("");
   const [password,setPassword] = useState("");
   const [confirm,setConfirm] = useState("");
+  const [role,setRole] = useState("OWNER");
   const [loading,setLoading] = useState(false);
   const [msg,setMsg] = useState("");
 
@@ -50,6 +51,19 @@ export default function Register(){
 
           <label>Confirmar senha</label>
           <input type="password" value={confirm} onChange={e=>setConfirm(e.target.value)} placeholder="Confirmar senha" required/>
+
+          <label>Tipo de usuário</label>
+          <select 
+            className="role-select" 
+            value={role} 
+            onChange={e=>setRole(e.target.value)}
+            required
+          >
+
+            <option value="" disabled>Selecione</option>
+            <option value="OWNER">Dono</option>
+            <option value="SITTER">Cuidador(a)</option>
+          </select>
 
           <button className="btn" disabled={loading}>
             {loading ? "Cadastrando..." : "Cadastrar"}
