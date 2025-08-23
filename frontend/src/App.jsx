@@ -1,3 +1,4 @@
+// frontend/src/App.jsx
 import React from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import "./styles.css";
@@ -8,10 +9,11 @@ export default function App(){
   return (
     <BrowserRouter>
       <Routes>
+        {/* por enquanto manda a raiz pro login */}
         <Route path="/" element={<Navigate to="/login" replace/>} />
         <Route path="/login" element={<Login/>} />
         <Route path="/register" element={<Register/>} />
-        {/* no futuro: <Route path="/dashboard" element={<Dashboard/>} /> */}
+        {/* futuro: <Route path="/home" element={<Home/>} /> */}
       </Routes>
     </BrowserRouter>
   );
