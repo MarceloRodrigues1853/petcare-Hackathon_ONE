@@ -20,7 +20,8 @@ services:
     restart: unless-stopped
 
   backend:
-    build: ./backend
+    build:
+      context: ./backend
     container_name: petcare-backend
     depends_on:
       db:
@@ -32,12 +33,22 @@ services:
     restart: unless-stopped
 
   frontend:
-    build: ./frontend
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
     container_name: petcare-frontend
     depends_on:
       - backend
+    # roda o Vite em modo dev dentro do container
+    command: npm run dev
+    environment:
+      NODE_ENV: development         # garante instalação de devDependencies (vite)
+      VITE_API_URL: http://localhost:8080
     ports:
       - "5173:5173"
+    volumes:
+      - ./frontend:/app             # código
+      - /app/node_modules           # preserva node_modules do container
     restart: unless-stopped
 
 volumes:
