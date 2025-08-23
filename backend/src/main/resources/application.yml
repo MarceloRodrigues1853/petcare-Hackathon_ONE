@@ -16,3 +16,6 @@ server:
 springdoc:
   api-docs.path: /v3/api-docs
   swagger-ui.path: /swagger-ui/index.html
+
+jwt:
+  secret: Chave26@21Segura354!$%Para984%&JWT@
