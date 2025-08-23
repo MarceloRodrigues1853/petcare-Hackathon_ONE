@@ -1,15 +1,11 @@
 # frontend/Dockerfile
-FROM node:20-alpine3.18
+FROM node:20-alpine
+
 WORKDIR /app
 
-# copia só os manifests (melhor cache)
-COPY package.json package-lock.json* ./
+# utilitário opcional
+RUN apk add --no-cache bash
 
-# instala TUDO (incluindo devDependencies onde fica o vite)
-RUN npm ci --include=dev
-
-# copia o resto
-COPY . .
-
-EXPOSE 5173
-CMD ["npm", "run", "dev", "--", "--host"]
+# como vamos usar bind mount do código, não copiamos nada aqui
+# o comando real é definido no docker-compose (section "command")
+CMD ["npm","run","dev"]
