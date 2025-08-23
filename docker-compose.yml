@@ -39,17 +39,13 @@ services:
     container_name: petcare-frontend
     depends_on:
       - backend
-    # roda o Vite em modo dev dentro do container
-    command: npm run dev
+    command: npm run dev -- --host
     environment:
-      NODE_ENV: development         # garante instalação de devDependencies (vite)
+      NODE_ENV: development
       VITE_API_URL: http://localhost:8080
     ports:
       - "5173:5173"
     volumes:
-      - ./frontend:/app             # código
-      - /app/node_modules           # preserva node_modules do container
+      - ./frontend:/app
+      - /app/node_modules
     restart: unless-stopped
-
-volumes:
-  db_data:
