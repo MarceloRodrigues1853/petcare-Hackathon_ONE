@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import Logo from "../components/Logo";
-import { postJson } from "../services/api"; // você já criou services/api.js
+import { postJson } from "../services/api";
 
 export default function Register(){
   const navigate = useNavigate();
@@ -35,7 +34,6 @@ export default function Register(){
 
   return (
     <div className="center">
-      <Logo/>
       <h1>Cadastro</h1>
 
       <div className="card">
