@@ -1,22 +1,62 @@
 package com.petcare.config;
 
+import com.petcare.auth.JwtAuthFilter;
+import com.petcare.user.UserDetailsServiceImpl;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @Configuration
 public class SecurityConfig {
+
+  @Autowired
+  private JwtAuthFilter jwtAuthFilter;
+
+
+
+  // Configura o provedor de autenticação usando dados do banco e senha criptografada
   @Bean
-  public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-    http.csrf(csrf -> csrf.disable())
-        .authorizeHttpRequests(auth -> auth
-          .requestMatchers("/auth/**","/v3/api-docs/**","/swagger-ui/**","/swagger-ui.html").permitAll()
-          .anyRequest().permitAll());
-    return http.build();
+  public AuthenticationProvider authenticationProvider(UserDetailsServiceImpl userDetailsService) {
+
+    DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
+
+    // Define o serviço que carrega os dados do usuário (email, senha, role)
+    // Esse serviço é a classe UserDetailsServiceImpl
+    authProvider.setUserDetailsService(userDetailsService);
+    authProvider.setPasswordEncoder(new BCryptPasswordEncoder());
+
+    return authProvider;
   }
+
+
+  @Bean
+  public SecurityFilterChain securityFilterChain(HttpSecurity http, AuthenticationProvider authenticationProvider) throws Exception {
+    return http
+            .csrf(csrf -> csrf.disable())
+            .authorizeHttpRequests(auth -> auth
+                    .requestMatchers("/auth/**").permitAll()
+                    .requestMatchers("/admin/**").hasAuthority("ADMIN")
+                    .requestMatchers("/sitter/**").hasAuthority("SITTER")
+                    .requestMatchers("/user/**").hasAuthority("OWNER")
+                    .anyRequest().authenticated()
+            )
+            .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .authenticationProvider(authenticationProvider)
+            .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
+            .build();
+  }
+
+
   @Bean
   public WebMvcConfigurer corsConfigurer() {
     return new WebMvcConfigurer() {
@@ -24,5 +64,11 @@ public class SecurityConfig {
         registry.addMapping("/**").allowedOrigins("http://localhost:5173").allowedMethods("*");
       }
     };
+  }
+
+
+  @Bean
+  public PasswordEncoder passwordEncoder() {
+    return new BCryptPasswordEncoder();
   }
 }
