@@ -32,12 +32,9 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
 
-        // Extrai o cabeçalho Authorization da requisição
         String authHeader = request.getHeader("Authorization");
 
-        // Verifica se o cabeçalho está presente e começa com "Bearer "
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            // Se não estiver, segue o fluxo sem autenticar
             filterChain.doFilter(request, response);
             return;
         }

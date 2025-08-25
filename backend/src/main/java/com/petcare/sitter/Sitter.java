@@ -12,5 +12,6 @@ public class Sitter extends User {
 
 
 }
- //podemos colocar outros dados que forem necessarios depois
+//está vazio, pq vamos colocar os dados mais especificos depois
+
 

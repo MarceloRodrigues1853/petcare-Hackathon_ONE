@@ -22,24 +22,19 @@ public class SecurityConfig {
   @Autowired
   private JwtAuthFilter jwtAuthFilter;
 
-  // Declara um bean do tipo AuthenticationProvider
-// Esse bean será usado pelo Spring Security para autenticar usuários
+
+
+  // Configura o provedor de autenticação usando dados do banco e senha criptografada
   @Bean
   public AuthenticationProvider authenticationProvider(UserDetailsServiceImpl userDetailsService) {
 
-    // Cria uma instância do DaoAuthenticationProvider
-    // Esse é o provedor padrão do Spring que usa dados do banco de dados
     DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
 
     // Define o serviço que carrega os dados do usuário (email, senha, role)
-    // Esse serviço é sua classe UserDetailsServiceImpl
+    // Esse serviço é a classe UserDetailsServiceImpl
     authProvider.setUserDetailsService(userDetailsService);
-
-    // Define o algoritmo de criptografia usado para verificar a senha
-    // Aqui usamos BCrypt, que é seguro e recomendado
     authProvider.setPasswordEncoder(new BCryptPasswordEncoder());
 
-    // Retorna o provedor configurado para ser usado na autenticação
     return authProvider;
   }
 
@@ -52,7 +47,7 @@ public class SecurityConfig {
                     .requestMatchers("/auth/**").permitAll()
                     .requestMatchers("/admin/**").hasAuthority("ADMIN")
                     .requestMatchers("/sitter/**").hasAuthority("SITTER")
-                    .requestMatchers("/user/**").hasAuthority("OWNER") // ou "USER", se preferir
+                    .requestMatchers("/user/**").hasAuthority("OWNER")
                     .anyRequest().authenticated()
             )
             .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
@@ -60,6 +55,7 @@ public class SecurityConfig {
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
             .build();
   }
+
 
   @Bean
   public WebMvcConfigurer corsConfigurer() {
@@ -70,11 +66,9 @@ public class SecurityConfig {
     };
   }
 
+
   @Bean
   public PasswordEncoder passwordEncoder() {
     return new BCryptPasswordEncoder();
   }
-
-
-
 }

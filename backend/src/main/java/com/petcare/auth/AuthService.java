@@ -23,10 +23,9 @@ public class AuthService {
         this.passwordEncoder = passwordEncoder;
     }
 
-    /**
-     * Registra um novo usuário no sistema.
-     * Valida se o email já existe, aplica hash na senha e salva no banco.
-     */
+
+    //Registra um novo usuário .
+    //Valida se o email já existe, aplica hash na senha e salva no banco.
     public RegisterResponse register(RegisterRequest req) {
         if (userRepository.findByEmail(req.email()).isPresent()) {
             throw new RuntimeException("Email já cadastrado");
@@ -50,10 +49,9 @@ public class AuthService {
         return new RegisterResponse(user.getId(), user.getName(), user.getEmail(), user.getRole().name());
     }
 
-    /**
-     * Autentica o usuário com email e senha.
-     * Gera e retorna o token JWT se as credenciais forem válidas.
-     */
+
+     //LOGIN: Autentica o usuário com email e senha.
+    //Gera e retorna o token JWT se as credenciais forem válidas.
     public LoginResponse login(LoginRequest req) {
         User user = userRepository.findByEmail(req.email())
                 .orElseThrow(() -> new RuntimeException("Email ou senha inválidos"));

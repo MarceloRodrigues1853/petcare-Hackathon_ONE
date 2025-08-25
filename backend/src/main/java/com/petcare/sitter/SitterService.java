@@ -22,6 +22,7 @@ public class SitterService {
         );
     }
 
+
     // Atualizar perfil
     public SitterResponse updateProfile(String email, SitterRequest request) {
         Sitter sitter = sitterRepository.findByEmail(email)
@@ -38,6 +39,7 @@ public class SitterService {
                 updated.getEmail()
         );
     }
+
 
     // Excluir perfil
     public void deleteProfile(String email) {

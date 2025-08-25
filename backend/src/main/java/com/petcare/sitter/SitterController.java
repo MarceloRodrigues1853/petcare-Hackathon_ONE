@@ -14,7 +14,7 @@ public class SitterController {
     private final SitterService sitterService;
 
     // Ver perfil - apenas sitter autenticado
-    @PreAuthorize("hasRole('SITTER')")
+    @PreAuthorize("hasRole('SITTER')") // Garante que só usuários com papel 'SITTER' podem executar este método
     @GetMapping("/profile")
     public ResponseEntity<SitterResponse> getProfile(Authentication authentication) {
         SitterResponse response = sitterService.getProfile(authentication.getName());
@@ -42,3 +42,5 @@ public class SitterController {
     }
 }
 
+//o @PreAuthorize restringe o acesso ao metodo com base no Role do usuario
+//verficiação é feitas antes da execução

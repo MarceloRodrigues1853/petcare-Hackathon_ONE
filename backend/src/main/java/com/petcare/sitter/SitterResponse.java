@@ -6,4 +6,5 @@ public record SitterResponse(
         String name,
         String email
 ) {}
+
 //acrescentar mais dados depois

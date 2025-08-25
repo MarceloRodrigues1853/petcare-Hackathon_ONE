@@ -4,6 +4,7 @@ import com.petcare.dto.LoginRequest;
 import com.petcare.dto.LoginResponse;
 import com.petcare.dto.RegisterRequest;
 import com.petcare.dto.RegisterResponse;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -20,7 +21,7 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<?> register(@RequestBody RegisterRequest req) {
+    public ResponseEntity<?> register(@Valid @RequestBody RegisterRequest req) {
         try {
             RegisterResponse response = authService.register(req);
             return ResponseEntity.ok(response);

@@ -66,3 +66,10 @@ public class UserDetailsImpl implements UserDetails {
         return user;
     }
 }
+
+//Essa classe é um adaptador: ela transforma sua entidade User (ou Sitter, Owner, etc.)
+// em algo que o Spring Security entende — ou seja, um UserDetails.
+//
+//Ela é usada internamente pelo Spring durante o processo de autenticação. Quando alguém
+// faz login, o Spring chama o UserDetailsServiceImpl, que busca o usuário no banco e
+// transforma ele em UserDetailsImpl.
