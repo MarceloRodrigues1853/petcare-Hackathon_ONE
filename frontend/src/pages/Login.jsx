@@ -41,6 +41,8 @@ export default function Login(){
           <label>Senha</label>
           <input type="password" value={password} onChange={e=>setPassword(e.target.value)} placeholder="Senha" required/>
 
+          <a href="/entar/esqueci-senha" className="link right">Esqueci minha senha</a>
+
           <button className="btn" disabled={loading}>
             {loading ? "Entrando..." : "Entrar"}
           </button>

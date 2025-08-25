@@ -12,8 +12,8 @@ export default function Services(){
           <p>Passeios seguros e divertidos.</p>
         </div>
         <div className="card">
-          <h3>Visitas</h3>
-          <p>Alimentação, água e medicação.</p>
+          <h3>Hospedagem</h3>
+          <p>Hospedagem por dias, semanas ou mês.</p>
         </div>
       </div>
     </section>
