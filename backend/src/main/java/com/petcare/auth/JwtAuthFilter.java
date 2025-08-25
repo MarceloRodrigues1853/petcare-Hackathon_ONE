@@ -1,5 +1,7 @@
-package com.petcare.user;
+package com.petcare.auth;
 
+import com.petcare.user.User;
+import com.petcare.user.UserRepository;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

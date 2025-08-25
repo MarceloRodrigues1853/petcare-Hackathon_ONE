@@ -1,5 +1,6 @@
-package com.petcare.user;
+package com.petcare.auth;
 
+import com.petcare.user.User;
 import io.jsonwebtoken.Claims;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;

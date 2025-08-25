@@ -1,7 +1,9 @@
-package com.petcare.user;
+package com.petcare.auth;
 
 import com.petcare.dto.LoginRequest;
 import com.petcare.dto.LoginResponse;
+import com.petcare.dto.RegisterRequest;
+import com.petcare.dto.RegisterResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -11,21 +13,22 @@ import java.util.Map;
 @RequestMapping("/auth")
 public class AuthController {
 
-    private final AutheticationService authService;
+    private final AuthService authService;
 
-    public AuthController(AutheticationService authService) {
+    public AuthController(AuthService authService) {
         this.authService = authService;
     }
 
     @PostMapping("/register")
-    public ResponseEntity<?> register(@RequestBody UserController.RegisterRequest req) {
+    public ResponseEntity<?> register(@RequestBody RegisterRequest req) {
         try {
-            UserController.RegisterResponse response = authService.register(req);
+            RegisterResponse response = authService.register(req);
             return ResponseEntity.ok(response);
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
     }
+
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest req) {

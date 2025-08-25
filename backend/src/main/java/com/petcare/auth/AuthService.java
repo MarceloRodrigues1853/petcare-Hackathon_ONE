@@ -1,20 +1,23 @@
-package com.petcare.user;
+package com.petcare.auth;
 
 import com.petcare.dto.LoginRequest;
 import com.petcare.dto.LoginResponse;
 import com.petcare.dto.RegisterRequest;
 import com.petcare.dto.RegisterResponse;
+import com.petcare.user.Role;
+import com.petcare.user.User;
+import com.petcare.user.UserRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
-public class AuthenticationService {
+public class AuthService {
 
     private final UserRepository userRepository;
     private final JwtService jwtService;
     private final PasswordEncoder passwordEncoder;
 
-    public AuthenticationService(UserRepository userRepository, JwtService jwtService, PasswordEncoder passwordEncoder) {
+    public AuthService(UserRepository userRepository, JwtService jwtService, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.jwtService = jwtService;
         this.passwordEncoder = passwordEncoder;
@@ -36,7 +39,7 @@ public class AuthenticationService {
 
         try {
             if (req.role() != null) {
-                user.setRole(User.Role.valueOf(req.role().toUpperCase()));
+                user.setRole(Role.valueOf(req.role().toUpperCase()));
             }
         } catch (IllegalArgumentException e) {
             throw new RuntimeException("Papel de usuário inválido");
