@@ -11,8 +11,7 @@ export default function Layout() {
           <Link to="/">Home</Link>
           <Link to="/about">Sobre</Link>
           <Link to="/services">Serviços</Link>
-          <Link to="/login">Login</Link>
-          <Link to="/register">Registrar</Link>
+          <Link to="/login">Entre ou cadastre-se</Link>
         </nav>
       </header>
 
