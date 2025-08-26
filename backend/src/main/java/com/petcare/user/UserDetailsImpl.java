@@ -73,3 +73,4 @@ public class UserDetailsImpl implements UserDetails {
 //Ela é usada internamente pelo Spring durante o processo de autenticação. Quando alguém
 // faz login, o Spring chama o UserDetailsServiceImpl, que busca o usuário no banco e
 // transforma ele em UserDetailsImpl.
+

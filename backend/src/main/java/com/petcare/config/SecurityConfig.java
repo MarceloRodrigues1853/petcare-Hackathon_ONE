@@ -22,8 +22,6 @@ public class SecurityConfig {
   @Autowired
   private JwtAuthFilter jwtAuthFilter;
 
-
-
   // Configura o provedor de autenticação usando dados do banco e senha criptografada
   @Bean
   public AuthenticationProvider authenticationProvider(UserDetailsServiceImpl userDetailsService) {
@@ -34,7 +32,6 @@ public class SecurityConfig {
     // Esse serviço é a classe UserDetailsServiceImpl
     authProvider.setUserDetailsService(userDetailsService);
     authProvider.setPasswordEncoder(new BCryptPasswordEncoder());
-
     return authProvider;
   }
 
@@ -56,7 +53,6 @@ public class SecurityConfig {
             .build();
   }
 
-
   @Bean
   public WebMvcConfigurer corsConfigurer() {
     return new WebMvcConfigurer() {
@@ -65,7 +61,6 @@ public class SecurityConfig {
       }
     };
   }
-
 
   @Bean
   public PasswordEncoder passwordEncoder() {

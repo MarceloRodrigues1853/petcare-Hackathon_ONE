@@ -1,7 +1,11 @@
+# frontend/Dockerfile
 FROM node:20-alpine
+
 WORKDIR /app
-COPY package.json package-lock.json* pnpm-lock.yaml* yarn.lock* ./
-RUN npm install || true
-COPY . .
-EXPOSE 5173
-CMD ["npm","run","dev","--","--host"]
+
+# utilitário opcional
+RUN apk add --no-cache bash
+
+# como vamos usar bind mount do código, não copiamos nada aqui
+# o comando real é definido no docker-compose (section "command")
+CMD ["npm","run","dev"]
