@@ -8,6 +8,7 @@
 
 ## Onde ficam os arquivos
 
+```css
 backend/
 └─ src/main/resources/
 ├─ db/migration/
@@ -16,6 +17,7 @@ backend/
 │ ├─ V3__create_pets.sql
 │ └─ V4__create_bookings.sql
 └─ data.sql
+```
 
 ```bash
 ## Configuração recomendada (application.properties)
