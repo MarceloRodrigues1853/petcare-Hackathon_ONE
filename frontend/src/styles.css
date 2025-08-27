@@ -15,6 +15,7 @@
 html, body, #root { height: 100%; }
 body{
   margin:0;
+  padding: 0;
   font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
   background: var(--bg);
   color: var(--text);
@@ -26,9 +27,9 @@ body{
 /* =========================
    Header
 ========================= */
-.header-wrap{
+/* .header-wrap{ */
   /* barra bege arredondada como no mock */
-  padding: 1rem 0;
+  /* padding: 1rem 0;
 }
 .header{
   max-width: 1200px;
@@ -45,28 +46,28 @@ body{
 .brand{
   display:flex; align-items:center; gap:.55rem;
   text-decoration:none; color:inherit; font-weight:700;
-}
+} */
 
 /* apenas o ícone (sem texto) para ficar fiel ao seu pedido */
-.logo-img{ width: 28px; height: 28px; display:block; }
+/* .logo-img{ width: 28px; height: 28px; display:block; } */
 
 /* navegação */
-.nav{ display:flex; align-items:center; gap: 1.6rem; }
+/* .nav{ display:flex; align-items:center; gap: 1.6rem; }
 .nav a{
   text-decoration:none; color:#38414a; font-weight:500;
 }
-.nav a.active{ text-decoration: underline; text-underline-offset: 4px; }
+.nav a.active{ text-decoration: underline; text-underline-offset: 4px; } */
 
 /* responsivo do header */
-@media (max-width: 900px){
+/* @media (max-width: 900px){
   .header{ flex-direction: column; gap: .8rem; align-items: stretch; }
   .nav{ justify-content:center; flex-wrap: wrap; gap: 1rem; }
-}
+} */
 
 /* =========================
    Hero (Home)
 ========================= */
-.hero{
+/* .hero{
   background: var(--card);
   padding: clamp(1.5rem, 3vw, 3rem);
   border-radius: 24px;
@@ -79,9 +80,9 @@ body{
 }
 
 .hero-text{ flex:1; }
-.hero-text h1{
+.hero-text h1{ */
   /* cresce/lê dinamicamente conforme a tela */
-  font-size: clamp(2rem, 3.2vw + 1rem, 3.4rem);
+  /* font-size: clamp(2rem, 3.2vw + 1rem, 3.4rem);
   line-height: 1.12;
   margin: 0 0 1rem;
   color: var(--brand);
@@ -89,10 +90,10 @@ body{
 .hero-text p{
   font-size: clamp(.95rem, .6vw + .7rem, 1.15rem);
   margin: 0 0 1.4rem; opacity:.9;
-}
+} */
 
 /* CTA da home: separado do .btn para não afetar os formulários */
-.btn-cta{
+/* .btn-cta{
   display:inline-block;
   padding: .9rem 1.6rem;
   border-radius: 14px;
@@ -101,22 +102,219 @@ body{
   text-decoration:none; border:0; cursor:pointer;
   box-shadow: 0 6px 18px rgba(239,123,71, .25);
 }
-.btn-cta:hover{ filter: brightness(.98); }
+.btn-cta:hover{ filter: brightness(.98); } */
 
 /* imagem do herói */
-.hero-media{
+/* .hero-media{
   flex:1;
   display:flex; align-items:center; justify-content:center;
 }
 .hero-media img{
   width: clamp(220px, 30vw, 420px);
   height: auto;
-}
+} */
 
 /* quebra para mobile/tablet */
-@media (max-width: 900px){
+/* @media (max-width: 900px){
   .hero{ flex-direction: column; text-align:center; }
   .hero-media img{ width: clamp(200px, 45vw, 300px); }
+} */
+
+/* ================== Banner Hero Simplificado ================== */
+.home-hero-simple {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+.home-hero {
+  width: 100vw;
+  margin-left: 50%;
+  transform: translateX(-50%);
+  height: 600px;
+  position: relative;
+  overflow: hidden;
+}
+
+.home-hero-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.home-hero-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding: 2rem;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.25);
+}
+
+.home-hero-overlay h1 {
+  font-size: clamp(2rem, 3vw + 1rem, 3rem);
+  color: var(--card);
+  margin-bottom: 1rem;
+}
+
+.home-hero-overlay p {
+  font-size: clamp(1.3rem, 1.2vw + 0.5rem, 1.5rem);
+  margin-bottom: 1.5rem;
+}
+
+.btn-cta {
+  font-size: 1.3rem;
+  padding: 1rem 2rem;
+  border-radius: 14px;
+  background: var(--accent);
+  color: #fff;
+  font-weight: 700;
+  text-decoration: none;
+  transition: all 0.2s;
+}
+
+.btn-cta:hover {
+  filter: brightness(0.95);
+}
+
+/* ================== Serviços ================== */
+.section-title {
+  text-align: center;
+  font-size: 2.3rem;
+  color: var(--brand);
+  margin-bottom: 2rem;
+}
+
+.home-list-grid {
+  display: flex;
+  gap: 2rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.home-card {
+  background: var(--card);
+  border-radius: 16px;
+  box-shadow: 0 8px 24px rgba(14,53,92,0.08);
+  width: 280px;
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.home-card:hover {
+  transform: translateY(-5px) scale(1.03);
+  box-shadow: 0 12px 30px rgba(14,53,92,0.12);
+}
+
+.home-img-wrapper {
+  width: 100%;
+  height: 180px;
+  overflow: hidden;
+  border-radius: 16px 16px 0 0;
+}
+
+.home-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.home-content {
+  padding: 1rem;
+}
+
+.home-title {
+  font-size: 1.5rem;
+  color: var(--brand);
+  margin-bottom: 0.5rem;
+  text-align: center;
+}
+
+.home-text {
+  font-size: 1.2rem;
+  color: var(--text);
+  text-align: center;
+}
+
+/* ================== Benefícios ================== */
+.home-benefits {
+  max-width: 1200px;
+  margin: 3rem auto;
+  padding: 0 1rem;
+  text-align: center;
+}
+
+.benefits-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2rem;
+  justify-content: center;
+  margin-top: 2rem;
+}
+
+.benefit-card {
+  background: var(--card);
+  padding: 1.5rem 1rem;
+  border-radius: var(--radius);
+  box-shadow: 0 6px 18px rgba(14,53,92,0.08);
+  flex: 1;
+  min-width: 250px;
+  max-width: 300px;
+}
+
+.benefit-card h3 {
+  color: var(--brand);
+  font-size: 1.8rem;
+  margin-bottom: 0.8rem;
+}
+
+.benefit-card p {
+  color: var(--text);
+  font-size: 1.2rem;
+  line-height: 1.5;
+}
+
+/* ================== Footer CTA ================== */
+.about-footer {
+  margin-top: 3rem;
+  text-align: center;
+}
+
+.about-btn {
+  background: var(--brand);
+  color: #fff;
+  padding: 0.8rem 1.5rem;
+  border-radius: 12px;
+  text-decoration: none;
+  font-weight: 600;
+  display: inline-block;
+  transition: all 0.2s;
+}
+
+.about-btn:hover {
+  background: var(--accent);
+}
+
+/* ================== Responsivo ================== */
+@media (max-width: 900px) {
+  .home-hero {
+    height: auto;
+    flex-direction: column;
+    text-align: center;
+    padding: 2rem 1rem;
+  }
+
+  .home-list-grid, .benefits-grid {
+    flex-direction: column;
+    align-items: center;
+  }
 }
 
 /* =========================
@@ -164,4 +362,4 @@ input:focus{
 /* =========================
    Footer
 ========================= */
-.footer{ text-align:center; padding: 2rem 0; opacity:.7; }
+/* .footer{ text-align:center; padding: 2rem 0; opacity:.7; } */
