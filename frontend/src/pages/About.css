@@ -1,0 +1,111 @@
+/* Reset básico */
+html, body {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+.about-section {
+  background: var(--bg);
+  font-family: "Helvetica Neue", Arial, sans-serif;
+  color: var(--text);
+}
+
+.about-banner {
+  position: relative;
+  width: 100vw;
+  height: 380px;
+  overflow: hidden;
+  left: 50%;
+  margin-left: -50vw;
+  top: 0;
+}
+
+.about-banner-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.about-banner-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(14, 53, 92, 0.35);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  color: #fff;
+  padding: 1rem;
+}
+
+.about-banner-overlay h1 {
+  font-size: 3rem;
+  color: #f4f0f0;
+  margin-bottom: 0.5rem;
+}
+
+.about-banner-overlay p {
+  font-size: 1.5rem;
+  max-width: 700px;
+}
+
+/* Blocos de texto */
+.about-block {
+  max-width: 900px;
+  margin: 3rem auto;
+  padding: 0 1.5rem;
+}
+
+.about-block h2 {
+  font-size: 2rem;
+  color: var(--brand);
+  margin-bottom: 1rem;
+}
+
+.about-block p {
+  font-size: 1.5rem;
+  line-height: 1.6;
+  text-align: justify;
+}
+
+.about-mission-img {
+  width: 100vw;
+  height: 300px;
+  overflow: hidden;
+  position: relative;
+  left: 50%;
+  margin-left: -50vw;
+}
+
+.about-mission-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.about-block-content {
+  padding: 1.5rem 0;
+}
+
+/* Responsivo */
+@media (max-width: 960px) {
+  .about-mission-img {
+    height: 200px;
+  }
+
+  .about-block-content {
+    padding: 1rem 0;
+  }
+}
+
+@media (max-width: 600px) {
+  .about-banner-overlay h1 {
+    font-size: 1.8rem;
+  }
+  .about-banner-overlay p {
+    font-size: 1rem;
+  }
+}
