@@ -42,7 +42,7 @@ docker compose logs -f backend
 
  - V5__descricao_curta.sql
   
-2. Coloque apenas DDL (CREATE/ALTER/DROP) e constraints.
+2. Coloque **apenas DDL** (CREATE/ALTER/DROP) e constraints.
 
 3. Não edite migrations antigas já aplicadas; crie uma nova versão.
 
@@ -55,7 +55,7 @@ CREATE INDEX idx_users_email ON users (email);
 
 ## Seeds (dados iniciais)
 
-- Use src/main/resources/data.sql apenas para dev (usuários de teste, etc.).
+- Use `src/main/resources/data.sql` **apenas para dev** (usuários de teste, etc.).
 - Ele roda no startup do Spring (com MySQL disponível).
 
 ## Variáveis de ambiente (compose)
