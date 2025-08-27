@@ -7,58 +7,51 @@ import com.petcare.dto.RegisterResponse;
 import com.petcare.user.Role;
 import com.petcare.user.User;
 import com.petcare.user.UserRepository;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.Arrays;
+import java.util.Map;
 
 @Service
+@RequiredArgsConstructor
 public class AuthService {
 
-    private final UserRepository userRepository;
-    private final JwtService jwtService;
-    private final PasswordEncoder passwordEncoder;
+  private final UserRepository userRepository;
+  private final JwtService jwtService;
+  private final BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
 
-    public AuthService(UserRepository userRepository, JwtService jwtService, PasswordEncoder passwordEncoder) {
-        this.userRepository = userRepository;
-        this.jwtService = jwtService;
-        this.passwordEncoder = passwordEncoder;
+  public RegisterResponse register(RegisterRequest req) {
+    userRepository.findByEmail(req.email()).ifPresent(u -> {
+      throw new RuntimeException("Email já cadastrado");
+    });
+
+    User u = new User();
+    u.setName(req.name());
+    u.setEmail(req.email());
+    u.setPasswordHash(User.hash(req.password()));
+    try {
+      u.setRole(req.role() != null ? Role.valueOf(req.role().toUpperCase()) : Role.USER);
+    } catch (Exception ignored) {
+      u.setRole(Role.USER);
     }
 
-    // Registro de novo usuário
-    public RegisterResponse register(RegisterRequest req) {
-        if (userRepository.findByEmail(req.email()).isPresent()) {
-            throw new RuntimeException("Email já cadastrado");
-        }
+    userRepository.save(u);
+    return new RegisterResponse(u.getId(), u.getName(), u.getEmail(), u.getRole().name());
+  }
 
-        User user = new User();
-        user.setName(req.name());
-        user.setEmail(req.email());
-        user.setPasswordHash(passwordEncoder.encode(req.password()));
+  public LoginResponse login(LoginRequest req) {
+    User u = userRepository.findByEmail(req.email())
+        .orElseThrow(() -> new RuntimeException("Email ou senha inválidos"));
 
-        if (req.role() != null) {
-            Role role = Arrays.stream(Role.values())
-                    .filter(r -> r.name().equalsIgnoreCase(req.role()))
-                    .findFirst()
-                    .orElseThrow(() -> new RuntimeException("Papel de usuário inválido"));
-            user.setRole(role);
-        }
-
-        userRepository.save(user);
-
-        return new RegisterResponse(user.getId(), user.getName(), user.getEmail(), user.getRole().name());
+    if (!encoder.matches(req.password(), u.getPasswordHash())) {
+      throw new RuntimeException("Email ou senha inválidos");
     }
 
-    // Autenticação de login
-    public LoginResponse login(LoginRequest req) {
-        User user = userRepository.findByEmail(req.email())
-                .orElseThrow(() -> new RuntimeException("Email ou senha inválidos"));
-
-        if (!passwordEncoder.matches(req.password(), user.getPasswordHash())) {
-            throw new RuntimeException("Email ou senha inválidos");
-        }
-
-        String token = jwtService.generateToken(user);
-        return new LoginResponse(token);
-    }
+    String token = jwtService.generateToken(
+        u.getEmail(),
+        Map.of("role", u.getRole() != null ? u.getRole().name() : "USER")
+    );
+    return new LoginResponse(token);
+  }
 }
