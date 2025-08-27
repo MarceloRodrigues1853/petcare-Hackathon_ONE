@@ -1,7 +1,6 @@
 /app/src/main/java/com/petcare/user/Role.java
 /app/src/main/java/com/petcare/auth/AuthController.java
 /app/src/main/java/com/petcare/user/LoginResponse.java
-/app/src/main/java/com/petcare/user/AuthController.java
 /app/src/main/java/com/petcare/sitter/SitterResponse.java
 /app/src/main/java/com/petcare/owner/Owner.java
 /app/src/main/java/com/petcare/user/AuthenticationService.java
@@ -12,7 +11,6 @@
 /app/src/main/java/com/petcare/config/SecurityConfig.java
 /app/src/main/java/com/petcare/user/LoginRequest.java
 /app/src/main/java/com/petcare/sitter/SitterService.java
-/app/src/main/java/com/petcare/user/JwtAuthFilter.java
 /app/src/main/java/com/petcare/sitter/SitterRequest.java
 /app/src/main/java/com/petcare/user/UserDetailsImpl.java
 /app/src/main/java/com/petcare/user/UserDetailsServiceImpl.java
