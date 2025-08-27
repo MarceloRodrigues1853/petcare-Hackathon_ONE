@@ -1,31 +1,21 @@
 package com.petcare.user;
 
-import com.petcare.dto.LoginRequest;
-import com.petcare.dto.LoginResponse;
+import java.util.Map;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Map;
-
 @RestController
-@RequestMapping("/auth")
+@RequestMapping("/api/auth")
+@RequiredArgsConstructor
 public class AuthController {
 
-    private final AutheticationService authService;
+  private final AuthenticationService authService;
 
-    public AuthController(AutheticationService authService) {
-        this.authService = authService;
-    }
-
-    @PostMapping("/register")
-    public ResponseEntity<?> register(@RequestBody UserController.RegisterRequest req) {
-        try {
-            UserController.RegisterResponse response = authService.register(req);
-            return ResponseEntity.ok(response);
-        } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
-        }
-    }
+  @PostMapping("/register")
+  public ResponseEntity<User> register(@RequestBody User user) {
+    return ResponseEntity.ok(authService.register(user));
+  }
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest req) {

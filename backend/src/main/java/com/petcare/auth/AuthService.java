@@ -10,6 +10,8 @@ import com.petcare.user.UserRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.Arrays;
+
 @Service
 public class AuthService {
 
@@ -23,9 +25,7 @@ public class AuthService {
         this.passwordEncoder = passwordEncoder;
     }
 
-
-    //Registra um novo usuário .
-    //Valida se o email já existe, aplica hash na senha e salva no banco.
+    // Registro de novo usuário
     public RegisterResponse register(RegisterRequest req) {
         if (userRepository.findByEmail(req.email()).isPresent()) {
             throw new RuntimeException("Email já cadastrado");
@@ -36,12 +36,12 @@ public class AuthService {
         user.setEmail(req.email());
         user.setPasswordHash(passwordEncoder.encode(req.password()));
 
-        try {
-            if (req.role() != null) {
-                user.setRole(Role.valueOf(req.role().toUpperCase()));
-            }
-        } catch (IllegalArgumentException e) {
-            throw new RuntimeException("Papel de usuário inválido");
+        if (req.role() != null) {
+            Role role = Arrays.stream(Role.values())
+                    .filter(r -> r.name().equalsIgnoreCase(req.role()))
+                    .findFirst()
+                    .orElseThrow(() -> new RuntimeException("Papel de usuário inválido"));
+            user.setRole(role);
         }
 
         userRepository.save(user);
@@ -49,9 +49,7 @@ public class AuthService {
         return new RegisterResponse(user.getId(), user.getName(), user.getEmail(), user.getRole().name());
     }
 
-
-     //LOGIN: Autentica o usuário com email e senha.
-    //Gera e retorna o token JWT se as credenciais forem válidas.
+    // Autenticação de login
     public LoginResponse login(LoginRequest req) {
         User user = userRepository.findByEmail(req.email())
                 .orElseThrow(() -> new RuntimeException("Email ou senha inválidos"));

@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/auth")
+@RequestMapping("/auth") // se preferir: "/api/auth"
 public class AuthController {
 
     private final AuthService authService;
@@ -30,7 +30,6 @@ public class AuthController {
         }
     }
 
-
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest req) {
         try {
@@ -40,10 +39,4 @@ public class AuthController {
             return ResponseEntity.status(401).body(Map.of("error", e.getMessage()));
         }
     }
-
-    @GetMapping("/health")
-    public String health() {
-        return "OK";
-    }
 }
-

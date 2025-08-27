@@ -1,14 +1,12 @@
 package com.petcare.auth;
 
 import com.petcare.user.User;
-import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.*;
+import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.security.Keys;
-import io.jsonwebtoken.SignatureAlgorithm;
 
-
+import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.function.Function;
 
@@ -18,52 +16,36 @@ public class JwtService {
     @Value("${JWT_SECRET}")
     private String secretKey;
 
-
-    //Gera um token JWT contendo o e-mail e a role do usuário. Define validade de 24 horas.
+    // Gera um token JWT contendo o e-mail e a role do usuário. Define validade de 24 horas.
     public String generateToken(User user) {
         return Jwts.builder()
                 .setSubject(user.getEmail())
-                .claim("role", user.getRole().name()) //
+                .claim("role", user.getRole().name())
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 24)) // 24h
-                .signWith(Keys.hmacShaKeyFor(secretKey.getBytes()), SignatureAlgorithm.HS256)
+                .signWith(Keys.hmacShaKeyFor(secretKey.getBytes(StandardCharsets.UTF_8)), SignatureAlgorithm.HS256)
                 .compact();
     }
 
-
-    //Extrai o e-mail (subject) do token JWT. É útil para identificar o usuário que está fazendo a requisição.
+    // Extrai o e-mail (subject) do token JWT.
     public String extractEmail(String token) {
-        return Jwts.parserBuilder()
-                .setSigningKey(Keys.hmacShaKeyFor(secretKey.getBytes()))
-                .setAllowedClockSkewSeconds(10)
-                .build()
-                .parseClaimsJws(token)
-                .getBody()
-                .getSubject();
+        return extractClaim(token, Claims::getSubject);
     }
 
-    //Verifica se o token é válido e checa se o token não está expirado.
+    // Verifica se o token é válido e não expirado.
     public boolean isTokenValid(String token, User user) {
-        String email = extractEmail(token);
-        return email.equals(user.getEmail()) && !isTokenExpired(token);
+        return extractEmail(token).equals(user.getEmail()) && !isTokenExpired(token);
     }
 
-    //Verifica se o token já passou da data de expiração. Serve como apoio para o método de validação.
+    // Verifica se o token já expirou.
     private boolean isTokenExpired(String token) {
-        Date expiration = Jwts.parserBuilder()
-                .setSigningKey(Keys.hmacShaKeyFor(secretKey.getBytes()))
-                .setAllowedClockSkewSeconds(10)
-                .build()
-                .parseClaimsJws(token)
-                .getBody()
-                .getExpiration();
-        return expiration.before(new Date());
+        return extractClaim(token, Claims::getExpiration).before(new Date());
     }
 
-    //Permite extrair qualquer informação (claim) do token, como a role.
+    // Extrai qualquer informação (claim) do token.
     public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
         Claims claims = Jwts.parserBuilder()
-                .setSigningKey(Keys.hmacShaKeyFor(secretKey.getBytes()))
+                .setSigningKey(Keys.hmacShaKeyFor(secretKey.getBytes(StandardCharsets.UTF_8)))
                 .setAllowedClockSkewSeconds(10)
                 .build()
                 .parseClaimsJws(token)
@@ -71,5 +53,11 @@ public class JwtService {
         return claimsResolver.apply(claims);
     }
 
-}
+    private byte[] getSigningKey() {
+    if (secretKey == null || secretKey.isBlank()) {
+        throw new IllegalStateException("JWT_SECRET não está definido");
+       }
+       return secretKey.getBytes(StandardCharsets.UTF_8);
+    }
 
+}
