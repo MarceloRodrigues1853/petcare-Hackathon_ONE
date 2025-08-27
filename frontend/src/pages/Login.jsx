@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import Logo from "../components/Logo";
 import { postJson } from "../services/api";
 
 export default function Login(){
@@ -32,7 +31,6 @@ export default function Login(){
 
   return (
     <div className="center">
-      <Logo/>
       <h1>Login</h1>
 
       <div className="card">
@@ -42,6 +40,8 @@ export default function Login(){
 
           <label>Senha</label>
           <input type="password" value={password} onChange={e=>setPassword(e.target.value)} placeholder="Senha" required/>
+
+          <a href="/entar/esqueci-senha" className="link right">Esqueci minha senha</a>
 
           <button className="btn" disabled={loading}>
             {loading ? "Entrando..." : "Entrar"}

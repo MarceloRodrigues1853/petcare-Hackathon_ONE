@@ -1,0 +1,191 @@
+:root {
+  --bg: #fff8ee;
+  --text: #15232d;
+  --brand: #0E355C;
+  --card: #ffffff;
+  --accent: #ef7b47;
+  --radius: 16px;
+}
+
+.services-page {
+  max-width: 1200px;
+  margin: 0 auto;
+  font-family: 'Segoe UI', Arial, sans-serif;
+  padding: 0 1rem;
+  background: var(--bg);
+}
+
+/* Banner no topo */
+.services-banner {
+  position: relative;
+  width: 100vw;
+  left: 50%;
+  right: 50%;
+  margin-left: -50vw;
+  margin-right: -50vw;
+  margin-bottom: 3rem;
+  overflow: hidden;
+  box-shadow: 0 4px 24px rgba(44,62,80,0.10);
+  height: 640px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--card);
+}
+
+.services-banner-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: brightness(0.7);
+}
+
+.services-banner-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  background: rgba(21, 101, 192, 0.25);
+}
+
+.services-banner-title {
+  font-size: 3rem;
+  font-weight: 700;
+  color: var(--card);
+  margin-bottom: 0.7rem;
+  text-shadow: 0 2px 8px rgba(44,62,80,0.18);
+}
+
+.services-banner-subtitle {
+  font-size: 1.8rem;
+  font-weight: 400;
+  text-shadow: 0 2px 8px rgba(44,62,80,0.12);
+}
+
+/* Lista de serviços */
+.services-list-grid {
+  display: flex;
+  flex-direction: row;
+  gap: 2rem;
+  flex-wrap: nowrap;
+  justify-content: center;
+  margin-bottom: 2rem;
+}
+
+/* Card de serviço */
+.service-card {
+  background: var(--card);
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(14, 53, 92, 0.08);
+  width: 260px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 1.5rem 1rem;
+  transition: transform 0.2s, box-shadow 0.2s;
+  position: relative;
+}
+
+.service-card:hover {
+  transform: translateY(-4px) scale(1.03);
+  box-shadow: 0 8px 24px rgba(14, 53, 92, 0.12);
+}
+
+.service-img-wrapper {
+  width: 100%;
+  height: 180px;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.service-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(14, 53, 92, 0.08);
+  background: #fff;
+}
+
+.service-title {
+  font-size: 1.2rem;
+  color: var(--brand);
+  font-weight: 600;
+  margin-bottom: 0.3rem;
+  text-align: center;
+}
+
+.service-text {
+  font-size: 1rem;
+  color: var(--text);
+  margin-bottom: 0.7rem;
+  text-align: center;
+}
+
+.service-price {
+  font-weight: bold;
+  color: var(--accent);
+  font-size: 1.08rem;
+  margin-top: 0.5rem;
+  text-align: right;
+  width: 100%;
+  display: block;
+}
+
+/* Footer */
+.about-footer {
+  margin-top: 2rem;
+  text-align: center;
+}
+
+.about-goal {
+  font-size: 1.13rem;
+  color: #333;
+  font-style: italic;
+  margin-bottom: 1rem;
+}
+
+.about-btn {
+  background: var(--brand);
+  color: #fff;
+  padding: 0.7rem 1.5rem;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 1rem;
+  transition: background 0.2s;
+  box-shadow: 0 2px 8px rgba(14, 53, 92, 0.08);
+  display: inline-block;
+}
+
+.about-btn:hover {
+  background: #388e3c;
+}
+
+/* Responsivo */
+@media (max-width: 900px) {
+  .services-list-grid {
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem;
+  }
+  .service-card {
+    width: 90%;
+    max-width: 350px;
+  }
+  .services-banner {
+    height: 180px;
+  }
+  .services-banner-title {
+    font-size: 1.3rem;
+  }
+}
