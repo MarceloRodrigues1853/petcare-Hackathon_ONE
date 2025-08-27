@@ -2,14 +2,14 @@ import React from "react";
 import "../styles.css";
 import imgBaba from "../assets/images/alexander-grey-42AQP6w8uyI-unsplash.jpg";
 import imgPasseio from "../assets/images/mikita-yo-q8tP-9LYP4o-unsplash.jpg";
-import imgVisita from "../assets/images/hale-tat-7nWfU3_M4ns-unsplash.jpg";
+import imgHospedagem from "../assets/images/hale-tat-7nWfU3_M4ns-unsplash.jpg";
 import heroImg from "../assets/images/andrew-s-ouo1hbizWwo-unsplash.jpg";
 
 export default function Home() {
   const services = [
     { id: 1, img: imgBaba, title: "Babá de Pets", desc: "Cuidado completo para o seu pet no conforto do lar." },
     { id: 2, img: imgPasseio, title: "Passeios", desc: "Atividades seguras e divertidas para o seu pet gastar energia." },
-    { id: 3, img: imgVisita, title: "Visitas Rápidas", desc: "Check-ins rápidos para alimentação, água e atenção extra." },
+    { id: 3, img: imgHospedagem, title: "Hospedagem", desc: "Hospede seu pet por dias, semanas ou mês." },
   ];
 
   const benefits = [
