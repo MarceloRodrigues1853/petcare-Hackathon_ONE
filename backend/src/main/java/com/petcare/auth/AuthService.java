@@ -10,8 +10,11 @@ import com.petcare.user.UserRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+<<<<<<< HEAD
 import java.util.Arrays;
 
+=======
+>>>>>>> main
 @Service
 public class AuthService {
 
@@ -25,7 +28,13 @@ public class AuthService {
         this.passwordEncoder = passwordEncoder;
     }
 
+<<<<<<< HEAD
     // Registro de novo usuário
+=======
+
+    //Registra um novo usuário .
+    //Valida se o email já existe, aplica hash na senha e salva no banco.
+>>>>>>> main
     public RegisterResponse register(RegisterRequest req) {
         if (userRepository.findByEmail(req.email()).isPresent()) {
             throw new RuntimeException("Email já cadastrado");
@@ -36,12 +45,21 @@ public class AuthService {
         user.setEmail(req.email());
         user.setPasswordHash(passwordEncoder.encode(req.password()));
 
+<<<<<<< HEAD
         if (req.role() != null) {
             Role role = Arrays.stream(Role.values())
                     .filter(r -> r.name().equalsIgnoreCase(req.role()))
                     .findFirst()
                     .orElseThrow(() -> new RuntimeException("Papel de usuário inválido"));
             user.setRole(role);
+=======
+        try {
+            if (req.role() != null) {
+                user.setRole(Role.valueOf(req.role().toUpperCase()));
+            }
+        } catch (IllegalArgumentException e) {
+            throw new RuntimeException("Papel de usuário inválido");
+>>>>>>> main
         }
 
         userRepository.save(user);
@@ -49,7 +67,13 @@ public class AuthService {
         return new RegisterResponse(user.getId(), user.getName(), user.getEmail(), user.getRole().name());
     }
 
+<<<<<<< HEAD
     // Autenticação de login
+=======
+
+     //LOGIN: Autentica o usuário com email e senha.
+    //Gera e retorna o token JWT se as credenciais forem válidas.
+>>>>>>> main
     public LoginResponse login(LoginRequest req) {
         User user = userRepository.findByEmail(req.email())
                 .orElseThrow(() -> new RuntimeException("Email ou senha inválidos"));

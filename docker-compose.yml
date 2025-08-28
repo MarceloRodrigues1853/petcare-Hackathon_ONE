@@ -10,8 +10,13 @@ services:
       - MYSQL_PASSWORD=${MYSQL_PASSWORD}
       - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
     ports:
+<<<<<<< HEAD
       - "3306:3306"
     command: ["mysqld", "--default-authentication-plugin=mysql_native_password"]
+=======
+      - "3307:3306"
+    command: ["mysqld", "--default-authentication-plugin=mysql_native_password", "--sql-mode="]
+>>>>>>> main
     volumes:
       - db_data:/var/lib/mysql
     healthcheck:
@@ -32,11 +37,16 @@ services:
       petcare-db:
         condition: service_healthy
     environment:
+<<<<<<< HEAD
       - SPRING_DATASOURCE_URL=jdbc:mysql://petcare-db:3306/${MYSQL_DATABASE}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
       - SPRING_DATASOURCE_USERNAME=${MYSQL_USER}
       - SPRING_DATASOURCE_PASSWORD=${MYSQL_PASSWORD}
       - SERVER_PORT=8080
       - JWT_SECRET=${JWT_SECRET}
+=======
+      SPRING_PROFILES_ACTIVE: docker
+      JWT_SECRET: ${JWT_SECRET}
+>>>>>>> main
     ports:
       - "8080:8080"
     networks:
