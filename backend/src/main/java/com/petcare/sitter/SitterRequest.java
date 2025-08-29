@@ -4,5 +4,5 @@ package com.petcare.sitter;
 public record SitterRequest(
         String name,
         String email,
-        String password
+        String senha
 ) {}

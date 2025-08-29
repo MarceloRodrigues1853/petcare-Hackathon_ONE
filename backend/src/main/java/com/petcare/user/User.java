@@ -1,66 +1,38 @@
 package com.petcare.user;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
-import lombok.Data;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
-<<<<<<< HEAD
 @Entity
 @Table(name = "users")
-=======
-@Entity @Table(name="users")
->>>>>>> main
-@Data
-@Inheritance(strategy = InheritanceType.JOINED)
 public class User {
 
-<<<<<<< HEAD
-  @Id
-  @GeneratedValue(strategy = GenerationType.IDENTITY)
-=======
-  @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
->>>>>>> main
-  private Long id;
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-  @NotBlank
-  private String name;
+    private String name;
 
-<<<<<<< HEAD
-  @Email
-  @Column(unique = true, nullable = false)
-=======
-  @Email @Column(unique = true, nullable = false)
->>>>>>> main
-  private String email;
+    @Column(unique = true, nullable = false)
+    private String email;
 
-  @NotBlank
-  private String passwordHash;
+    private String password;
 
-  @Enumerated(EnumType.STRING)
-  private Role role;
+    @Enumerated(EnumType.STRING)
+    private Role role = Role.USER;
 
-  public static String hash(String raw) {
-    return new BCryptPasswordEncoder().encode(raw);
-  }
-<<<<<<< HEAD
+    // getters/setters
 
-  // ===== getters/setters explícitos (blindam o build no Docker) =====
-  public Long getId() { return id; }
-  public void setId(Long id) { this.id = id; }
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
 
-  public String getName() { return name; }
-  public void setName(String name) { this.name = name; }
+    public String getName() { return name; }
+    public void setName(String name) { this.name = name; }
 
-  public String getEmail() { return email; }
-  public void setEmail(String email) { this.email = email; }
+    public String getEmail() { return email; }
+    public void setEmail(String email) { this.email = email; }
 
-  public String getPasswordHash() { return passwordHash; }
-  public void setPasswordHash(String passwordHash) { this.passwordHash = passwordHash; }
+    public String getPassword() { return senha; }
+    public void setPassword(String senha) { this.senha = senha; }
 
-  public Role getRole() { return role; }
-  public void setRole(Role role) { this.role = role; }
-=======
->>>>>>> main
+    public Role getRole() { return role; }
+    public void setRole(Role role) { this.role = role; }
 }
