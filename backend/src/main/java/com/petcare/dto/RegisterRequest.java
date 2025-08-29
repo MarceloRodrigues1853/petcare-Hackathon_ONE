@@ -18,4 +18,8 @@ public record RegisterRequest(
         String role
 ) {}
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> main
 //DTO para receber dados de registro do novo usuário

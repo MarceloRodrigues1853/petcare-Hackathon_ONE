@@ -6,5 +6,9 @@ public record LoginRequest(
 ) {
 }
 
+<<<<<<< HEAD
 
 //DTO para receber credenciais de login
+=======
+//DTO para receber credenciais de login
+>>>>>>> main

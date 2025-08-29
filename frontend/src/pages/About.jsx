@@ -1,3 +1,7 @@
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+>>>>>>> dev
 import React from "react";
 import "./About.css";
 import bannerImg from "../assets/images/krista-mangulsone-9gz3wfHr65U-unsplash.jpg";
@@ -54,4 +58,21 @@ export default function About() {
 
     </section>
   );
+<<<<<<< HEAD
 }
+=======
+}
+=======
+export default function About(){
+  return (
+    <section className="card">
+      <h2>Sobre</h2>
+      <p>
+        Conectamos donos de pets a babás de confiança. Nossa plataforma
+        simplifica o agendamento, pagamento e feedback.
+      </p>
+    </section>
+  );
+}
+>>>>>>> af23470 (feat(home): página principal + layout + rotas + perfis base)
+>>>>>>> dev

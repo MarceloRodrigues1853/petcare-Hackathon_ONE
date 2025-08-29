@@ -11,7 +11,16 @@ export default function Layout() {
           <Link to="/">Home</Link>
           <Link to="/about">Sobre</Link>
           <Link to="/services">Serviços</Link>
+<<<<<<< HEAD
           <Link to="/login">Entre ou cadastre-se</Link>
+=======
+<<<<<<< HEAD
+          <Link to="/login">Entre ou cadastre-se</Link>
+=======
+          <Link to="/login">Login</Link>
+          <Link to="/register">Registrar</Link>
+>>>>>>> af23470 (feat(home): página principal + layout + rotas + perfis base)
+>>>>>>> dev
         </nav>
       </header>
 
