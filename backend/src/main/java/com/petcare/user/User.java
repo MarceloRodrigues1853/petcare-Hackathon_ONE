@@ -38,4 +38,10 @@ public class User {
     // ---- aliases para compatibilidade com código antigo ----
     public String getPasswordHash() { return password; }
     public void setPasswordHash(String hash) { this.password = hash; }
+
+    // helper legado: permite chamar User.hash("senha") em código antigo
+    public static String hash(String rawPassword) {
+        return new org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder()
+            .encode(rawPassword);
+    }
 }
