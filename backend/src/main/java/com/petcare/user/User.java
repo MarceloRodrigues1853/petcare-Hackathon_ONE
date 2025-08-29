@@ -14,13 +14,12 @@ public class User {
     @Column(unique = true, nullable = false)
     private String email;
 
-    private String password;
+    private String password; // <== padroniza como "password"
 
     @Enumerated(EnumType.STRING)
     private Role role = Role.USER;
 
-    // getters/setters
-
+    // getters/setters padrão
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 
@@ -30,9 +29,13 @@ public class User {
     public String getEmail() { return email; }
     public void setEmail(String email) { this.email = email; }
 
-    public String getPassword() { return senha; }
-    public void setPassword(String senha) { this.senha = senha; }
+    public String getPassword() { return password; }
+    public void setPassword(String password) { this.password = password; }
 
     public Role getRole() { return role; }
     public void setRole(Role role) { this.role = role; }
+
+    // ---- aliases para compatibilidade com código antigo ----
+    public String getPasswordHash() { return password; }
+    public void setPasswordHash(String hash) { this.password = hash; }
 }

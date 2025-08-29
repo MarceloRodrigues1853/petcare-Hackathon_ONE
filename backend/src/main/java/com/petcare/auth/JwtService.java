@@ -24,9 +24,9 @@ public class JwtService {
     public String generateToken(String subject) {
         long now = System.currentTimeMillis();
         return Jwts.builder()
-                .subject(subject)
-                .issuedAt(new Date(now))
-                .expiration(new Date(now + expirationMs))
+                .setSubject(subject)                 // <<< aqui
+                .setIssuedAt(new Date(now))          // <<< aqui
+                .setExpiration(new Date(now + expirationMs)) // <<< aqui
                 .signWith(key)
                 .compact();
     }
