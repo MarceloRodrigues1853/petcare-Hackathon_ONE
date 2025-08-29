@@ -1,25 +1,16 @@
 package com.petcare.dto;
 
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
+public class RegisterRequest {
+    private String name;
+    private String email;
+    private String senha;
 
-public record RegisterRequest(
-        @NotBlank(message = "Nome é obrigatório")
-        String name,
+    public String getName() { return name; }
+    public void setName(String name) { this.name = name; }
 
-        @Email(message = "Email inválido")
-        @NotBlank(message = "Email é obrigatório")
-        String email,
+    public String getEmail() { return email; }
+    public void setEmail(String email) { this.email = email; }
 
-        @NotBlank(message = "Senha é obrigatória")
-        String password,
-
-        @NotBlank(message = "Role é obrigatória")
-        String role
-) {}
-
-<<<<<<< HEAD
-=======
-
->>>>>>> main
-//DTO para receber dados de registro do novo usuário
+    public String getPassword() { return senha; }
+    public void setPassword(String password) { this.password = senha; }
+}
