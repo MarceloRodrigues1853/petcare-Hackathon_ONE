@@ -18,7 +18,11 @@ body{
 <<<<<<< HEAD
   padding: 0;
 =======
+<<<<<<< HEAD
+  padding: 0;
+=======
 >>>>>>> af23470 (feat(home): página principal + layout + rotas + perfis base)
+>>>>>>> dev
   font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
   background: var(--bg);
   color: var(--text);
@@ -35,10 +39,16 @@ body{
   /* barra bege arredondada como no mock */
   /* padding: 1rem 0;
 =======
+<<<<<<< HEAD
+/* .header-wrap{ */
+  /* barra bege arredondada como no mock */
+  /* padding: 1rem 0;
+=======
 .header-wrap{
   /* barra bege arredondada como no mock */
   padding: 1rem 0;
 >>>>>>> af23470 (feat(home): página principal + layout + rotas + perfis base)
+>>>>>>> dev
 }
 .header{
   max-width: 1200px;
@@ -56,6 +66,9 @@ body{
   display:flex; align-items:center; gap:.55rem;
   text-decoration:none; color:inherit; font-weight:700;
 <<<<<<< HEAD
+=======
+<<<<<<< HEAD
+>>>>>>> dev
 } */
 
 /* apenas o ícone (sem texto) para ficar fiel ao seu pedido */
@@ -93,6 +106,8 @@ body{
 .hero-text h1{ */
   /* cresce/lê dinamicamente conforme a tela */
   /* font-size: clamp(2rem, 3.2vw + 1rem, 3.4rem);
+<<<<<<< HEAD
+=======
 =======
 }
 
@@ -132,6 +147,7 @@ body{
   /* cresce/lê dinamicamente conforme a tela */
   font-size: clamp(2rem, 3.2vw + 1rem, 3.4rem);
 >>>>>>> af23470 (feat(home): página principal + layout + rotas + perfis base)
+>>>>>>> dev
   line-height: 1.12;
   margin: 0 0 1rem;
   color: var(--brand);
@@ -140,16 +156,22 @@ body{
   font-size: clamp(.95rem, .6vw + .7rem, 1.15rem);
   margin: 0 0 1.4rem; opacity:.9;
 <<<<<<< HEAD
+=======
+<<<<<<< HEAD
+>>>>>>> dev
 } */
 
 /* CTA da home: separado do .btn para não afetar os formulários */
 /* .btn-cta{
+<<<<<<< HEAD
+=======
 =======
 }
 
 /* CTA da home: separado do .btn para não afetar os formulários */
 .btn-cta{
 >>>>>>> af23470 (feat(home): página principal + layout + rotas + perfis base)
+>>>>>>> dev
   display:inline-block;
   padding: .9rem 1.6rem;
   border-radius: 14px;
@@ -159,16 +181,22 @@ body{
   box-shadow: 0 6px 18px rgba(239,123,71, .25);
 }
 <<<<<<< HEAD
+=======
+<<<<<<< HEAD
+>>>>>>> dev
 .btn-cta:hover{ filter: brightness(.98); } */
 
 /* imagem do herói */
 /* .hero-media{
+<<<<<<< HEAD
+=======
 =======
 .btn-cta:hover{ filter: brightness(.98); }
 
 /* imagem do herói */
 .hero-media{
 >>>>>>> af23470 (feat(home): página principal + layout + rotas + perfis base)
+>>>>>>> dev
   flex:1;
   display:flex; align-items:center; justify-content:center;
 }
@@ -176,6 +204,9 @@ body{
   width: clamp(220px, 30vw, 420px);
   height: auto;
 <<<<<<< HEAD
+=======
+<<<<<<< HEAD
+>>>>>>> dev
 } */
 
 /* quebra para mobile/tablet */
@@ -379,6 +410,8 @@ body{
     flex-direction: column;
     align-items: center;
   }
+<<<<<<< HEAD
+=======
 =======
 }
 
@@ -387,6 +420,7 @@ body{
   .hero{ flex-direction: column; text-align:center; }
   .hero-media img{ width: clamp(200px, 45vw, 300px); }
 >>>>>>> af23470 (feat(home): página principal + layout + rotas + perfis base)
+>>>>>>> dev
 }
 
 /* =========================
@@ -437,5 +471,9 @@ input:focus{
 <<<<<<< HEAD
 /* .footer{ text-align:center; padding: 2rem 0; opacity:.7; } */
 =======
+<<<<<<< HEAD
+/* .footer{ text-align:center; padding: 2rem 0; opacity:.7; } */
+=======
 .footer{ text-align:center; padding: 2rem 0; opacity:.7; }
 >>>>>>> af23470 (feat(home): página principal + layout + rotas + perfis base)
+>>>>>>> dev

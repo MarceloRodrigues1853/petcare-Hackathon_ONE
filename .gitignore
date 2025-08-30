@@ -8,6 +8,7 @@
 
 # Java/Maven
 target/
+
 bin/
 **/*.class
 *.log
@@ -20,3 +21,7 @@ frontend/.vite/
 # Env
 .env
 **/*.env
+backend/target/
+frontend/node_modules/
+frontend/build/
+*.log

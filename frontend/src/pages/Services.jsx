@@ -1,9 +1,16 @@
 <<<<<<< HEAD
+=======
+<<<<<<< HEAD
+>>>>>>> dev
 import React from "react";
 import "./Services.css";
 import imgBaba from "../assets/images/catia-dombaxe-3G9Jb5eMr5E-unsplash.jpg";
 import imgPasseio from "../assets/images/edgar-pimenta-iaRuEbnZajc-unsplash.jpg";
+<<<<<<< HEAD
+import imgHospedagem from "../assets/images/jonas-vincent-xulIYVIbYIc-unsplash.jpg";
+=======
 import imgVisita from "../assets/images/jonas-vincent-xulIYVIbYIc-unsplash.jpg";
+>>>>>>> dev
 import bannerImg from "../assets/images/bailey-burton-8vlc3e_Tv-w-unsplash.jpg";
 
 export default function Services() {
@@ -24,10 +31,17 @@ export default function Services() {
     },
     {
       id: 3,
+<<<<<<< HEAD
+      img: imgHospedagem,
+      title: "Hoespedagem",
+      desc: "Hospede seu pet por dias, semanas ou mês.",
+      price: "Apartir de R$60 /dia",
+=======
       img: imgVisita,
       title: "Visitas",
       desc: "Check-ins rápidos para alimentação, água e atenção extra.",
       price: "Apartir de R$40 /visita",
+>>>>>>> dev
     },
   ];
 
@@ -71,6 +85,9 @@ export default function Services() {
       </div>
     </section>
   );
+<<<<<<< HEAD
+}
+=======
 }
 =======
 export default function Services(){
@@ -95,3 +112,4 @@ export default function Services(){
   );
 }
 >>>>>>> af23470 (feat(home): página principal + layout + rotas + perfis base)
+>>>>>>> dev

@@ -1,4 +1,7 @@
 <<<<<<< HEAD
+=======
+<<<<<<< HEAD
+>>>>>>> dev
 import React from "react";
 import "./About.css";
 import bannerImg from "../assets/images/krista-mangulsone-9gz3wfHr65U-unsplash.jpg";
@@ -55,6 +58,9 @@ export default function About() {
 
     </section>
   );
+<<<<<<< HEAD
+}
+=======
 }
 =======
 export default function About(){
@@ -69,3 +75,4 @@ export default function About(){
   );
 }
 >>>>>>> af23470 (feat(home): página principal + layout + rotas + perfis base)
+>>>>>>> dev

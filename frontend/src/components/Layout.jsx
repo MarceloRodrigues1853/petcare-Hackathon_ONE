@@ -14,9 +14,13 @@ export default function Layout() {
 <<<<<<< HEAD
           <Link to="/login">Entre ou cadastre-se</Link>
 =======
+<<<<<<< HEAD
+          <Link to="/login">Entre ou cadastre-se</Link>
+=======
           <Link to="/login">Login</Link>
           <Link to="/register">Registrar</Link>
 >>>>>>> af23470 (feat(home): página principal + layout + rotas + perfis base)
+>>>>>>> dev
         </nav>
       </header>
 
