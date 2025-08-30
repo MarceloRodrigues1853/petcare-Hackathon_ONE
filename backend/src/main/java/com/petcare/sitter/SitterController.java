@@ -34,16 +34,11 @@ public class SitterController {
         return ResponseEntity.noContent().build();
     }
 
-    // ==== mapper Sitter -> SitterResponse (tolerante a nomes de métodos) ====
+    // ==== mapper Sitter -> SitterResponse ====
     private SitterResponse toResponse(Sitter s) {
-        Long id = (Long) tryCall(s, "getId", Long.class, null);
         String name = (String) tryCall(s, "getName", String.class, null);
         String email = (String) tryCall(s, "getEmail", String.class, null);
-        String phone = (String) tryCall(s, "getPhone", String.class, null);
-        String bio = (String) tryCall(s, "getBio", String.class, null);
-
-        // Se sua classe SitterResponse tiver outro construtor, ajuste aqui.
-        return new SitterResponse(id, name, email, phone, bio);
+        return new SitterResponse(name, email); // seu record aceita só (String, String)
     }
 
     private Object tryCall(Object target, String methodName, Class<?> returnType, Object defaultVal) {
