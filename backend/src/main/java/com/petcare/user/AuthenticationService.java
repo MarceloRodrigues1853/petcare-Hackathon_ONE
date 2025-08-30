@@ -1,24 +1,34 @@
 package com.petcare.user;
 
-import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
-@RequiredArgsConstructor
 public class AuthenticationService {
 
-  private final UserRepository userRepository;
+    private final UserRepository users;
+    private final PasswordEncoder encoder;
 
-  public User register(User user) {
-    // exemplo: garantir hash
-    if (user.getPasswordHash() != null && !user.getPasswordHash().isEmpty()) {
-      user.setPasswordHash(User.hash(user.getPasswordHash()));
+    public AuthenticationService(UserRepository users, PasswordEncoder encoder) {
+        this.users = users;
+        this.encoder = encoder;
     }
-    if (user.getRole() == null) {
-      user.setRole(Role.USER);
-    }
-    return userRepository.save(user);
-  }
 
-  // outros métodos de autenticação/login…
+    public User register(com.petcare.dto.RegisterRequest req) {
+        User u = new User();
+        u.setName(req.name());
+        u.setEmail(req.email());
+        u.setPasswordHash(encoder.encode(req.password()));
+        u.setRole(Role.USER); // <-- usar o enum top-level
+        return users.save(u);
+    }
+
+    public User authenticate(String email, String rawPassword) {
+        User u = users.findByEmail(email)
+                .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado"));
+        if (!encoder.matches(rawPassword, u.getPasswordHash())) {
+            throw new IllegalArgumentException("Credenciais inválidas");
+        }
+        return u;
+    }
 }
