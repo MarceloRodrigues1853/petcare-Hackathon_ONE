@@ -1,38 +1,59 @@
 package com.petcare.auth;
 
-import com.petcare.dto.LoginResponse;
-import com.petcare.dto.RegisterRequest;
-import com.petcare.dto.RegisterResponse;
-import com.petcare.user.AuthenticationService;
-import com.petcare.user.User;
-import com.petcare.user.UserRepository;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.security.Keys;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+
+import java.security.Key;
+import java.util.Date;
+import java.util.function.Function;
 
 @Service
-public class AuthService {
+public class JwtService {
 
-    private final UserRepository users;
-    private final AuthenticationService authn;
-    private final JwtService jwt;
+    private final Key key;
+    private final long expirationMs;
 
-    public AuthService(UserRepository users, AuthenticationService authn, JwtService jwt) {
-        this.users = users;
-        this.authn = authn;
-        this.jwt = jwt;
+    public JwtService() {
+        // Lê segredo de env; precisa ter >= 256 bits
+        String secret = System.getenv("JWT_SECRET");
+        if (secret == null || secret.isBlank()) {
+            throw new IllegalStateException("JWT_SECRET não definido");
+        }
+        this.key = Keys.hmacShaKeyFor(secret.getBytes());
+        this.expirationMs = 1000L * 60 * 60 * 8; // 8h
     }
 
-    @Transactional
-    public RegisterResponse register(RegisterRequest req) {
-        // cria usuário (AuthenticationService lida com hash/salto/role etc)
-        User u = authn.register(req);
-        // apenas mensagem, pois RegisterResponse(String message)
-        return new RegisterResponse("Usuário registrado com sucesso: " + u.getEmail());
+    public String generateToken(String email) {
+        Date now = new Date();
+        Date exp = new Date(now.getTime() + expirationMs);
+        return Jwts.builder()
+                .setSubject(email)
+                .setIssuedAt(now)
+                .setExpiration(exp)
+                .signWith(key, SignatureAlgorithm.HS256)
+                .compact();
     }
 
-    public LoginResponse login(String email, String password) {
-        User u = authn.authenticate(email, password);
-        String token = jwt.generateToken(u.getEmail());
-        return new LoginResponse(token);
+    public String extractEmail(String token) {
+        return extractClaim(token, claims -> claims.getSubject());
+    }
+
+    public boolean isTokenValid(String token, UserDetails userDetails) {
+        String email = extractEmail(token);
+        return email != null && email.equals(userDetails.getUsername()) && !isTokenExpired(token);
+    }
+
+    private boolean isTokenExpired(String token) {
+        Date exp = extractClaim(token, claims -> claims.getExpiration());
+        return exp.before(new Date());
+    }
+
+    private <T> T extractClaim(String token, Function<io.jsonwebtoken.Claims, T> resolver) {
+        var claims = Jwts.parserBuilder().setSigningKey(key).build()
+                .parseClaimsJws(token).getBody();
+        return resolver.apply(claims);
     }
 }

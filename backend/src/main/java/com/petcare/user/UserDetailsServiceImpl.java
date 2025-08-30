@@ -1,39 +1,43 @@
 package com.petcare.user;
 
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.stereotype.Service;
 
-import java.util.Collection;
-import java.util.List;
+@Service
+public class UserDetailsServiceImpl implements UserDetailsService {
 
-public class UserDetailsImpl implements UserDetails {
+    private final UserRepository users;
 
-    private final User user;
-
-    public UserDetailsImpl(User u) {
-        this.user = u;
+    public UserDetailsServiceImpl(UserRepository users) {
+        this.users = users;
     }
 
     @Override
-    public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(new SimpleGrantedAuthority("ROLE_" + user.getRole().name()));
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        User u = users.findByEmail(username)
+                .orElseThrow(() -> new UsernameNotFoundException("Usuário não encontrado"));
+
+        String email = safeString(get(u, "getEmail"));
+        String hash  = safeString(get(u, "getPasswordHash")); // tenta hash
+        if (hash == null) hash = safeString(get(u, "getPassword")); // fallback
+        String role  = null;
+        try {
+            Object r = u.getClass().getMethod("getRole").invoke(u);
+            role = r == null ? null : r.toString();
+        } catch (Exception ignored) {}
+
+        return new UserDetailsImpl(email != null ? email : username, hash != null ? hash : "", role);
     }
 
-    @Override
-    public String getPassword() {
-        return user.getPasswordHash(); // <-- usar hash
+    private static Object get(Object target, String method) {
+        try {
+            return target.getClass().getMethod(method).invoke(target);
+        } catch (Exception e) {
+            return null;
+        }
     }
 
-    @Override
-    public String getUsername() {
-        return user.getEmail();
-    }
-
-    @Override public boolean isAccountNonExpired() { return true; }
-    @Override public boolean isAccountNonLocked() { return true; }
-    @Override public boolean isCredentialsNonExpired() { return true; }
-    @Override public boolean isEnabled() { return true; }
-
-    public User getDomainUser() { return user; }
+    private static String safeString(Object o) { return o == null ? null : String.valueOf(o); }
 }

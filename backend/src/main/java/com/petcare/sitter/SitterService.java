@@ -1,51 +1,29 @@
 package com.petcare.sitter;
 
-import com.petcare.dto.RegisterResponse;
-import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
+import java.lang.reflect.Field;
+
 @Service
-@RequiredArgsConstructor
 public class SitterService {
 
-    private final SitterRepository sitterRepository;
+    private final SitterRepository repo;
 
-    // Ver perfil do sitter autenticado
-    public SitterResponse getProfile(String email) {
-        Sitter sitter = sitterRepository.findByEmail(email)
-                .orElseThrow(() -> new UsernameNotFoundException("Sitter não encontrado"));
-
-        return new SitterResponse(
-                sitter.getName(),
-                sitter.getEmail()
-        );
+    public SitterService(SitterRepository repo) {
+        this.repo = repo;
     }
 
-
-    // Atualizar perfil
-    public SitterResponse updateProfile(String email, SitterRequest request) {
-        Sitter sitter = sitterRepository.findByEmail(email)
-                .orElseThrow(() -> new UsernameNotFoundException("Sitter não encontrado"));
-
-        sitter.setName(request.name());
-        sitter.setEmail(request.email());
-        // senha: deixar para depois pois exige logica
-
-        Sitter updated = sitterRepository.save(sitter);
-
-        return new SitterResponse(
-                updated.getName(),
-                updated.getEmail()
-        );
+    public Sitter create(Sitter sitter) {
+        return repo.save(sitter);
     }
 
-
-    // Excluir perfil
-    public void deleteProfile(String email) {
-        Sitter sitter = sitterRepository.findByEmail(email)
-                .orElseThrow(() -> new UsernameNotFoundException("Sitter não encontrado"));
-        sitterRepository.delete(sitter);
+    public Sitter update(Long id, Sitter updated) {
+        // garante id no objeto e salva
+        try {
+            Field f = updated.getClass().getDeclaredField("id");
+            f.setAccessible(true);
+            f.set(updated, id);
+        } catch (Exception ignored) {}
+        return repo.save(updated);
     }
 }
-

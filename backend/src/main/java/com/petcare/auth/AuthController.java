@@ -26,7 +26,15 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest request) {
-        LoginResponse resp = auth.login(request.email(), request.password());
-        return ResponseEntity.ok(resp);
+        // Suporta DTO com getters padrão (getEmail/getPassword)
+        String email;
+        String password;
+        try {
+            email = (String) LoginRequest.class.getMethod("getEmail").invoke(request);
+            password = (String) LoginRequest.class.getMethod("getPassword").invoke(request);
+        } catch (Exception e) {
+            throw new IllegalArgumentException("LoginRequest precisa expor getEmail() e getPassword()");
+        }
+        return ResponseEntity.ok(auth.login(email, password));
     }
 }
