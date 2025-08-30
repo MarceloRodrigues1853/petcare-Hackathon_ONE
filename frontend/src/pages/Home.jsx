@@ -1,27 +1,17 @@
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
->>>>>>> dev
+// frontend/src/pages/Home.jsx
 import React from "react";
 import "../styles.css";
+
 import imgBaba from "../assets/images/alexander-grey-42AQP6w8uyI-unsplash.jpg";
 import imgPasseio from "../assets/images/mikita-yo-q8tP-9LYP4o-unsplash.jpg";
-<<<<<<< HEAD
 import imgHospedagem from "../assets/images/hale-tat-7nWfU3_M4ns-unsplash.jpg";
-=======
-import imgVisita from "../assets/images/hale-tat-7nWfU3_M4ns-unsplash.jpg";
->>>>>>> dev
 import heroImg from "../assets/images/andrew-s-ouo1hbizWwo-unsplash.jpg";
 
 export default function Home() {
   const services = [
     { id: 1, img: imgBaba, title: "Babá de Pets", desc: "Cuidado completo para o seu pet no conforto do lar." },
     { id: 2, img: imgPasseio, title: "Passeios", desc: "Atividades seguras e divertidas para o seu pet gastar energia." },
-<<<<<<< HEAD
     { id: 3, img: imgHospedagem, title: "Hospedagem", desc: "Hospede seu pet por dias, semanas ou mês." },
-=======
-    { id: 3, img: imgVisita, title: "Visitas Rápidas", desc: "Check-ins rápidos para alimentação, água e atenção extra." },
->>>>>>> dev
   ];
 
   const benefits = [
@@ -32,7 +22,7 @@ export default function Home() {
 
   return (
     <main className="home-page">
-      {/* Banner hero simplificado */}
+      {/* Banner hero */}
       <section className="home-hero-simple">
         <div className="home-hero">
           <img src={heroImg} alt="Cachorro e gato" className="home-hero-img" />
@@ -75,7 +65,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Footer call-to-action */}
+      {/* CTA final */}
       <div className="about-footer">
         <p className="about-goal">
           Nosso propósito é oferecer <strong>tranquilidade</strong> e <strong>bem-estar</strong> para seu pet, com serviços pensados para cada necessidade.
@@ -85,43 +75,3 @@ export default function Home() {
     </main>
   );
 }
-
-// import hero from "../assets/images/hero.png";
-
-// export default function Home(){
-//   return (
-//     <section className="hero">
-//       <div className="hero-text">
-//         <h1>Cuidando dos seus pets</h1>
-//         <p>Contrate hoje mesmo serviços de babá para cães e gatos.</p>
-//         <a className="btn-cta" href="/services">Saiba mais</a>
-//       </div>
-
-//       <div className="hero-media">
-//         <img src={hero} alt="Cachorro e gato" />
-//       </div>
-//     </section>
-//   );
-// }
-<<<<<<< HEAD
-=======
-=======
-import hero from "../assets/images/hero.png";
-
-export default function Home(){
-  return (
-    <section className="hero">
-      <div className="hero-text">
-        <h1>Cuidando dos seus pets</h1>
-        <p>Contrate hoje mesmo serviços de babá para cães e gatos.</p>
-        <a className="btn-cta" href="/services">Saiba mais</a>
-      </div>
-
-      <div className="hero-media">
-        <img src={hero} alt="Cachorro e gato" />
-      </div>
-    </section>
-  );
-}
->>>>>>> af23470 (feat(home): página principal + layout + rotas + perfis base)
->>>>>>> dev
