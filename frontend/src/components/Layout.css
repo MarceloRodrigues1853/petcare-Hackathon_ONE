@@ -78,20 +78,6 @@
   color: #555;
 }
 
-/* @media (max-width: 768px) {
-  .header {
-    flex-direction: column;
-    align-items: flex-start;
-    padding: 15px 20px;
-  }
-
-  .nav {
-    margin-top: 10px;
-    flex-wrap: wrap;
-    gap: 15px;
-  }
-} */
-
 /* Responsividade para tablets */
 @media (max-width: 900px) {
   .header {
