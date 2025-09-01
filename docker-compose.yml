@@ -35,6 +35,8 @@ services:
     environment:
       # profile opcional; use se tiver application-docker.properties
       SPRING_PROFILES_ACTIVE: docker
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT: org.hibernate.dialect.MySQLDialect
       # datasource (casando com application.properties -> DB_URL/USER/PASS)
       DB_URL: jdbc:mysql://petcare-db:3306/petcare?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
       DB_USER: petcare

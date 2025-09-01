@@ -5,7 +5,6 @@ import com.petcare.dto.RegisterRequest;
 import com.petcare.dto.RegisterResponse;
 import com.petcare.user.AuthenticationService;
 import com.petcare.user.User;
-import com.petcare.user.UserRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -14,34 +13,54 @@ public class AuthServiceImpl implements AuthService {
 
     private final AuthenticationService authn;
     private final JwtService jwt;
-    private final UserRepository users;
 
-    public AuthServiceImpl(AuthenticationService authn, JwtService jwt, UserRepository users) {
+    public AuthServiceImpl(AuthenticationService authn, JwtService jwt) {
         this.authn = authn;
         this.jwt = jwt;
-        this.users = users;
     }
 
     @Override
     @Transactional
     public RegisterResponse register(RegisterRequest req) {
-        User u = authn.register(req);
-        String email = (u != null && u.getEmail() != null) ? u.getEmail() : req.getEmail();
-        return new RegisterResponse("Usuário registrado com sucesso", email);
+        // normaliza role (Owner/owner -> OWNER; default OWNER)
+        String normalized = "OWNER";
+        if (req.role() != null && !req.role().isBlank()) {
+            try {
+                normalized = req.role().trim().toUpperCase();
+                User.Role.valueOf(normalized); // valida contra o enum
+            } catch (IllegalArgumentException ignore) {
+                normalized = "OWNER";
+            }
+        }
+
+        // cria um novo RegisterRequest com a role normalizada
+        RegisterRequest fixed = new RegisterRequest(
+                req.name(),
+                req.email(),
+                req.password(),
+                normalized
+        );
+
+        User u = authn.register(fixed);
+
+        return new RegisterResponse(
+                "Usuário registrado com sucesso",
+                u.getEmail(),
+                u.getRole() != null ? u.getRole().name() : null
+        );
     }
 
     @Override
     public LoginResponse login(String email, String password) {
         authn.authenticate(email, password);
-
+        User u = authn.loadByEmail(email);
         String token = jwt.generateToken(email);
 
-        String role = null;
-        User u = users.findByEmail(email).orElse(null);
-        if (u != null && u.getRole() != null) {
-            role = u.getRole().name(); // 👈 enum para String
-        }
-
-        return new LoginResponse(token, "Bearer", email, role);
+        return LoginResponse.builder()
+                .token(token)
+                .tokenType("Bearer")
+                .email(u.getEmail())
+                .role(u.getRole() != null ? u.getRole().name() : null)
+                .build();
     }
 }
