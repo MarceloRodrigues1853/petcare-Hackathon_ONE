@@ -1,105 +1,56 @@
 package com.petcare.config;
 
 import com.petcare.auth.JwtAuthFilter;
-<<<<<<< HEAD
-import lombok.RequiredArgsConstructor;
-=======
-import com.petcare.user.UserDetailsServiceImpl;
-import org.springframework.beans.factory.annotation.Autowired;
->>>>>>> main
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.authentication.AuthenticationProvider;
-import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-<<<<<<< HEAD
-import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-=======
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.web.servlet.config.annotation.CorsRegistry;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
->>>>>>> main
 
 @Configuration
-@EnableWebSecurity
-@RequiredArgsConstructor
 public class SecurityConfig {
 
-<<<<<<< HEAD
-  private final JwtAuthFilter jwtAuthFilter;
+    private final JwtAuthFilter jwtAuthFilter;
 
-  @Bean
-  public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-    return http
-        .csrf(csrf -> csrf.disable())
-        .cors(cors -> {}) // usa CORS padrão; se precisar, dá pra criar um CorsConfigurationSource
-        .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-        .authorizeHttpRequests(auth -> auth
-            .requestMatchers("/auth/**").permitAll()
-            // .requestMatchers("/actuator/**").permitAll() // (opcional) se usar actuator
-            .anyRequest().authenticated()
-        )
-        .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
-        .build();
-=======
-  @Autowired
-  private JwtAuthFilter jwtAuthFilter;
+    public SecurityConfig(JwtAuthFilter jwtAuthFilter) {
+        this.jwtAuthFilter = jwtAuthFilter;
+    }
 
-
-
-  // Configura o provedor de autenticação usando dados do banco e senha criptografada
-  @Bean
-  public AuthenticationProvider authenticationProvider(UserDetailsServiceImpl userDetailsService) {
-
-    DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
-
-    // Define o serviço que carrega os dados do usuário (email, senha, role)
-    // Esse serviço é a classe UserDetailsServiceImpl
-    authProvider.setUserDetailsService(userDetailsService);
-    authProvider.setPasswordEncoder(new BCryptPasswordEncoder());
-
-    return authProvider;
-  }
-
-
-  @Bean
-  public SecurityFilterChain securityFilterChain(HttpSecurity http, AuthenticationProvider authenticationProvider) throws Exception {
-    return http
-            .csrf(csrf -> csrf.disable())
+    @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        http.csrf(csrf -> csrf.disable())
+            .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
+                    // Endpoints públicos
                     .requestMatchers("/auth/**").permitAll()
-                    .requestMatchers("/admin/**").hasAuthority("ADMIN")
-                    .requestMatchers("/sitter/**").hasAuthority("SITTER")
-                    .requestMatchers("/user/**").hasAuthority("OWNER")
+                    // Swagger/OpenAPI
+                    .requestMatchers(
+                            "/v3/api-docs/**",
+                            "/swagger-ui/**",
+                            "/swagger-ui.html",
+                            "/swagger-resources/**",
+                            "/webjars/**"
+                    ).permitAll()
+                    // Qualquer outra requisição precisa de autenticação
                     .anyRequest().authenticated()
             )
-            .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            .authenticationProvider(authenticationProvider)
-            .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
-            .build();
-  }
+            .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
+        return http.build();
+    }
 
-  @Bean
-  public WebMvcConfigurer corsConfigurer() {
-    return new WebMvcConfigurer() {
-      @Override public void addCorsMappings(CorsRegistry registry) {
-        registry.addMapping("/**").allowedOrigins("http://localhost:5173").allowedMethods("*");
-      }
-    };
->>>>>>> main
-  }
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
 
-
-  @Bean
-  public PasswordEncoder passwordEncoder() {
-    return new BCryptPasswordEncoder();
-  }
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration cfg) throws Exception {
+        return cfg.getAuthenticationManager();
+    }
 }

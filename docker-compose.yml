@@ -1,88 +1,64 @@
+name: petcare
+
 services:
-  petcare-db:
+  db:
     image: mysql:8.0
     container_name: petcare-db
-    restart: unless-stopped
     environment:
-      - MYSQL_DATABASE=${MYSQL_DATABASE}
-      - MYSQL_USER=${MYSQL_USER}
-      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
-      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
-    # Uso 3307 no host pra evitar conflito com MySQL local (host:3307 -> container:3306)
+      MYSQL_DATABASE: petcare
+      MYSQL_USER: petcare
+      MYSQL_PASSWORD: petcare
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_ROOT_HOST: '%'
+    command: >
+      --default-authentication-plugin=mysql_native_password
+      --character-set-server=utf8mb4
+      --collation-server=utf8mb4_unicode_ci
     ports:
-      - "3307:3306"
-    # Mantém auth nativo + desativa sql_mode estrito (evita erro chato em inserts/updates)
-    command: ["mysqld", "--default-authentication-plugin=mysql_native_password", "--sql-mode="]
+      - "3306:3306"
     volumes:
-      - db_data:/var/lib/mysql
+      - db-data:/var/lib/mysql
     healthcheck:
-      test: ["CMD-SHELL", "mysqladmin ping -h localhost -uroot -p$${MYSQL_ROOT_PASSWORD} --silent"]
-      interval: 10s
-      timeout: 5s
-      retries: 12
-    networks:
-      - petcare-net
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -ppetcare --silent"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
 
   backend:
     build:
       context: ./backend
       dockerfile: Dockerfile
     container_name: petcare-backend
-    restart: unless-stopped
     depends_on:
-      petcare-db:
+      db:
         condition: service_healthy
     environment:
-      # mantém o profile docker e as variáveis do datasource para ficar explícito
-      - SPRING_PROFILES_ACTIVE=docker
-      - SPRING_DATASOURCE_URL=jdbc:mysql://petcare-db:3306/${MYSQL_DATABASE}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
-      - SPRING_DATASOURCE_USERNAME=${MYSQL_USER}
-      - SPRING_DATASOURCE_PASSWORD=${MYSQL_PASSWORD}
-      - SERVER_PORT=8080
-      - JWT_SECRET=${JWT_SECRET}
+      SPRING_PROFILES_ACTIVE: docker
+      DB_URL: jdbc:mysql://petcare-db:3306/petcare?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      DB_USER: petcare
+      DB_PASS: petcare
+      JWT_SECRET: VUOFe/VonnmE9uguOCp9jLpDfg20bZlRqVjCoVtd/9E=
+      JWT_EXPIRATION_MS: "86400000"
     ports:
       - "8080:8080"
-    networks:
-      - petcare-net
+    restart: unless-stopped
 
-  # ---- FRONTEND DEV (Vite hot-reload) ----
   frontend-dev:
-    profiles: ["dev"]
     build:
       context: ./frontend
-      target: dev            # target do Dockerfile multi-stage
+      dockerfile: Dockerfile
+      target: dev
     container_name: petcare-frontend-dev
-    restart: unless-stopped
-    command: npm run dev -- --host
     ports:
       - "5173:5173"
+    environment:
+      VITE_BACKEND_URL: http://localhost:8080
     volumes:
       - ./frontend:/app
-      - frontend_node_modules:/app/node_modules
+      - /app/node_modules
+    command: npm run dev -- --host
     depends_on:
       - backend
-    networks:
-      - petcare-net
-
-  # ---- FRONTEND PROD (Nginx servindo build) ----
-  frontend:
-    profiles: ["prod"]
-    build:
-      context: ./frontend
-      target: prod           # target do Dockerfile multi-stage
-    container_name: petcare-frontend
-    restart: unless-stopped
-    ports:
-      - "5173:80"            # acessa em http://localhost:5173
-    depends_on:
-      - backend
-    networks:
-      - petcare-net
 
 volumes:
-  db_data:
-  frontend_node_modules:
-
-networks:
-  petcare-net:
-    driver: bridge
+  db-data:
