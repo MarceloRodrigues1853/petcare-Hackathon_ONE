@@ -1,19 +1,13 @@
 package com.petcare.dto;
 
+import lombok.AllArgsConstructor;
+import lombok.Data;
+
+@Data
+@AllArgsConstructor
 public class LoginResponse {
     private String token;
-
-    public LoginResponse(String token) {
-        this.token = token;
-    }
-
-    // getter
-    public String getToken() {
-                return token;
-        }
-
-    // setter
-    public void setToken(String token) {
-                this.token = token;
-        }
+    private String tokenType; // "Bearer"
+    private String email;
+    private String role;
 }

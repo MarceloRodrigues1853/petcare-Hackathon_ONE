@@ -5,11 +5,13 @@ import com.petcare.dto.LoginResponse;
 import com.petcare.dto.RegisterRequest;
 import com.petcare.dto.RegisterResponse;
 import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/auth")
+@RequestMapping(value = "/api/auth", produces = MediaType.APPLICATION_JSON_VALUE)
 public class AuthController {
 
     private final AuthService auth;
@@ -18,23 +20,15 @@ public class AuthController {
         this.auth = auth;
     }
 
-    @PostMapping("/register")
+    @PostMapping(value = "/register", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<RegisterResponse> register(@Valid @RequestBody RegisterRequest request) {
         RegisterResponse resp = auth.register(request);
-        return ResponseEntity.ok(resp);
+        return ResponseEntity.status(HttpStatus.CREATED).body(resp);
     }
 
-    @PostMapping("/login")
+    @PostMapping(value = "/login", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest request) {
-        // Suporta DTO com getters padrão (getEmail/getPassword)
-        String email;
-        String password;
-        try {
-            email = (String) LoginRequest.class.getMethod("getEmail").invoke(request);
-            password = (String) LoginRequest.class.getMethod("getPassword").invoke(request);
-        } catch (Exception e) {
-            throw new IllegalArgumentException("LoginRequest precisa expor getEmail() e getPassword()");
-        }
-        return ResponseEntity.ok(auth.login(email, password));
+        LoginResponse resp = auth.login(request.getEmail(), request.getPassword());
+        return ResponseEntity.ok(resp);
     }
 }

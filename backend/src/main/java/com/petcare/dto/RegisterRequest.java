@@ -20,5 +20,5 @@ public class RegisterRequest {
     @NotBlank(message = "Senha é obrigatória")
     private String password;
 
-    private String role; // pode ser "OWNER" ou "SITTER"
+    private String role; // "OWNER" ou "SITTER"
 }

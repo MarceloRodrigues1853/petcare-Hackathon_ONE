@@ -4,16 +4,16 @@ services:
   db:
     image: mysql:8.0
     container_name: petcare-db
+    command: >
+      --default-authentication-plugin=mysql_native_password
+      --character-set-server=utf8mb4
+      --collation-server=utf8mb4_unicode_ci
     environment:
       MYSQL_DATABASE: petcare
       MYSQL_USER: petcare
       MYSQL_PASSWORD: petcare
       MYSQL_ROOT_PASSWORD: root
       MYSQL_ROOT_HOST: '%'
-    command: >
-      --default-authentication-plugin=mysql_native_password
-      --character-set-server=utf8mb4
-      --collation-server=utf8mb4_unicode_ci
     ports:
       - "3306:3306"
     volumes:
@@ -33,15 +33,26 @@ services:
       db:
         condition: service_healthy
     environment:
+      # profile opcional; use se tiver application-docker.properties
       SPRING_PROFILES_ACTIVE: docker
+      # datasource (casando com application.properties -> DB_URL/USER/PASS)
       DB_URL: jdbc:mysql://petcare-db:3306/petcare?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
       DB_USER: petcare
       DB_PASS: petcare
+      # JWT (casando com jwt.secret e expiration-ms)
       JWT_SECRET: VUOFe/VonnmE9uguOCp9jLpDfg20bZlRqVjCoVtd/9E=
       JWT_EXPIRATION_MS: "86400000"
+      # (opcional) log extra de segurança em docker
+      # LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_SECURITY: DEBUG
     ports:
       - "8080:8080"
     restart: unless-stopped
+    # (opcional) healthcheck HTTP se você tiver actuator habilitado
+    # healthcheck:
+    #   test: ["CMD", "wget", "--spider", "-q", "http://localhost:8080/actuator/health"]
+    #   interval: 10s
+    #   timeout: 3s
+    #   retries: 10
 
   frontend-dev:
     build:
@@ -52,6 +63,9 @@ services:
     ports:
       - "5173:5173"
     environment:
+      # Use a mesma origem que você liberou no CORS do backend
+      VITE_API_BASE: http://localhost:8080
+      # se seu código usa VITE_BACKEND_URL, mantenha também:
       VITE_BACKEND_URL: http://localhost:8080
     volumes:
       - ./frontend:/app
