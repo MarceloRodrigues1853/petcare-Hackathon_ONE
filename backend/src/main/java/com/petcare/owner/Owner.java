@@ -1,46 +1,43 @@
 package com.petcare.owner;
 
-import com.petcare.user.User;
-<<<<<<< HEAD
-
-public class Owner extends User {
-}
- //User é entidade base e owner entidade especifica
-//podemos colocar endereço, forma pagamento, pet, etc
-=======
-import com.petcare.pet.Pet;
-import com.petcare.servico.Servico;
-import com.petcare.servico.PrecoServico;
-import com.petcare.servico.StatusServico;
-import com.petcare.baba.Baba;
 import jakarta.persistence.*;
-import lombok.Data;
-
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 
 @Entity
-@Table(name = "owners")
-@Data
-public class Owner extends User {
+public class Owner {
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-    @OneToMany(mappedBy = "dono", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Pet> pets = new ArrayList<>();
+    private String name;
+    private String email;
+    private String phone;
 
-    @OneToMany(mappedBy = "dono", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Servico> servicos = new ArrayList<>();
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
 
-   
+    public String getName() { return name; }
+    public void setName(String name) { this.name = name; }
 
-    public void addPet(Pet pet) {
-        pets.add(pet);
-        pet.setDono(this);
+    public String getEmail() { return email; }
+    public void setEmail(String email) { this.email = email; }
+
+    public String getPhone() { return phone; }
+    public void setPhone(String phone) { this.phone = phone; }
+    
+    public Owner() {}
+
+    public Owner(String name, String email, String phone) {
+        this.name = name;
+        this.email = email;
+        this.phone = phone;
     }
-
-    public void removePet(Pet pet) {
-        pets.remove(pet);
-        pet.setDono(null);
+    
+    @Override
+    public String toString() {
+        return "Owner{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", email='" + email + '\'' +
+                ", phone='" + phone + '\'' +
+                '}';
     }
 }
->>>>>>> main

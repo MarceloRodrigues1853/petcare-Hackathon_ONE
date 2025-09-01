@@ -1,9 +1,10 @@
-<<<<<<< HEAD
+// frontend/src/pages/Services.jsx
 import React from "react";
 import "./Services.css";
+
 import imgBaba from "../assets/images/catia-dombaxe-3G9Jb5eMr5E-unsplash.jpg";
 import imgPasseio from "../assets/images/edgar-pimenta-iaRuEbnZajc-unsplash.jpg";
-import imgVisita from "../assets/images/jonas-vincent-xulIYVIbYIc-unsplash.jpg";
+import imgHospedagem from "../assets/images/jonas-vincent-xulIYVIbYIc-unsplash.jpg";
 import bannerImg from "../assets/images/bailey-burton-8vlc3e_Tv-w-unsplash.jpg";
 
 export default function Services() {
@@ -13,21 +14,21 @@ export default function Services() {
       img: imgBaba,
       title: "Babá de Pets",
       desc: "Cuidado completo para o seu pet no conforto do lar.",
-      price: "Apartir de R$50 /visita",
+      price: "A partir de R$50 /visita",
     },
     {
       id: 2,
       img: imgPasseio,
       title: "Passeios",
       desc: "Atividades seguras e divertidas para o seu pet gastar energia.",
-      price: "Apartir de R$55 /passeio",
+      price: "A partir de R$55 /passeio",
     },
     {
       id: 3,
-      img: imgVisita,
-      title: "Visitas",
-      desc: "Check-ins rápidos para alimentação, água e atenção extra.",
-      price: "Apartir de R$40 /visita",
+      img: imgHospedagem,
+      title: "Hospedagem",
+      desc: "Hospede seu pet por dias, semanas ou até meses.",
+      price: "A partir de R$60 /dia",
     },
   ];
 
@@ -59,6 +60,8 @@ export default function Services() {
           </div>
         ))}
       </div>
+
+      {/* Footer CTA */}
       <div className="about-footer">
         <p className="about-goal">
           Nosso propósito é oferecer <strong>tranquilidade para você</strong> e{" "}
@@ -72,26 +75,3 @@ export default function Services() {
     </section>
   );
 }
-=======
-export default function Services(){
-  return (
-    <section>
-      <h2>Serviços</h2>
-      <div className="card-grid">
-        <div className="card">
-          <h3>Babá de Pets</h3>
-          <p>Cuidado em casa por hora ou diária.</p>
-        </div>
-        <div className="card">
-          <h3>Passeios</h3>
-          <p>Passeios seguros e divertidos.</p>
-        </div>
-        <div className="card">
-          <h3>Visitas</h3>
-          <p>Alimentação, água e medicação.</p>
-        </div>
-      </div>
-    </section>
-  );
-}
->>>>>>> af23470 (feat(home): página principal + layout + rotas + perfis base)

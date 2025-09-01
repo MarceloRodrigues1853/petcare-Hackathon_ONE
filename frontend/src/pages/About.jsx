@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 import React from "react";
 import "./About.css";
 import bannerImg from "../assets/images/krista-mangulsone-9gz3wfHr65U-unsplash.jpg";
@@ -7,7 +6,6 @@ import missionImg from "../assets/images/shane-ORANl-unsplash-banner-about.jpg";
 export default function About() {
   return (
     <section className="about-section">
-
       {/* Banner full-width */}
       <div className="about-banner">
         <img src={bannerImg} alt="Equipe" className="about-banner-img" />
@@ -52,20 +50,6 @@ export default function About() {
           cuidado.
         </p>
       </div>
-
     </section>
   );
 }
-=======
-export default function About(){
-  return (
-    <section className="card">
-      <h2>Sobre</h2>
-      <p>
-        Conectamos donos de pets a babás de confiança. Nossa plataforma
-        simplifica o agendamento, pagamento e feedback.
-      </p>
-    </section>
-  );
-}
->>>>>>> af23470 (feat(home): página principal + layout + rotas + perfis base)

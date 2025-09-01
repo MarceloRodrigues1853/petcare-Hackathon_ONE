@@ -1,9 +1,19 @@
 package com.petcare.dto;
 
-public record LoginResponse(
-        String token
-) {
-}
+public class LoginResponse {
+    private String token;
 
-//DTO para retornar token JWT apos login
-//token sera usado para autenticar em futuras requisições
+    public LoginResponse(String token) {
+        this.token = token;
+    }
+
+    // getter
+    public String getToken() {
+                return token;
+        }
+
+    // setter
+    public void setToken(String token) {
+                this.token = token;
+        }
+}
