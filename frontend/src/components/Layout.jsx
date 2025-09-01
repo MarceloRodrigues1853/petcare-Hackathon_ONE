@@ -1,4 +1,4 @@
-import { Outlet, Link } from "react-router-dom";
+import {  Outlet, Link } from "react-router-dom";
 import "./Layout.css";
 import logo from "../assets/images/logo.png";
 
@@ -6,9 +6,11 @@ export default function Layout() {
   return (
     <div className="layout">
       <header className="header">
-        <img src={logo} alt="Logo" className="logo" />
+        <h1 className="logo">
+          <Link to="/">PetCare</Link>
+        </h1>
         <nav className="nav">
-          <Link to="/">Home</Link>
+          <Link to="/">Início</Link>
           <Link to="/about">Sobre</Link>
           <Link to="/services">Serviços</Link>
           <Link to="/login">Entre ou cadastre-se</Link>
@@ -16,12 +18,12 @@ export default function Layout() {
       </header>
 
       {/* Aqui vai renderizar a página atual */}
-      <main className="main-content">
+      <main className="content">
         <Outlet />
       </main>
 
       <footer className="footer">
-        <p>© 2025 PetCare. Todos os direitos reservados.</p>
+        © {new Date().getFullYear()} PetCare
       </footer>
     </div>
   );

@@ -1,5 +1,7 @@
+// frontend/src/pages/Home.jsx
 import React from "react";
 import "../styles.css";
+
 import imgBaba from "../assets/images/alexander-grey-42AQP6w8uyI-unsplash.jpg";
 import imgPasseio from "../assets/images/mikita-yo-q8tP-9LYP4o-unsplash.jpg";
 import imgHospedagem from "../assets/images/hale-tat-7nWfU3_M4ns-unsplash.jpg";
@@ -20,7 +22,7 @@ export default function Home() {
 
   return (
     <main className="home-page">
-      {/* Banner hero simplificado */}
+      {/* Banner hero */}
       <section className="home-hero-simple">
         <div className="home-hero">
           <img src={heroImg} alt="Cachorro e gato" className="home-hero-img" />
@@ -63,7 +65,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Footer call-to-action */}
+      {/* CTA final */}
       <div className="about-footer">
         <p className="about-goal">
           Nosso propósito é oferecer <strong>tranquilidade</strong> e <strong>bem-estar</strong> para seu pet, com serviços pensados para cada necessidade.
@@ -73,21 +75,3 @@ export default function Home() {
     </main>
   );
 }
-
-// import hero from "../assets/images/hero.png";
-
-// export default function Home(){
-//   return (
-//     <section className="hero">
-//       <div className="hero-text">
-//         <h1>Cuidando dos seus pets</h1>
-//         <p>Contrate hoje mesmo serviços de babá para cães e gatos.</p>
-//         <a className="btn-cta" href="/services">Saiba mais</a>
-//       </div>
-
-//       <div className="hero-media">
-//         <img src={hero} alt="Cachorro e gato" />
-//       </div>
-//     </section>
-//   );
-// }

@@ -1,5 +1,7 @@
+// frontend/src/pages/Services.jsx
 import React from "react";
 import "./Services.css";
+
 import imgBaba from "../assets/images/catia-dombaxe-3G9Jb5eMr5E-unsplash.jpg";
 import imgPasseio from "../assets/images/edgar-pimenta-iaRuEbnZajc-unsplash.jpg";
 import imgHospedagem from "../assets/images/jonas-vincent-xulIYVIbYIc-unsplash.jpg";
@@ -12,21 +14,21 @@ export default function Services() {
       img: imgBaba,
       title: "Babá de Pets",
       desc: "Cuidado completo para o seu pet no conforto do lar.",
-      price: "Apartir de R$50 /visita",
+      price: "A partir de R$50 /visita",
     },
     {
       id: 2,
       img: imgPasseio,
       title: "Passeios",
       desc: "Atividades seguras e divertidas para o seu pet gastar energia.",
-      price: "Apartir de R$55 /passeio",
+      price: "A partir de R$55 /passeio",
     },
     {
       id: 3,
       img: imgHospedagem,
-      title: "Hoespedagem",
-      desc: "Hospede seu pet por dias, semanas ou mês.",
-      price: "Apartir de R$60 /dia",
+      title: "Hospedagem",
+      desc: "Hospede seu pet por dias, semanas ou até meses.",
+      price: "A partir de R$60 /dia",
     },
   ];
 
@@ -58,6 +60,8 @@ export default function Services() {
           </div>
         ))}
       </div>
+
+      {/* Footer CTA */}
       <div className="about-footer">
         <p className="about-goal">
           Nosso propósito é oferecer <strong>tranquilidade para você</strong> e{" "}

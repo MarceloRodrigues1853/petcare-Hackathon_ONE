@@ -5,52 +5,33 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
-import java.util.Collections;
+import java.util.List;
 
+/**
+ * Implementação independente da entidade User
+ * (não depende de getters da sua classe de domínio).
+ */
 public class UserDetailsImpl implements UserDetails {
 
-    private final User user;
+    private final String username;      // email
+    private final String passwordHash;  // hash
+    private final String roleName;      // ex: USER/ADMIN
 
-    public UserDetailsImpl(User user) {
-        this.user = user;
+    public UserDetailsImpl(String username, String passwordHash, String roleName) {
+        this.username = username;
+        this.passwordHash = passwordHash;
+        this.roleName = roleName == null ? "USER" : roleName;
     }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return Collections.singletonList(new SimpleGrantedAuthority(user.getRole().name()));
+        return List.of(new SimpleGrantedAuthority("ROLE_" + roleName));
     }
 
-    @Override
-    public String getPassword() {
-        return user.getPasswordHash();
-    }
-
-    @Override
-    public String getUsername() {
-        return user.getEmail(); // usamos email como identificador
-    }
-
-    @Override
-    public boolean isAccountNonExpired() {
-        return true; // pode personalizar depois
-    }
-
-    @Override
-    public boolean isAccountNonLocked() {
-        return true; // pode personalizar depois
-    }
-
-    @Override
-    public boolean isCredentialsNonExpired() {
-        return true; // pode personalizar depois
-    }
-
-    @Override
-    public boolean isEnabled() {
-        return true; // pode personalizar depois
-    }
-
-    public User getUser() {
-        return user;
-    }
+    @Override public String getPassword() { return passwordHash; }
+    @Override public String getUsername() { return username; }
+    @Override public boolean isAccountNonExpired() { return true; }
+    @Override public boolean isAccountNonLocked() { return true; }
+    @Override public boolean isCredentialsNonExpired() { return true; }
+    @Override public boolean isEnabled() { return true; }
 }

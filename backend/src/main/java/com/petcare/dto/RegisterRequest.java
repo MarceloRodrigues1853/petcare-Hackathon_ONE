@@ -2,20 +2,23 @@ package com.petcare.dto;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-public record RegisterRequest(
-        @NotBlank(message = "Nome é obrigatório")
-        String name,
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class RegisterRequest {
+    @NotBlank(message = "Nome é obrigatório")
+    private String name;
 
-        @Email(message = "Email inválido")
-        @NotBlank(message = "Email é obrigatório")
-        String email,
+    @Email(message = "E-mail inválido")
+    @NotBlank(message = "E-mail é obrigatório")
+    private String email;
 
-        @NotBlank(message = "Senha é obrigatória")
-        String password,
+    @NotBlank(message = "Senha é obrigatória")
+    private String password;
 
-        @NotBlank(message = "Role é obrigatória")
-        String role
-) {}
-
-//DTO para receber dados de registro do novo usuário
+    private String role; // pode ser "OWNER" ou "SITTER"
+}

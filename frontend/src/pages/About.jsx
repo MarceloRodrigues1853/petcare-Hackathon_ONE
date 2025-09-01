@@ -6,7 +6,6 @@ import missionImg from "../assets/images/shane-ORANl-unsplash-banner-about.jpg";
 export default function About() {
   return (
     <section className="about-section">
-
       {/* Banner full-width */}
       <div className="about-banner">
         <img src={bannerImg} alt="Equipe" className="about-banner-img" />
@@ -51,7 +50,6 @@ export default function About() {
           cuidado.
         </p>
       </div>
-
     </section>
   );
 }
