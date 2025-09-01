@@ -1,4 +1,5 @@
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+// src/App.jsx
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import "./styles.css";
 
 import Layout from "./components/Layout";
@@ -12,6 +13,37 @@ import OwnerProfile from "./pages/profile/OwnerProfile";
 import SitterProfile from "./pages/profile/SitterProfile";
 import AdminProfile from "./pages/profile/AdminProfile";
 
+// --- Guards ---
+function PrivateRoute({ children, roles }) {
+  const token = localStorage.getItem("token");
+  const role  = localStorage.getItem("role");
+  const location = useLocation();
+
+  if (!token) {
+    return <Navigate to="/login" replace state={{ from: location }} />;
+  }
+
+  if (roles && roles.length > 0 && !roles.includes(role)) {
+    // opcional: mandar para a home, ou para o perfil correto
+    return <Navigate to="/" replace />;
+  }
+
+  return children;
+}
+
+// se já estiver logado, manda direto para o perfil correspondente
+function RedirectIfAuthenticated({ children }) {
+  const token = localStorage.getItem("token");
+  const role  = localStorage.getItem("role");
+
+  if (token) {
+    if (role === "OWNER")  return <Navigate to="/profile/owner" replace />;
+    if (role === "SITTER") return <Navigate to="/profile/sitter" replace />;
+    if (role === "ADMIN")  return <Navigate to="/profile/admin" replace />;
+  }
+  return children;
+}
+
 export default function App() {
   return (
     <BrowserRouter>
@@ -19,20 +51,63 @@ export default function App() {
         {/* Layout como rota pai */}
         <Route path="/" element={<Layout />}>
           {/* Página inicial */}
-          <Route index element={<Home />} />
+          <Route
+            index
+            element={
+              // se estiver logado, redireciona para o perfil; senão, mostra Home normalmente
+              <RedirectIfAuthenticated>
+                <Home />
+              </RedirectIfAuthenticated>
+            }
+          />
 
           {/* Páginas comuns */}
           <Route path="about" element={<About />} />
           <Route path="services" element={<Services />} />
 
-          {/* Perfis */}
-          <Route path="profile/owner" element={<OwnerProfile />} />
-          <Route path="profile/sitter" element={<SitterProfile />} />
-          <Route path="profile/admin" element={<AdminProfile />} />
+          {/* Perfis (protegidos) */}
+          <Route
+            path="profile/owner"
+            element={
+              <PrivateRoute roles={["OWNER"]}>
+                <OwnerProfile />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="profile/sitter"
+            element={
+              <PrivateRoute roles={["SITTER"]}>
+                <SitterProfile />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="profile/admin"
+            element={
+              <PrivateRoute roles={["ADMIN"]}>
+                <AdminProfile />
+              </PrivateRoute>
+            }
+          />
 
           {/* Autenticação */}
-          <Route path="login" element={<Login />} />
-          <Route path="register" element={<Register />} />
+          <Route
+            path="login"
+            element={
+              <RedirectIfAuthenticated>
+                <Login />
+              </RedirectIfAuthenticated>
+            }
+          />
+          <Route
+            path="register"
+            element={
+              <RedirectIfAuthenticated>
+                <Register />
+              </RedirectIfAuthenticated>
+            }
+          />
 
           {/* Rota inválida → Redireciona */}
           <Route path="*" element={<Navigate to="/" replace />} />

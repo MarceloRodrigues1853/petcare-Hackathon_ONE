@@ -1,3 +1,4 @@
+// src/pages/Register.jsx
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { postJson } from "../services/api";
@@ -21,8 +22,8 @@ export default function Register(){
     }
     setLoading(true);
     try{
-      // por enquanto vamos cadastrar sempre como OWNER (como no seu backend)
-      await postJson("/auth/register", { name, email, password, role: "OWNER" });
+      // manda sempre a role em UPPERCASE (combina com normalização do backend)
+      await postJson("/auth/register", { name, email, password, role: role?.toUpperCase() || 'OWNER' });
       setMsg("Cadastro criado com sucesso! Redirecionando para login…");
       setTimeout(()=> navigate("/login"), 700);
     }catch(err){
@@ -51,14 +52,12 @@ export default function Register(){
           <input type="password" value={confirm} onChange={e=>setConfirm(e.target.value)} placeholder="Confirmar senha" required/>
 
           <label>Tipo de usuário</label>
-          <select 
-            className="role-select" 
-            value={role} 
+          <select
+            className="role-select"
+            value={role}
             onChange={e=>setRole(e.target.value)}
             required
           >
-
-            <option value="" disabled>Selecione</option>
             <option value="OWNER">Dono</option>
             <option value="SITTER">Cuidador(a)</option>
           </select>

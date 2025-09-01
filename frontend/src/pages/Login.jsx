@@ -1,30 +1,35 @@
-import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { postJson } from "../services/api";
+// src/pages/Login.jsx
+import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { postJson } from '../services/api';
 
-export default function Login(){
-  // const navigate = useNavigate();
-  const [email,setEmail] = useState("");
-  const [password,setPassword] = useState("");
-  const [loading,setLoading] = useState(false);
-  const [msg,setMsg] = useState("");
+export default function Login() {
+  const navigate = useNavigate();
+  const [email, setEmail]       = useState('');
+  const [password, setPassword] = useState('');
+  const [loading, setLoading]   = useState(false);
+  const [msg, setMsg]           = useState('');
 
-  async function handleSubmit(e){
+  async function handleSubmit(e) {
     e.preventDefault();
-    setMsg("");
+    setMsg('');
     setLoading(true);
-    try{
-      // Quando existir /auth/login no backend, descomente:
-      // const data = await postJson("/auth/login", { email, password });
-      // localStorage.setItem("token", data.token);
-      // navigate("/dashboard");
+    try {
+      const data = await postJson('/auth/login', { email, password });
+      // espera: { token, tokenType: 'Bearer', email, role }
+      localStorage.setItem('token', data.token);
+      localStorage.setItem('role',  data.role || '');
 
-      // Enquanto não existe:
-      await new Promise(r=>setTimeout(r, 500));
-      setMsg("Login: aguardando /auth/login no backend. (form ok)");
-    }catch(err){
-      setMsg(err.message || "Erro ao entrar");
-    }finally{
+      if (data.role === 'OWNER') {
+        navigate('/owner/dashboard');
+      } else if (data.role === 'SITTER') {
+        navigate('/sitter/dashboard');
+      } else {
+        navigate('/');
+      }
+    } catch (err) {
+      setMsg(err.message || 'Erro ao entrar');
+    } finally {
       setLoading(false);
     }
   }
@@ -32,26 +37,37 @@ export default function Login(){
   return (
     <div className="center">
       <h1>Login</h1>
-
       <div className="card">
         <form onSubmit={handleSubmit}>
           <label>Email</label>
-          <input type="email" value={email} onChange={e=>setEmail(e.target.value)} placeholder="Email" required/>
+          <input
+            type="email"
+            value={email}
+            onChange={e=>setEmail(e.target.value)}
+            placeholder="Email"
+            required
+          />
 
           <label>Senha</label>
-          <input type="password" value={password} onChange={e=>setPassword(e.target.value)} placeholder="Senha" required/>
+          <input
+            type="password"
+            value={password}
+            onChange={e=>setPassword(e.target.value)}
+            placeholder="Senha"
+            required
+          />
 
-          <a href="/entar/esqueci-senha" className="link right">Esqueci minha senha</a>
+          <Link to="/esqueci-senha" className="link right">Esqueci minha senha</Link>
 
           <button className="btn" disabled={loading}>
-            {loading ? "Entrando..." : "Entrar"}
+            {loading ? 'Entrando...' : 'Entrar'}
           </button>
         </form>
 
         {msg && <p className="msg">{msg}</p>}
 
         <p className="footer-link">
-          Ainda não possui uma conta?{" "}
+          Ainda não possui uma conta?{' '}
           <Link to="/register" className="link">Cadastre-se</Link>
         </p>
       </div>
