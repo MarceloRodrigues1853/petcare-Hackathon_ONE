@@ -1,118 +1,81 @@
-// src/App.jsx
-import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
-import "./styles.css";
-
+// App router (com dashboards e guardas)
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import AuthProvider from "./context/AuthContext";
 import Layout from "./components/Layout";
+
 import Home from "./pages/Home";
 import About from "./pages/About";
 import Services from "./pages/Services";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 
-import OwnerProfile from "./pages/profile/OwnerProfile";
-import SitterProfile from "./pages/profile/SitterProfile";
-import AdminProfile from "./pages/profile/AdminProfile";
+import ProtectedRoute from "./components/ProtectedRoute";
+import RoleRoute from "./components/RoleRoute";
 
-// --- Guards ---
-function PrivateRoute({ children, roles }) {
-  const token = localStorage.getItem("token");
-  const role  = localStorage.getItem("role");
-  const location = useLocation();
+import OwnerDashboard from "./pages/dashboards/OwnerDashboard";
+import SitterDashboard from "./pages/dashboards/SitterDashboard";
+import AdminDashboard from "./pages/dashboards/AdminDashboard";
 
-  if (!token) {
-    return <Navigate to="/login" replace state={{ from: location }} />;
-  }
+import PetForm from "./pages/owner/PetForm";
+import AppointmentNew from "./pages/owner/AppointmentNew";
+import AppointmentsList from "./pages/owner/AppointmentsList";
+import OwnerProfileEdit from "./pages/owner/OwnerProfileEdit";
 
-  if (roles && roles.length > 0 && !roles.includes(role)) {
-    // opcional: mandar para a home, ou para o perfil correto
-    return <Navigate to="/" replace />;
-  }
+import ServicesForm from "./pages/sitter/ServicesForm";
+import SitterAppointments from "./pages/sitter/SitterAppointments";
+import SitterProfileEdit from "./pages/sitter/SitterProfileEdit";
 
-  return children;
-}
-
-// se já estiver logado, manda direto para o perfil correspondente
-function RedirectIfAuthenticated({ children }) {
-  const token = localStorage.getItem("token");
-  const role  = localStorage.getItem("role");
-
-  if (token) {
-    if (role === "OWNER")  return <Navigate to="/profile/owner" replace />;
-    if (role === "SITTER") return <Navigate to="/profile/sitter" replace />;
-    if (role === "ADMIN")  return <Navigate to="/profile/admin" replace />;
-  }
-  return children;
-}
+import SittersList from "./pages/admin/SittersList";
+import OwnersList from "./pages/admin/OwnersList";
+import AdminSchedule from "./pages/admin/AdminSchedule";
 
 export default function App() {
   return (
-    <BrowserRouter>
-      <Routes>
-        {/* Layout como rota pai */}
-        <Route path="/" element={<Layout />}>
-          {/* Página inicial */}
-          <Route
-            index
-            element={
-              // se estiver logado, redireciona para o perfil; senão, mostra Home normalmente
-              <RedirectIfAuthenticated>
-                <Home />
-              </RedirectIfAuthenticated>
-            }
-          />
+    <AuthProvider>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<Layout />}>
+            <Route index element={<Home />} />
+            <Route path="about" element={<About />} />
+            <Route path="services" element={<Services />} />
 
-          {/* Páginas comuns */}
-          <Route path="about" element={<About />} />
-          <Route path="services" element={<Services />} />
+            {/* público */}
+            <Route path="login" element={<Login />} />
+            <Route path="register" element={<Register />} />
 
-          {/* Perfis (protegidos) */}
-          <Route
-            path="profile/owner"
-            element={
-              <PrivateRoute roles={["OWNER"]}>
-                <OwnerProfile />
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="profile/sitter"
-            element={
-              <PrivateRoute roles={["SITTER"]}>
-                <SitterProfile />
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="profile/admin"
-            element={
-              <PrivateRoute roles={["ADMIN"]}>
-                <AdminProfile />
-              </PrivateRoute>
-            }
-          />
+            {/* autenticado */}
+            <Route element={<ProtectedRoute />}>
+              {/* OWNER */}
+              <Route element={<RoleRoute allowed={['OWNER']} />}>
+                <Route path="owner/dashboard" element={<OwnerDashboard />} />
+                <Route path="owner/pet/new" element={<PetForm />} />
+                <Route path="owner/appointments/new" element={<AppointmentNew />} />
+                <Route path="owner/appointments" element={<AppointmentsList />} />
+                <Route path="owner/profile/edit" element={<OwnerProfileEdit />} />
+              </Route>
 
-          {/* Autenticação */}
-          <Route
-            path="login"
-            element={
-              <RedirectIfAuthenticated>
-                <Login />
-              </RedirectIfAuthenticated>
-            }
-          />
-          <Route
-            path="register"
-            element={
-              <RedirectIfAuthenticated>
-                <Register />
-              </RedirectIfAuthenticated>
-            }
-          />
+              {/* SITTER */}
+              <Route element={<RoleRoute allowed={['SITTER']} />}>
+                <Route path="sitter/dashboard" element={<SitterDashboard />} />
+                <Route path="sitter/services" element={<ServicesForm />} />
+                <Route path="sitter/appointments" element={<SitterAppointments />} />
+                <Route path="sitter/profile/edit" element={<SitterProfileEdit />} />
+              </Route>
 
-          {/* Rota inválida → Redireciona */}
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Route>
-      </Routes>
-    </BrowserRouter>
+              {/* ADMIN */}
+              <Route element={<RoleRoute allowed={['ADMIN']} />}>
+                <Route path="admin/dashboard" element={<AdminDashboard />} />
+                <Route path="admin/sitters" element={<SittersList />} />
+                <Route path="admin/owners" element={<OwnersList />} />
+                <Route path="admin/schedule" element={<AdminSchedule />} />
+              </Route>
+            </Route>
+
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Route>
+        </Routes>
+      </BrowserRouter>
+    </AuthProvider>
   );
 }
+
