@@ -1,17 +1,15 @@
-import { useNavigate } from 'react-router-dom';
-import BigButton from '../../components/BigButton';
+import { Link } from 'react-router-dom';
 
 export default function SitterDashboard() {
-  const nav = useNavigate();
   return (
-    <section>
-      <h1>Olá, Cuidador</h1>
-      <div className="grid2">
-        <BigButton onClick={() => nav('/sitter/services')}>meus serviços</BigButton>
-        <BigButton onClick={() => nav('/sitter/profile/edit')}>Editar perfil</BigButton>
-        <BigButton onClick={() => nav('/sitter/appointments')}>ver agendamentos</BigButton>
-        <BigButton onClick={() => alert('histórico: a implementar')}>meu histórico</BigButton>
+    <div style={{ padding: 24 }}>
+      <h2>Olá, Sitter</h2>
+      <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:24, maxWidth:700 }}>
+        <Link className="btn" to="/sitter/services">meus serviços</Link>
+        <Link className="btn" to="/sitter/profile/edit">Editar perfil</Link>
+        <Link className="btn" to="/sitter/appointments">ver agendamentos</Link>
+        <Link className="btn" to="/sitter/history">meu histórico</Link>
       </div>
-    </section>
+    </div>
   );
 }

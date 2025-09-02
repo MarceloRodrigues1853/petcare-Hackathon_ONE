@@ -1,31 +1,36 @@
-const API_BASE = import.meta.env.VITE_API_BASE ?? 'http://localhost:8080/api';
+// src/api/http.js
+const BASE = import.meta.env.VITE_API_BASE || 'http://localhost:8080/api';
 
-export async function postJson(path, body, auth = false) {
-  const headers = { 'Content-Type': 'application/json' };
-  if (auth) {
-    const t = localStorage.getItem('token');
-    if (t) headers['Authorization'] = `Bearer ${t}`;
-  }
-  const res = await fetch(`${API_BASE}${path}`, {
+export async function postJson(path, body) {
+  const res = await fetch(`${BASE}${path}`, {
     method: 'POST',
-    headers,
+    headers: {
+      'Content-Type': 'application/json',
+      // envia o token se existir:
+      ...(localStorage.getItem('token')
+        ? { Authorization: `Bearer ${localStorage.getItem('token')}` }
+        : {}),
+    },
     body: JSON.stringify(body),
-    credentials: 'include'
+    credentials: 'include',
   });
   if (!res.ok) {
-    const text = await res.text();
-    throw new Error(text || `HTTP ${res.status}`);
+    const txt = await res.text().catch(() => '');
+    throw new Error(txt || `HTTP ${res.status}`);
   }
   return res.json();
 }
 
-export async function getJson(path, auth = false) {
-  const headers = {};
-  if (auth) {
-    const t = localStorage.getItem('token');
-    if (t) headers['Authorization'] = `Bearer ${t}`;
-  }
-  const res = await fetch(`${API_BASE}${path}`, { headers, credentials: 'include' });
+export async function getJson(path) {
+  const res = await fetch(`${BASE}${path}`, {
+    method: 'GET',
+    headers: {
+      ...(localStorage.getItem('token')
+        ? { Authorization: `Bearer ${localStorage.getItem('token')}` }
+        : {}),
+    },
+    credentials: 'include',
+  });
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
   return res.json();
 }

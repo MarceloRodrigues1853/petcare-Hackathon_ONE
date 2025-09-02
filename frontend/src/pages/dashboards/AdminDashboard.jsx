@@ -1,18 +1,15 @@
-import { useNavigate } from 'react-router-dom';
-import BigButton from '../../components/BigButton';
+import { Link } from 'react-router-dom';
 
 export default function AdminDashboard() {
-  const nav = useNavigate();
   return (
-    <section>
-      <h1>Administração</h1>
-      <div style={{display:'grid', gap:24, maxWidth:900}}>
-        <BigButton onClick={() => nav('/admin/schedule')}>calendário semanal</BigButton>
-        <div className="grid2">
-          <BigButton onClick={() => nav('/admin/sitters')}>listar Cuidadoders</BigButton>
-          <BigButton onClick={() => nav('/admin/owners')}>listar donos</BigButton>
-        </div>
+    <div style={{ padding: 24 }}>
+      <h2>Administração</h2>
+      <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:24, maxWidth:800 }}>
+        <Link className="btn" to="/admin/schedule">calendário semanal</Link>
+        <div />
+        <Link className="btn" to="/admin/sitters">listar sitters</Link>
+        <Link className="btn" to="/admin/owners">listar donos</Link>
       </div>
-    </section>
+    </div>
   );
 }

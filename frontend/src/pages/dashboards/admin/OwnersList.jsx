@@ -1,1 +1,8 @@
-export default function OwnersList(){ return <h2>Listar/Excluir Donos</h2>; }
+export default function OwnersList() {
+  return (
+    <div style={{ padding: 24 }}>
+      <h2>Lista de Donos</h2>
+      <p>Tabela (placeholder).</p>
+    </div>
+  );
+}
