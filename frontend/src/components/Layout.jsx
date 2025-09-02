@@ -1,14 +1,18 @@
-import {  Outlet, Link } from "react-router-dom";
+import { Outlet, Link } from "react-router-dom";
 import "./Layout.css";
-import logo from "../assets/images/logo.png";
+import Logo from "./Logo"; // importa a logo
+import Footer from "./Footer";
 
 export default function Layout() {
   return (
     <div className="layout">
       <header className="header">
-        <h1 className="logo">
-          <Link to="/">PetCare</Link>
-        </h1>
+        {/* Logo no canto esquerdo */}
+        <Link to="/" className="brand">
+          <Logo />
+        </Link>
+
+        {/* Menu no canto direito */}
         <nav className="nav">
           <Link to="/">Início</Link>
           <Link to="/about">Sobre</Link>
@@ -17,13 +21,13 @@ export default function Layout() {
         </nav>
       </header>
 
-      {/* Aqui vai renderizar a página atual */}
       <main className="content">
         <Outlet />
       </main>
 
       <footer className="footer">
-        © {new Date().getFullYear()} PetCare
+        <Footer />
+        {/* © {new Date().getFullYear()} PetCare */}
       </footer>
     </div>
   );
