@@ -1,38 +1,77 @@
-// Login com redireciono por role
 // src/pages/Login.jsx
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
+import React, { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 
 export default function Login() {
-  const { login } = useAuth();
-  const nav = useNavigate();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [err, setErr] = useState('');
+  const { login } = useAuth(); // chama seu AuthContext atual
+  const navigate = useNavigate();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [msg, setMsg] = useState("");
 
-  const onSubmit = async (e) => {
+  async function handleSubmit(e) {
     e.preventDefault();
-    setErr('');
+    setMsg("");
+    setLoading(true);
     try {
-      const data = await login(email, password);
-      const r = data.role;
-      if (r === 'OWNER') nav('/owner/dashboard');
-      else if (r === 'SITTER') nav('/sitter/dashboard');
-      else if (r === 'ADMIN') nav('/admin/dashboard');
-      else nav('/');
-    } catch (e2) {
-      setErr(e2.message || 'Falha no login');
+      const data = await login(email, password); // deve salvar token/role internamente
+      // redireciona por role
+      const r = (data?.role || "").toUpperCase();
+      if (r === "OWNER") navigate("/owner/dashboard");
+      else if (r === "SITTER") navigate("/sitter/dashboard");
+      else if (r === "ADMIN") navigate("/admin/dashboard");
+      else navigate("/");
+    } catch (err) {
+      setMsg(err?.message || "Falha no login");
+    } finally {
+      setLoading(false);
     }
-  };
+  }
 
   return (
-    <form onSubmit={onSubmit} className="stack">
-      <h2>Entrar</h2>
-      {err && <div className="error">{err}</div>}
-      <input placeholder="e-mail" value={email} onChange={e=>setEmail(e.target.value)} />
-      <input placeholder="senha" type="password" value={password} onChange={e=>setPassword(e.target.value)} />
-      <button type="submit">Login</button>
-    </form>
+    <div className="center">
+      <h1>Login</h1>
+
+      <div className="card">
+        <form onSubmit={handleSubmit}>
+          <label>Email</label>
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="Email"
+            required
+          />
+
+          <label>Senha</label>
+          <input
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="Senha"
+            required
+          />
+
+          <a href="/entrar/esqueci-senha" className="link right">
+            Esqueci minha senha
+          </a>
+
+          <button className="btn" disabled={loading}>
+            {loading ? "Entrando..." : "Entrar"}
+          </button>
+        </form>
+
+        {msg && <p className="msg">{msg}</p>}
+
+        <p className="footer-link">
+          Ainda não possui uma conta?{" "}
+          <Link to="/register" className="link">
+            Cadastre-se
+          </Link>
+        </p>
+      </div>
+    </div>
   );
 }
