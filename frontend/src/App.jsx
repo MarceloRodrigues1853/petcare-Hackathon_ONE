@@ -16,18 +16,18 @@ import OwnerDashboard from "./pages/dashboards/OwnerDashboard";
 import SitterDashboard from "./pages/dashboards/SitterDashboard";
 import AdminDashboard from "./pages/dashboards/AdminDashboard";
 
-import PetForm from "./pages/owner/PetForm";
-import AppointmentNew from "./pages/owner/AppointmentNew";
-import AppointmentsList from "./pages/owner/AppointmentsList";
-import OwnerProfileEdit from "./pages/owner/OwnerProfileEdit";
+import PetForm from "./pages/dashboards/owner/PetForm";
+import AppointmentNew from "./pages/dashboards/owner/AppointmentNew";
+import AppointmentsList from "./pages/dashboards/owner/AppointmentsList";
+import OwnerProfileEdit from "./pages/dashboards/owner/OwnerProfileEdit";
 
-import ServicesForm from "./pages/sitter/ServicesForm";
-import SitterAppointments from "./pages/sitter/SitterAppointments";
-import SitterProfileEdit from "./pages/sitter/SitterProfileEdit";
+import ServicesForm from "./pages/dashboards/sitter/ServicesForm";
+import SitterAppointments from "./pages/dashboards/sitter/SitterAppointments";
+import SitterProfileEdit from "./pages/dashboards/sitter/SitterProfileEdit";
 
-import SittersList from "./pages/admin/SittersList";
-import OwnersList from "./pages/admin/OwnersList";
-import AdminSchedule from "./pages/admin/AdminSchedule";
+import SittersList from "./pages/dashboards/admin/SittersList";
+import OwnersList from "./pages/dashboards/admin/OwnersList";
+import AdminSchedule from "./pages/dashboards/admin/AdminSchedule";
 
 export default function App() {
   return (
