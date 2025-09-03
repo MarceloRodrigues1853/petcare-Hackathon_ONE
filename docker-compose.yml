@@ -50,8 +50,7 @@ services:
     ports:
       - "5173:5173"
     environment:
-      # A URL para o frontend está correta, pois o navegador acessa o backend via localhost
-      VITE_BACKEND_URL: http://localhost:8080/api
+      VITE_API_BASE: http://localhost:8080/api
     volumes:
       - ./frontend:/app
       - /app/node_modules
