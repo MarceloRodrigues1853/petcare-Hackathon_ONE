@@ -10,11 +10,7 @@ import lombok.*;
 @AllArgsConstructor
 public class User {
 
-    public enum Role {
-        OWNER,
-        SITTER,
-        ADMIN
-    }
+    public enum Role { OWNER, SITTER, ADMIN }
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -30,10 +26,13 @@ public class User {
     private String passwordHash;
 
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private Role role;
 
-    // helper estático para hash (compatibilidade com versões anteriores)
-    public static String hash(String plain) {
-        return plain; // depois pode trocar para BCrypt direto
+    @PrePersist
+    void prePersist() {
+        if (this.role == null) this.role = Role.OWNER;
     }
+
+    public static String hash(String plain) { return plain; }
 }

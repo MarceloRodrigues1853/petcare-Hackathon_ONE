@@ -30,6 +30,7 @@ export default function Register() {
         email,
         password,
         role: role?.toUpperCase() || "OWNER",
+        userRole: role?.toUpperCase() || "OWNER",
       });
       setMsg("Cadastro criado com sucesso! Redirecionando para login…");
       setTimeout(() => navigate("/login"), 700);
