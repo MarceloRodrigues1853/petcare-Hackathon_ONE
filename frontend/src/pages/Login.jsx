@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { postJson } from '../utils/api'; // seu helper de fetch
+import { postJson } from "../services/api"; // seu helper de fetch
 
 export default function Login() {
   const [email, setEmail] = useState('');
