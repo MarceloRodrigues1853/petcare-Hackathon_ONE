@@ -26,45 +26,44 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         this.userDetailsService = userDetailsService;
     }
 
+    private boolean isPublicPath(String path) {
+        return path.startsWith("/swagger-ui")
+                || path.startsWith("/v3/api-docs")
+                || path.startsWith("/api/auth/")
+                || path.startsWith("/auth/")
+                || "/ping".equals(path);
+    }
+
     @Override
     protected void doFilterInternal(
             @NonNull HttpServletRequest request,
             @NonNull HttpServletResponse response,
             @NonNull FilterChain filterChain) throws ServletException, IOException {
 
-        // ✅ BYPASS: rotas públicas (cadastro/login) não exigem token
-        String path = request.getServletPath();
-        if (path.startsWith("/api/auth/") || path.startsWith("/auth/")) {
+        final String path = request.getRequestURI();
+
+        // Sempre deixa rotas públicas seguirem sem tocar no response
+        if (isPublicPath(path)) {
             filterChain.doFilter(request, response);
             return;
         }
 
-        // Header Authorization: Bearer <token>
         final String authHeader = request.getHeader("Authorization");
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            filterChain.doFilter(request, response);
-            return;
-        }
-
-        final String jwt = authHeader.substring(7);
-        String email = null;
-        try {
-            email = jwtService.extractEmail(jwt);
-        } catch (Exception e) {
-            // token inválido -> segue sem autenticar
-            filterChain.doFilter(request, response);
-            return;
-        }
-
-        if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-            UserDetails userDetails = userDetailsService.loadUserByUsername(email);
-
-            if (jwtService.isTokenValid(jwt, userDetails)) {
-                UsernamePasswordAuthenticationToken authToken =
-                        new UsernamePasswordAuthenticationToken(
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            final String jwt = authHeader.substring(7);
+            try {
+                final String email = jwtService.extractEmail(jwt);
+                if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+                    UserDetails userDetails = userDetailsService.loadUserByUsername(email);
+                    if (jwtService.isTokenValid(jwt, userDetails)) {
+                        var authToken = new UsernamePasswordAuthenticationToken(
                                 userDetails, null, userDetails.getAuthorities());
-                authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                SecurityContextHolder.getContext().setAuthentication(authToken);
+                        authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                        SecurityContextHolder.getContext().setAuthentication(authToken);
+                    }
+                }
+            } catch (Exception ignore) {
+                // Se o token for inválido, não autentica; o Security cuidará do 401.
             }
         }
 

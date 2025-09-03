@@ -28,7 +28,7 @@ public class OwnerService {
 
         owner.setName(request.name());
         owner.setEmail(request.email());
-        // senha deixamos para depois (exige lógica extra de hash + segurança)
+        // senha 
 
         Owner updated = ownerRepository.save(owner);
 

@@ -1,57 +1,83 @@
-// src/App.jsx
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import Login from './pages/Login.jsx';
-import Register from './pages/Register.jsx';
+// App router (com dashboards e guardas)
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import AuthProvider from "./context/AuthContext";
+import Layout from "./components/Layout";
 
-function OwnerDashboard() {
-  return <h2>Dashboard do Dono (OWNER)</h2>;
-}
+import Home from "./pages/Home";
+import About from "./pages/About";
+import Services from "./pages/Services";
+import Login from "./pages/Login";
+import Register from "./pages/Register";
 
-function SitterDashboard() {
-  return <h2>Dashboard do Cuidador (SITTER)</h2>;
-}
+import ProtectedRoute from "./components/ProtectedRoute";
+import RoleRoute from "./components/RoleRoute";
 
-// Rota protegida simples por token (opcionalmente também checa role)
-function PrivateRoute({ children, roles }) {
-  const token = localStorage.getItem('token');
-  const role  = localStorage.getItem('role');
+import OwnerDashboard from "./pages/dashboards/OwnerDashboard";
+import SitterDashboard from "./pages/dashboards/SitterDashboard";
+import AdminDashboard from "./pages/dashboards/AdminDashboard";
 
-  if (!token) return <Navigate to="/login" replace />;
+import PetForm from "./pages/dashboards/owner/PetForm";
+import AppointmentNew from "./pages/dashboards/owner/AppointmentNew";
+import AppointmentsList from "./pages/dashboards/owner/AppointmentsList";
+import OwnerProfileEdit from "./pages/dashboards/owner/OwnerProfileEdit";
 
-  if (roles && roles.length > 0 && !roles.includes(role)) {
-    return <Navigate to="/login" replace />;
-  }
+import ServicesForm from "./pages/dashboards/sitter/ServicesForm";
+import SitterAppointments from "./pages/dashboards/sitter/SitterAppointments";
+import SitterProfileEdit from "./pages/dashboards/sitter/SitterProfileEdit";
 
-  return children;
-}
+import SittersList from "./pages/dashboards/admin/SittersList";
+import OwnersList from "./pages/dashboards/admin/OwnersList";
+import AdminSchedule from "./pages/dashboards/admin/AdminSchedule";
+
+import Forbidden from "./pages/Forbidden"; // 👈
 
 export default function App() {
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<Navigate to="/login" replace />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
+    <AuthProvider>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<Layout />}>
+            <Route index element={<Home />} />
+            <Route path="about" element={<About />} />
+            <Route path="services" element={<Services />} />
 
-        <Route
-          path="/owner/dashboard"
-          element={
-            <PrivateRoute roles={['OWNER']}>
-              <OwnerDashboard />
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/sitter/dashboard"
-          element={
-            <PrivateRoute roles={['SITTER']}>
-              <SitterDashboard />
-            </PrivateRoute>
-          }
-        />
+            {/* público */}
+            <Route path="login" element={<Login />} />
+            <Route path="register" element={<Register />} />
+            <Route path="403" element={<Forbidden />} /> {/* 👈 */}
 
-        <Route path="*" element={<h2>404</h2>} />
-      </Routes>
-    </BrowserRouter>
+            {/* autenticado */}
+            <Route element={<ProtectedRoute />}>
+              {/* OWNER */}
+              <Route element={<RoleRoute allowed={['OWNER']} />}>
+                <Route path="owner/dashboard" element={<OwnerDashboard />} />
+                <Route path="owner/pet/new" element={<PetForm />} />
+                <Route path="owner/appointments/new" element={<AppointmentNew />} />
+                <Route path="owner/appointments" element={<AppointmentsList />} />
+                <Route path="owner/profile/edit" element={<OwnerProfileEdit />} />
+              </Route>
+
+              {/* SITTER */}
+              <Route element={<RoleRoute allowed={['SITTER']} />}>
+                <Route path="sitter/dashboard" element={<SitterDashboard />} />
+                <Route path="sitter/services" element={<ServicesForm />} />
+                <Route path="sitter/appointments" element={<SitterAppointments />} />
+                <Route path="sitter/profile/edit" element={<SitterProfileEdit />} />
+              </Route>
+
+              {/* ADMIN */}
+              <Route element={<RoleRoute allowed={['ADMIN']} />}>
+                <Route path="admin/dashboard" element={<AdminDashboard />} />
+                <Route path="admin/sitters" element={<SittersList />} />
+                <Route path="admin/owners" element={<OwnersList />} />
+                <Route path="admin/schedule" element={<AdminSchedule />} />
+              </Route>
+            </Route>
+
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Route>
+        </Routes>
+      </BrowserRouter>
+    </AuthProvider>
   );
 }
