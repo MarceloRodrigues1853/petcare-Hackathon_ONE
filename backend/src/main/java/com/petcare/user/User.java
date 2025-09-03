@@ -1,28 +1,35 @@
 package com.petcare.user;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
 @Table(name = "users")
-@Data
+@Getter @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
+@ToString(exclude = "passwordHash")                  // evita logar o hash
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)    // evita usar o hash no equals/hashCode
 public class User {
 
     public enum Role { OWNER, SITTER, ADMIN }
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @EqualsAndHashCode.Include
     private Long id;
 
     @Column(nullable = false)
     private String name;
 
     @Column(unique = true, nullable = false)
+    @EqualsAndHashCode.Include
     private String email;
 
     @Column(nullable = false, name = "password_hash")
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY) // não serializa para JSON
     private String passwordHash;
 
     @Enumerated(EnumType.STRING)
@@ -34,5 +41,7 @@ public class User {
         if (this.role == null) this.role = Role.OWNER;
     }
 
+    /** Não usar. O hash é feito via PasswordEncoder no service. */
+    @Deprecated
     public static String hash(String plain) { return plain; }
 }

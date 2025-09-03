@@ -1,3 +1,4 @@
+// src/api/auth.js
 import { postJson } from './http';
 
 export async function loginApi(email, password) {

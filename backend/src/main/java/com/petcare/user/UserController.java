@@ -1,27 +1,34 @@
 package com.petcare.user;
 
-import com.petcare.auth.JwtService;
+import com.petcare.dto.UserResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/users")
 @RequiredArgsConstructor
+@RequestMapping("/api/users")
 public class UserController {
 
     private final UserRepository userRepository;
-    private final JwtService jwtService;
 
+    // GET /api/users  → lista sem expor passwordHash
     @GetMapping
-    public List<User> listAll() {
-        return userRepository.findAll();
+    public List<UserResponse> listAll() {
+        return userRepository.findAll()
+                .stream()
+                .map(UserResponse::from)
+                .toList();
     }
 
+    // GET /api/users/{id} → um usuário (404 se não existir)
     @GetMapping("/{id}")
-    public User getUser(@PathVariable Long id) {
+    public ResponseEntity<UserResponse> getUser(@PathVariable Long id) {
         return userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+                .map(UserResponse::from)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
 }

@@ -9,8 +9,8 @@ RUN mvn -q -DskipTests -Dmaven.test.skip=true dependency:go-offline
 # Copia o restante do código
 COPY src ./src
 
-# Compila o projeto (gera o .jar) pulando totalmente testes
-RUN mvn -q -DskipTests -Dmaven.test.skip=true package
+# 👇 importante: CLEAN para apagar classes antigas
+RUN mvn -q -DskipTests -Dmaven.test.skip=true clean package
 
 # ====== runtime ======
 FROM eclipse-temurin:17-jre

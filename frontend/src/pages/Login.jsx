@@ -16,8 +16,8 @@ export default function Login() {
     setMsg("");
     setLoading(true);
     try {
-      const session = await login(email, password); // <= GARANTE que está dentro da função
-      const r = (session?.role || session?.user?.role || "").toUpperCase();
+      const session = await login(email, password);
+      const r = (session?.role || "").toUpperCase();
       if (r === "OWNER") navigate("/owner/dashboard");
       else if (r === "SITTER") navigate("/sitter/dashboard");
       else if (r === "ADMIN") navigate("/admin/dashboard");

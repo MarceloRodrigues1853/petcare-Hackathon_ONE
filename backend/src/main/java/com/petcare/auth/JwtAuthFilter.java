@@ -27,11 +27,11 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     }
 
     private boolean isPublicPath(String path) {
-        // Deixa passar Swagger e Auth (com e sem /api)
         return path.startsWith("/swagger-ui")
                 || path.startsWith("/v3/api-docs")
+                || path.startsWith("/api/auth/")
                 || path.startsWith("/auth/")
-                || path.startsWith("/api/auth/");
+                || "/ping".equals(path);
     }
 
     @Override
@@ -40,40 +40,30 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             @NonNull HttpServletResponse response,
             @NonNull FilterChain filterChain) throws ServletException, IOException {
 
-        String path = request.getRequestURI();
+        final String path = request.getRequestURI();
+
+        // Sempre deixa rotas públicas seguirem sem tocar no response
         if (isPublicPath(path)) {
             filterChain.doFilter(request, response);
             return;
         }
 
         final String authHeader = request.getHeader("Authorization");
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            // Sem token -> segue o fluxo; o Security vai exigir auth nas rotas protegidas
-            filterChain.doFilter(request, response);
-            return;
-        }
-
-        final String jwt = authHeader.substring(7);
-        final String email;
-        try {
-            email = jwtService.extractEmail(jwt);
-        } catch (Exception e) {
-            // Token inválido -> 401 (melhor que 403)
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            return;
-        }
-
-        if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-            UserDetails userDetails = userDetailsService.loadUserByUsername(email);
-
-            if (jwtService.isTokenValid(jwt, userDetails)) {
-                var authToken = new UsernamePasswordAuthenticationToken(
-                        userDetails, null, userDetails.getAuthorities());
-                authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                SecurityContextHolder.getContext().setAuthentication(authToken);
-            } else {
-                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                return;
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            final String jwt = authHeader.substring(7);
+            try {
+                final String email = jwtService.extractEmail(jwt);
+                if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+                    UserDetails userDetails = userDetailsService.loadUserByUsername(email);
+                    if (jwtService.isTokenValid(jwt, userDetails)) {
+                        var authToken = new UsernamePasswordAuthenticationToken(
+                                userDetails, null, userDetails.getAuthorities());
+                        authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                        SecurityContextHolder.getContext().setAuthentication(authToken);
+                    }
+                }
+            } catch (Exception ignore) {
+                // Se o token for inválido, não autentica; o Security cuidará do 401.
             }
         }
 

@@ -29,6 +29,8 @@ import SittersList from "./pages/dashboards/admin/SittersList";
 import OwnersList from "./pages/dashboards/admin/OwnersList";
 import AdminSchedule from "./pages/dashboards/admin/AdminSchedule";
 
+import Forbidden from "./pages/Forbidden"; // 👈
+
 export default function App() {
   return (
     <AuthProvider>
@@ -42,6 +44,7 @@ export default function App() {
             {/* público */}
             <Route path="login" element={<Login />} />
             <Route path="register" element={<Register />} />
+            <Route path="403" element={<Forbidden />} /> {/* 👈 */}
 
             {/* autenticado */}
             <Route element={<ProtectedRoute />}>
@@ -78,4 +81,3 @@ export default function App() {
     </AuthProvider>
   );
 }
-

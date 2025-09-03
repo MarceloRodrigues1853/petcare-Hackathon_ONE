@@ -25,7 +25,6 @@ public class SecurityConfig {
 
   private final JwtAuthFilter jwtAuthFilter;
 
-  // Rotas públicas do Swagger (springdoc)
   private static final String[] SWAGGER_WHITELIST = {
       "/swagger-ui.html",
       "/swagger-ui/**",
@@ -34,12 +33,6 @@ public class SecurityConfig {
       "/v3/api-docs.yaml",
       "/swagger-resources/**",
       "/webjars/**"
-  };
-
-  // Rotas públicas de auth (com e sem /api, pra cobrir o frontend)
-  private static final String[] AUTH_WHITELIST = {
-      "/auth/**",
-      "/api/auth/**"
   };
 
   @Bean
@@ -51,8 +44,13 @@ public class SecurityConfig {
         .authorizeHttpRequests(auth -> auth
             .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
             .requestMatchers(SWAGGER_WHITELIST).permitAll()
-            .requestMatchers(AUTH_WHITELIST).permitAll()
+            .requestMatchers("/api/auth/**", "/auth/**").permitAll()
+            .requestMatchers("/ping").permitAll() // rota de sanity check
             .anyRequest().authenticated()
+        )
+        .exceptionHandling(e -> e
+            .authenticationEntryPoint((req, res, ex) -> res.sendError(401, "Unauthorized"))
+            .accessDeniedHandler((req, res, ex) -> res.sendError(403, "Forbidden"))
         )
         .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
@@ -66,21 +64,13 @@ public class SecurityConfig {
 
   @Bean
   CorsConfigurationSource corsConfigurationSource() {
-    var cfg = new CorsConfiguration();
-
-    // IMPORTANTE: quando allowCredentials=true, NÃO pode usar allowedOrigins="*".
-    // Use padrões ou URLs específicas:
-    cfg.setAllowedOriginPatterns(List.of(
-        "http://localhost:*",
-        "http://127.0.0.1:*"
-    ));
-
+    CorsConfiguration cfg = new CorsConfiguration();
+    cfg.setAllowedOrigins(List.of("http://localhost:5173","http://127.0.0.1:5173"));
     cfg.setAllowedMethods(List.of("GET","POST","PUT","DELETE","PATCH","OPTIONS"));
     cfg.setAllowedHeaders(List.of("*"));
     cfg.setAllowCredentials(true);
-
-    var source = new UrlBasedCorsConfigurationSource();
-    source.registerCorsConfiguration("/**", cfg);
-    return source;
+    UrlBasedCorsConfigurationSource src = new UrlBasedCorsConfigurationSource();
+    src.registerCorsConfiguration("/**", cfg);
+    return src;
   }
 }
