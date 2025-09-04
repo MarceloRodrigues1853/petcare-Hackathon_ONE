@@ -36,4 +36,11 @@ public class User {
     public static String hash(String plain) {
         return plain; // depois pode trocar para BCrypt direto
     }
+    //construtor
+    public User(String name, String email, String passwordHash, Role role) {
+        this.name = name;
+        this.email = email;
+        this.passwordHash = passwordHash;
+        this.role = role;
+    }
 }

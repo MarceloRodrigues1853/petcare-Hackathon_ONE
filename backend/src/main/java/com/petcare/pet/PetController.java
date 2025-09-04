@@ -1,41 +1,48 @@
 package com.petcare.pet;
 
-import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
 
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
 @RestController
-@RequestMapping("/api/pet")
-@RequiredArgsConstructor
+@RequestMapping("/pets")
 public class PetController {
 
     private final PetService petService;
 
-    @PreAuthorize("hasAnyRole('OWNER','ADMIN')")
+    public PetController(PetService petService) {
+        this.petService = petService;
+    }
+
+    @GetMapping
+    public List<PetResponse> listar() {
+        return petService.listarTodos();
+    }
+
+    @GetMapping("/{id}")
+    public PetResponse buscarPorId(@PathVariable Long id) {
+        return petService.buscarPorId(id);
+    }
+
     @PostMapping
-    public ResponseEntity<PetResponse> createPet(@RequestBody PetRequest request) {
-        return ResponseEntity.ok(petService.createPet(request));
+    public PetResponse criar(@RequestBody PetRequest request) {
+        return petService.criar(request);
     }
 
-    @PreAuthorize("hasAnyRole('OWNER','ADMIN')")
     @PutMapping("/{id}")
-    public ResponseEntity<PetResponse> updatePet(@PathVariable Long id, @RequestBody PetRequest request) {
-        return ResponseEntity.ok(petService.updatePet(id, request));
+    public PetResponse atualizar(@PathVariable Long id, @RequestBody PetRequest request) {
+        return petService.atualizar(id, request);
     }
 
-    @PreAuthorize("hasAnyRole('OWNER','ADMIN')")
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deletePet(@PathVariable Long id) {
-        petService.deletePet(id);
-        return ResponseEntity.noContent().build();
-    }
-
-    @PreAuthorize("hasAnyRole('OWNER','ADMIN')")
-    @GetMapping("/owner/{ownerId}")
-    public ResponseEntity<List<PetResponse>> listPets(@PathVariable Long ownerId) {
-        return ResponseEntity.ok(petService.listPetsByOwner(ownerId));
+    public void deletar(@PathVariable Long id) {
+        petService.deletar(id);
     }
 }
