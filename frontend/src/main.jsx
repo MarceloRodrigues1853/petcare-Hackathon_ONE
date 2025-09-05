@@ -6,7 +6,6 @@ import './components/Layout.css';
 import './App.css';
 import './styles.css';
 import './index.css';
-import './tailwind.css';
 
 import App from './App.jsx';
 

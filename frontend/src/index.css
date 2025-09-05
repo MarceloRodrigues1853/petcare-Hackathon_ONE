@@ -1,3 +1,8 @@
+/*
+  CORREÇÃO: Este ficheiro deve conter APENAS estas três linhas.
+  Elas são diretivas especiais que o Tailwind usa para gerar todo o CSS necessário.
+  Qualquer outro conteúdo neste ficheiro causará erros.
+*/
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
