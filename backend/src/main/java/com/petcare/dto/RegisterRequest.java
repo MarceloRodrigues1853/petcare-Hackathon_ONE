@@ -1,7 +1,6 @@
 package com.petcare.dto;
 
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
+import com.petcare.user.User;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -10,15 +9,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class RegisterRequest {
-    @NotBlank(message = "Nome é obrigatório")
     private String name;
-
-    @Email(message = "E-mail inválido")
-    @NotBlank(message = "E-mail é obrigatório")
     private String email;
-
-    @NotBlank(message = "Senha é obrigatória")
     private String password;
-
-    private String role; // pode ser "OWNER" ou "SITTER"
+    private User.Role role; // OWNER / SITTER / ADMIN
 }
