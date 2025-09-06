@@ -1,46 +1,48 @@
 package com.petcare.user;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
 @Table(name = "users")
-@Data
+@Getter @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
+@ToString(exclude = "passwordHash")                  // evita logar o hash
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)    // evita usar o hash no equals/hashCode
 public class User {
 
-    public enum Role {
-        OWNER,
-        SITTER,
-        ADMIN
-    }
+    public enum Role { OWNER, SITTER, ADMIN }
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @EqualsAndHashCode.Include
     private Long id;
 
     @Column(nullable = false)
     private String name;
 
     @Column(unique = true, nullable = false)
+    @EqualsAndHashCode.Include
     private String email;
 
     @Column(nullable = false, name = "password_hash")
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY) // não serializa para JSON
     private String passwordHash;
 
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private Role role;
 
-    // helper estático para hash (compatibilidade com versões anteriores)
-    public static String hash(String plain) {
-        return plain; // depois pode trocar para BCrypt direto
+    @PrePersist
+    void prePersist() {
+        if (this.role == null) this.role = Role.OWNER;
     }
-    //construtor
-    public User(String name, String email, String passwordHash, Role role) {
-        this.name = name;
-        this.email = email;
-        this.passwordHash = passwordHash;
-        this.role = role;
-    }
+  
+    /** Não usar. O hash é feito via PasswordEncoder no service. */
+    @Deprecated
+    public static String hash(String plain) { return plain; }
+
 }

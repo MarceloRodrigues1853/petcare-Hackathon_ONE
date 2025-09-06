@@ -1,3 +1,5 @@
+# Arquivo: docker-compose.yml (Revisado)
+
 name: petcare
 
 services:
@@ -6,8 +8,8 @@ services:
     container_name: petcare-db
     environment:
       MYSQL_DATABASE: petcare
-      MYSQL_USER: petcare
-      MYSQL_PASSWORD: petcare
+      MYSQL_USER: petcare       # Para uma melhoria extra, poderia vir de um .env na raiz
+      MYSQL_PASSWORD: petcare   # Para uma melhoria extra, poderia vir de um .env na raiz
       MYSQL_ROOT_PASSWORD: root
       MYSQL_ROOT_HOST: '%'
     command: >
@@ -32,13 +34,9 @@ services:
     depends_on:
       db:
         condition: service_healthy
-    environment:
-      SPRING_PROFILES_ACTIVE: docker
-      DB_URL: jdbc:mysql://petcare-db:3306/petcare?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
-      DB_USER: petcare
-      DB_PASS: petcare
-      JWT_SECRET: VUOFe/VonnmE9uguOCp9jLpDfg20bZlRqVjCoVtd/9E=
-      JWT_EXPIRATION_MS: "86400000"
+    # (SUGESTÃO 1) Movendo as variáveis para um arquivo .env para mais segurança
+    env_file:
+      - ./backend/.env
     ports:
       - "8080:8080"
     restart: unless-stopped
@@ -52,7 +50,7 @@ services:
     ports:
       - "5173:5173"
     environment:
-      VITE_BACKEND_URL: http://localhost:8080
+      VITE_API_BASE: http://localhost:8080/api
     volumes:
       - ./frontend:/app
       - /app/node_modules
