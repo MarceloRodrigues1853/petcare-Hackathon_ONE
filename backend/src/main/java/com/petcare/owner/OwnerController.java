@@ -1,41 +1,48 @@
 package com.petcare.owner;
 
-import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.*;
+import java.util.List;
+
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/owner")
-@RequiredArgsConstructor
+@RequestMapping("/owners")
 public class OwnerController {
 
     private final OwnerService ownerService;
 
-    // Ver perfil - apenas dono autenticado
-    @PreAuthorize("hasRole('OWNER')") 
-    @GetMapping("/profile")
-    public ResponseEntity<OwnerResponse> getProfile(Authentication authentication) {
-        OwnerResponse response = ownerService.getProfile(authentication.getName());
-        return ResponseEntity.ok(response);
+    public OwnerController(OwnerService ownerService) {
+        this.ownerService = ownerService;
     }
 
-    // Editar perfil - apenas dono autenticado
-    @PreAuthorize("hasRole('OWNER')")
-    @PutMapping("/profile")
-    public ResponseEntity<OwnerResponse> updateProfile(
-            Authentication authentication,
-            @RequestBody OwnerRequest request) {
-        OwnerResponse response = ownerService.updateProfile(authentication.getName(), request);
-        return ResponseEntity.ok(response);
+    @GetMapping
+    public List<OwnerResponse> listar() {
+        return ownerService.listarTodos();
     }
 
-    // Excluir perfil - dono ou admin
-    @PreAuthorize("hasAnyRole('OWNER', 'ADMIN')")
-    @DeleteMapping("/profile")
-    public ResponseEntity<Void> deleteProfile(Authentication authentication) {
-        ownerService.deleteProfile(authentication.getName());
-        return ResponseEntity.noContent().build();
+    @GetMapping("/{id}")
+    public OwnerResponse buscarPorId(@PathVariable Long id) {
+        return ownerService.buscarPorId(id);
+    }
+
+    @PostMapping
+    public OwnerResponse criar(@RequestBody OwnerRequest request) {
+        return ownerService.criar(request);
+    }
+
+    @PutMapping("/{id}")
+    public OwnerResponse atualizar(@PathVariable Long id, @RequestBody OwnerRequest request) {
+        return ownerService.atualizar(id, request);
+    }
+
+    @DeleteMapping("/{id}")
+    public void deletar(@PathVariable Long id) {
+        ownerService.deletar(id);
     }
 }

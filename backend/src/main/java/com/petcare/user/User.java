@@ -40,8 +40,9 @@ public class User {
     void prePersist() {
         if (this.role == null) this.role = Role.OWNER;
     }
-
+  
     /** Não usar. O hash é feito via PasswordEncoder no service. */
     @Deprecated
     public static String hash(String plain) { return plain; }
+
 }
