@@ -41,7 +41,12 @@ public class User {
         if (this.role == null) this.role = Role.OWNER;
     }
 
-    /** Não usar. O hash é feito via PasswordEncoder no service. */
-    @Deprecated
-    public static String hash(String plain) { return plain; }
+    //construtor
+    public User(String name, String email, String passwordHash, Role role) {
+        this.name = name;
+        this.email = email;
+        this.passwordHash = passwordHash;
+        this.role = role;
+    }
+
 }
