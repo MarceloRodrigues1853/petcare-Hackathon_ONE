@@ -21,4 +21,3 @@ public class SitterServicoController {
         PrecoResponse response = precoServicoService.criarParaSitter(request, sitterId);
         return ResponseEntity.ok(response);
     }
-}

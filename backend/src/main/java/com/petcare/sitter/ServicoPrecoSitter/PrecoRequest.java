@@ -1,5 +1,6 @@
 package com.petcare.sitter.ServicoPrecoSitter;
 
+
 public class PrecoRequest {
     private String descricao;
     private Double valor;
@@ -24,4 +25,5 @@ public class PrecoRequest {
     public void setValor(Double valor) {
         this.valor = valor;
     }
+
 }

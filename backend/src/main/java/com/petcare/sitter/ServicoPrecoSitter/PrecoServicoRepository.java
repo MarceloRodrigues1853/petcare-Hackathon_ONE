@@ -9,4 +9,3 @@ public interface PrecoServicoRepository extends JpaRepository<PrecoServico, Long
 
     boolean existsByUser_IdAndDescricao(Long userId, String descricao);
 }
-

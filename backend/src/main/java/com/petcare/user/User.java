@@ -48,5 +48,4 @@ public class User {
         this.passwordHash = passwordHash;
         this.role = role;
     }
-
 }

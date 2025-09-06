@@ -19,6 +19,7 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequestMapping("/api/owners")
 @RequiredArgsConstructor
+
 public class OwnerController {
 
     private final OwnerService ownerService;

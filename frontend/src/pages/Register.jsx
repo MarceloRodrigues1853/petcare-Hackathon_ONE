@@ -49,6 +49,14 @@ export default function Register() {
     }
   }
 
+  const formInvalid =
+    !name.trim() ||
+    !email.trim() ||
+    !password ||
+    !confirm ||
+    password !== confirm ||
+    !role;
+
   return (
     <div className="center">
       <h1>Cadastro</h1>
@@ -73,7 +81,7 @@ export default function Register() {
             <option value="SITTER">Cuidador(a)</option>
           </select>
 
-          <button className="btn" disabled={loading}>
+          <button className="btn" disabled={loading || formInvalid}>
             {loading ? "Cadastrando..." : "Cadastrar"}
           </button>
         </form>
