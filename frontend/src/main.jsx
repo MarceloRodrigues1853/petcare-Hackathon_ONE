@@ -5,6 +5,7 @@ import ReactDOM from 'react-dom/client';
 import './components/Layout.css';
 import './App.css';
 import './styles.css';
+import './index.css';
 
 import App from './App.jsx';
 

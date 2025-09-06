@@ -1,52 +1,60 @@
 package com.petcare.owner;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import com.petcare.user.User;
+import com.petcare.user.User.Role;
+
+import jakarta.persistence.EntityNotFoundException;
+import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
 
 @Service
 public class OwnerService {
 
     private final OwnerRepository ownerRepository;
+    private final PasswordEncoder passwordEncoder;
 
-    public OwnerService(OwnerRepository ownerRepository) {
-        this.ownerRepository = ownerRepository;
+    // MÉTODO CORRIGIDO / ADICIONADO
+    public List<Owner> findAll() {
+        return ownerRepository.findAll();
     }
 
-    public List<OwnerResponse> listarTodos() {
-        return ownerRepository.findAll().stream()
-                .map(o -> new OwnerResponse(o.getId(), o.getName(), o.getEmail()))
-                .collect(Collectors.toList());
+    // MÉTODO CORRIGIDO / ADICIONADO
+    public Owner findById(Long id) {
+        return ownerRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Owner não encontrado com o id: " + id));
     }
 
-    public OwnerResponse buscarPorId(Long id) {
-        Owner owner = ownerRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Owner não encontrado"));
-        return new OwnerResponse(owner.getId(), owner.getName(), owner.getEmail());
+    @Transactional
+    public Owner save(OwnerRequest request) {
+        Owner owner = new Owner();
+        owner.setName(request.name());
+        owner.setEmail(request.email());
+        owner.setRole(Role.OWNER);
+        owner.setPasswordHash(passwordEncoder.encode(request.password()));
+        return ownerRepository.save(owner);
     }
 
-    public OwnerResponse criar(OwnerRequest request) {
-        Owner owner = new Owner(request.getName(), request.getEmail(), User.hash(request.getPassword()));
-        ownerRepository.save(owner);
-        return new OwnerResponse(owner.getId(), owner.getName(), owner.getEmail());
+    @Transactional
+    public Owner update(Long id, OwnerRequest request) {
+        Owner owner = ownerRepository.getReferenceById(id);
+        owner.setName(request.name());
+        owner.setEmail(request.email());
+
+        if (request.password() != null && !request.password().isBlank()) {
+            owner.setPasswordHash(passwordEncoder.encode(request.password()));
+        }
+        return owner;
     }
 
-    public OwnerResponse atualizar(Long id, OwnerRequest request) {
-        Owner owner = ownerRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Owner não encontrado"));
-
-        owner.setName(request.getName());
-        owner.setEmail(request.getEmail());
-        owner.setPasswordHash(User.hash(request.getPassword()));
-
-        ownerRepository.save(owner);
-        return new OwnerResponse(owner.getId(), owner.getName(), owner.getEmail());
-    }
-
-    public void deletar(Long id) {
+    public void delete(Long id) {
+        if (!ownerRepository.existsById(id)) {
+            throw new EntityNotFoundException("Owner não encontrado com o id: " + id);
+        }
         ownerRepository.deleteById(id);
     }
 }
+

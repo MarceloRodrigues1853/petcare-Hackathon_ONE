@@ -25,4 +25,5 @@ public class PrecoRequest {
     public void setValor(Double valor) {
         this.valor = valor;
     }
+
 }

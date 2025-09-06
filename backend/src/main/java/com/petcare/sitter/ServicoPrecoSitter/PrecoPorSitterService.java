@@ -42,6 +42,4 @@ public class PrecoPorSitterService {
             ps.getValor()
         );
     }
-
-    //CRIAR METODO PARA EXCLUIR PRECO E SERVICO E LISTAR
 }
