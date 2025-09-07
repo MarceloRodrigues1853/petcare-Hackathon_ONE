@@ -3,6 +3,7 @@ package com.petcare.owner;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.springframework.security.crypto.password.PasswordEncoder; // Import adicionado
 import org.springframework.stereotype.Service;
 
 import com.petcare.user.User;
@@ -11,9 +12,12 @@ import com.petcare.user.User;
 public class OwnerService {
 
     private final OwnerRepository ownerRepository;
+    private final PasswordEncoder passwordEncoder; // Campo adicionado
 
-    public OwnerService(OwnerRepository ownerRepository) {
+    // Construtor atualizado
+    public OwnerService(OwnerRepository ownerRepository, PasswordEncoder passwordEncoder) {
         this.ownerRepository = ownerRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     public List<OwnerResponse> listarTodos() {
@@ -29,7 +33,8 @@ public class OwnerService {
     }
 
     public OwnerResponse criar(OwnerRequest request) {
-        Owner owner = new Owner(request.getName(), request.getEmail(), User.hash(request.getPassword()));
+        // Correção aplicada
+        Owner owner = new Owner(request.getName(), request.getEmail(), passwordEncoder.encode(request.getPassword()));
         ownerRepository.save(owner);
         return new OwnerResponse(owner.getId(), owner.getName(), owner.getEmail());
     }
@@ -40,7 +45,8 @@ public class OwnerService {
 
         owner.setName(request.getName());
         owner.setEmail(request.getEmail());
-        owner.setPasswordHash(User.hash(request.getPassword()));
+        // Correção aplicada
+        owner.setPasswordHash(passwordEncoder.encode(request.getPassword()));
 
         ownerRepository.save(owner);
         return new OwnerResponse(owner.getId(), owner.getName(), owner.getEmail());
