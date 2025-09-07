@@ -5,13 +5,14 @@ import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
-@Table(name = "users")
+@Table(name = "users") // A tabela física no banco de dados
+@Inheritance(strategy = InheritanceType.SINGLE_TABLE) // Estratégia: Todos os filhos na mesma tabela
+@DiscriminatorColumn(name = "user_type", discriminatorType = DiscriminatorType.STRING) // Coluna que diferencia Owner de Sitter
 @Getter @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
-@ToString(exclude = "passwordHash")                  // evita logar o hash
-@EqualsAndHashCode(onlyExplicitlyIncluded = true)    // evita usar o hash no equals/hashCode
+@ToString(exclude = "passwordHash")
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class User {
 
     public enum Role { OWNER, SITTER, ADMIN }
@@ -29,24 +30,19 @@ public class User {
     private String email;
 
     @Column(nullable = false, name = "password_hash")
-    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY) // não serializa para JSON
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String passwordHash;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Role role;
 
-    @PrePersist
-    void prePersist() {
-        if (this.role == null) this.role = Role.OWNER;
-    }
-
-    //construtor
+    // Construtor principal que as classes filhas (Owner, Sitter) irão chamar
     public User(String name, String email, String passwordHash, Role role) {
         this.name = name;
         this.email = email;
         this.passwordHash = passwordHash;
         this.role = role;
     }
-
 }
+

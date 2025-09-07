@@ -1,86 +1,58 @@
 package com.petcare.servico;
 
-import com.petcare.pet.Pet;
-import com.petcare.precoServico.PrecoServico;
-import com.petcare.user.User;
 import jakarta.persistence.*;
+import java.util.Objects;
 
-import java.time.LocalDateTime;
-
+/**
+ * Representa um TIPO de serviço oferecido na plataforma (ex: Passeio, Hospedagem).
+ * Esta é uma entidade de catálogo, geralmente gerenciada por um administrador.
+ */
 @Entity
 @Table(name = "servicos")
 public class Servico {
-
-    public enum Status {
-        Agendado,
-        EmAndamento,
-        Concluido,
-        Cancelado
-    }
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne
-    @JoinColumn(name = "dono_id", nullable = false)
-    private User dono;
+    @Column(nullable = false, unique = true, length = 100)
+    private String descricao;
 
-    @ManyToOne
-    @JoinColumn(name = "baba_id", nullable = false)
-    private User baba;
-
-    @ManyToOne
-    @JoinColumn(name = "pet_id", nullable = false)
-    private Pet pet;
-
-    @ManyToOne
-    @JoinColumn(name = "preco_servico_id", nullable = false)
-    private PrecoServico precoServico;
-
-    @Column(nullable = false)
-    private LocalDateTime dataInicio;
-
-    @Column(nullable = false)
-    private LocalDateTime dataFim;
-
-    @Enumerated(EnumType.STRING)
-    private Status status;
-
-    public Servico() {}
-
-    public Servico(User dono, User baba, Pet pet, PrecoServico precoServico, LocalDateTime dataInicio, LocalDateTime dataFim, Status status) {
-        this.dono = dono;
-        this.baba = baba;
-        this.pet = pet;
-        this.precoServico = precoServico;
-        this.dataInicio = dataInicio;
-        this.dataFim = dataFim;
-        this.status = status;
+    // Construtor vazio para o JPA
+    public Servico() {
     }
 
-    // Getters e Setters
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
+    // --- Getters e Setters ---
 
-    public User getDono() { return dono; }
-    public void setDono(User dono) { this.dono = dono; }
+    public Long getId() {
+        return id;
+    }
 
-    public User getBaba() { return baba; }
-    public void setBaba(User baba) { this.baba = baba; }
+    public void setId(Long id) {
+        this.id = id;
+    }
 
-    public Pet getPet() { return pet; }
-    public void setPet(Pet pet) { this.pet = pet; }
+    public String getDescricao() {
+        return descricao;
+    }
 
-    public PrecoServico getPrecoServico() { return precoServico; }
-    public void setPrecoServico(PrecoServico precoServico) { this.precoServico = precoServico; }
+    public void setDescricao(String descricao) {
+        this.descricao = descricao;
+    }
 
-    public LocalDateTime getDataInicio() { return dataInicio; }
-    public void setDataInicio(LocalDateTime dataInicio) { this.dataInicio = dataInicio; }
+    // --- equals() e hashCode() são importantes para o bom funcionamento das entidades ---
 
-    public LocalDateTime getDataFim() { return dataFim; }
-    public void setDataFim(LocalDateTime dataFim) { this.dataFim = dataFim; }
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Servico servico = (Servico) o;
+        return Objects.equals(id, servico.id);
+    }
 
-    public Status getStatus() { return status; }
-    public void setStatus(Status status) { this.status = status; }
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
+    }
 }
+

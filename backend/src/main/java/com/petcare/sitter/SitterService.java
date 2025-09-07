@@ -1,126 +1,84 @@
 package com.petcare.sitter;
 
+import com.petcare.servico.Servico; // Supondo que você tenha uma entidade Servico
+import com.petcare.servico.ServicoRepository; // Supondo que você tenha um repositório para Servico
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.lang.reflect.Method;
-import java.util.Optional;
+import java.util.List;
 
 @Service
 public class SitterService {
 
-    private final SitterRepository repo;
+    private final SitterRepository sitterRepository;
+    private final SitterServicoPrecoRepository sitterServicoPrecoRepository;
+    private final ServicoRepository servicoRepository; // Dependência para buscar os tipos de serviço
 
-    public SitterService(SitterRepository repo) {
-        this.repo = repo;
+    // Construtor unificado com todas as dependências necessárias
+    public SitterService(SitterRepository sitterRepository,
+                         SitterServicoPrecoRepository sitterServicoPrecoRepository,
+                         ServicoRepository servicoRepository) {
+        this.sitterRepository = sitterRepository;
+        this.sitterServicoPrecoRepository = sitterServicoPrecoRepository;
+        this.servicoRepository = servicoRepository;
     }
 
-    // ==== Métodos já existentes ====
-    public Sitter create(Sitter sitter) {
-        return repo.save(sitter);
+    // --- MÉTODOS PARA GERENCIAR O PERFIL DO SITTER ---
+
+    @Transactional(readOnly = true)
+    public Sitter getSitterProfile(Long sitterId) {
+        return sitterRepository.findById(sitterId)
+                .orElseThrow(() -> new RuntimeException("Sitter com ID " + sitterId + " não encontrado."));
     }
 
-    public Sitter update(Long id, Sitter updated) {
-        try {
-            var f = updated.getClass().getDeclaredField("id");
-            f.setAccessible(true);
-            f.set(updated, id);
-        } catch (Exception ignored) {}
-        return repo.save(updated);
+    @Transactional
+    public Sitter updateSitterProfile(Long sitterId, SitterProfileRequest request) {
+        Sitter sitter = getSitterProfile(sitterId);
+        sitter.setName(request.name());
+        sitter.setEmail(request.email());
+        // Adicione outros campos que podem ser atualizados (bio, telefone, etc.)
+        return sitterRepository.save(sitter);
     }
 
-    // ==== Métodos esperados pelo controller ====
+    // --- MÉTODOS PARA GERENCIAR OS SERVIÇOS E PREÇOS DO SITTER (LÓGICA DO ANTIGO PrecoPorSitterService) ---
 
-    /** Busca por email (se houver findByEmail) ou tenta interpretar como ID numérico. */
-    public Sitter getProfile(String key) {
-        // tenta findByEmail(String)
-        Sitter byEmail = (Sitter) invokeRepo("findByEmail", new Class[]{String.class}, new Object[]{key})
-                .map(this::unwrapOptional).orElse(null);
-        if (byEmail != null) return byEmail;
-
-        // tenta findById(Long)
-        try {
-            Long id = Long.valueOf(key);
-            Sitter byId = (Sitter) invokeRepo("findById", new Class[]{Long.class}, new Object[]{id})
-                    .map(this::unwrapOptional).orElse(null);
-            if (byId != null) return byId;
-        } catch (NumberFormatException ignored) {}
-
-        throw new IllegalArgumentException("Sitter não encontrado");
-    }
-
-    /** Atualiza perfil a partir de um request arbitrário (SitterRequest) via reflexão. */
-    public Sitter updateProfile(String key, Object sitterRequest) {
-        Sitter current = getProfile(key);
-
-        // tenta mapear campos comuns do request para o entity
-        copyIfPresent(sitterRequest, "getName", current, "setName");
-        copyIfPresent(sitterRequest, "getEmail", current, "setEmail");
-        copyIfPresent(sitterRequest, "getPhone", current, "setPhone");
-        copyIfPresent(sitterRequest, "getBio", current, "setBio");
-
-        return repo.save(current);
-    }
-
-    /** Deleta por email (se houver) ou por id numérico. */
-    public void deleteProfile(String key) {
-        // tenta buscar entity e deletar
-        Sitter s = getProfile(key);
-        try {
-            Method m = repo.getClass().getMethod("delete", Object.class);
-            m.invoke(repo, s);
-            return;
-        } catch (Exception ignored) {}
-
-        // fallback: deleteById(Long)
-        try {
-            Long id = Long.valueOf(key);
-            Method m = repo.getClass().getMethod("deleteById", Object.class);
-            m.invoke(repo, id);
-        } catch (Exception e) {
-            throw new IllegalStateException("Não foi possível deletar o perfil", e);
+    @Transactional(readOnly = true)
+    public List<SitterServicoPreco> getServicosDoSitter(Long sitterId) {
+        // Garante que o sitter existe antes de buscar os serviços
+        if (!sitterRepository.existsById(sitterId)) {
+            throw new RuntimeException("Sitter com ID " + sitterId + " não encontrado.");
         }
+        return sitterServicoPrecoRepository.findBySitterId(sitterId);
     }
 
-    // ==== helpers de reflexão ====
+    @Transactional
+    public SitterServicoPreco addServicoParaSitter(Long sitterId, SitterServicoRequest request) {
+        Sitter sitter = getSitterProfile(sitterId);
 
-    private Optional<?> invokeRepo(String method, Class<?>[] types, Object[] args) {
-        try {
-            Method m = repo.getClass().getMethod(method, types);
-            Object result = m.invoke(repo, args);
-            return Optional.ofNullable(result);
-        } catch (NoSuchMethodException e) {
-            return Optional.empty();
-        } catch (Exception e) {
-            throw new IllegalStateException("Falha ao chamar " + method + " no repository", e);
+        // Busca o tipo de serviço (ex: Passeio, Hospedagem) pelo ID
+        Servico servico = servicoRepository.findById(request.servicoId())
+                .orElseThrow(() -> new RuntimeException("Tipo de Serviço com ID " + request.servicoId() + " não encontrado."));
+
+        // Verifica se o sitter já oferece este serviço para evitar duplicatas
+        boolean jaExiste = sitterServicoPrecoRepository.existsBySitterAndServico(sitter, servico);
+        if (jaExiste) {
+            throw new RuntimeException("Este Sitter já oferece o serviço de '" + servico.getDescricao() + "'.");
         }
+
+        SitterServicoPreco novoServicoPreco = new SitterServicoPreco();
+        novoServicoPreco.setSitter(sitter);
+        novoServicoPreco.setServico(servico);
+        novoServicoPreco.setValor(request.valor());
+
+        return sitterServicoPrecoRepository.save(novoServicoPreco);
     }
 
-    private Object unwrapOptional(Object o) {
-        if (o instanceof Optional<?> opt) {
-            return opt.orElse(null);
-        }
-        return o;
-    }
-
-    private void copyIfPresent(Object src, String getter, Object dst, String setter) {
-        try {
-            Method g = src.getClass().getMethod(getter);
-            Object val = g.invoke(src);
-            if (val != null) {
-                // tenta achar setter com o tipo exato; se não achar, procura por String
-                Method s;
-                try {
-                    s = dst.getClass().getMethod(setter, val.getClass());
-                } catch (NoSuchMethodException e) {
-                    s = dst.getClass().getMethod(setter, String.class);
-                    if (!(val instanceof String)) val = String.valueOf(val);
-                }
-                s.invoke(dst, val);
-            }
-        } catch (NoSuchMethodException ignored) {
-            // getter não existe no request; tudo bem
-        } catch (Exception e) {
-            throw new IllegalStateException("Falha ao copiar campo via reflexão (" + getter + ")", e);
-        }
+    @Transactional
+    public void deleteServicoDoSitter(Long sitterId, Long servicoPrecoId) {
+        SitterServicoPreco servicoPreco = sitterServicoPrecoRepository.findByIdAndSitterId(servicoPrecoId, sitterId)
+                .orElseThrow(() -> new RuntimeException("Serviço com ID " + servicoPrecoId + " não encontrado para o Sitter ID " + sitterId));
+        
+        sitterServicoPrecoRepository.delete(servicoPreco);
     }
 }
+
