@@ -15,7 +15,7 @@ import RoleRoute from "./components/RoleRoute.jsx";
 
 import OwnerDashboard from "./pages/dashboards/OwnerDashboard.jsx";
 import SitterDashboard from "./pages/dashboards/SitterDashboard.jsx";
-import AdminDashboard from "./pages/dashboards/AdminDashboard.jsx";
+import AdminDashboard from "./pages/dashboards/admin/AdminDashboard.jsx";
 
 import PetForm from "./pages/dashboards/owner/PetForm.jsx";
 import AppointmentNew from "./pages/dashboards/owner/AppointmentNew.jsx";
