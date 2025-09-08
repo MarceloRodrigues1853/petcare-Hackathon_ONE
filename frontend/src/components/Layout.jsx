@@ -1,10 +1,10 @@
 import { useState, useRef, useEffect } from "react";
 import { Outlet, Link } from "react-router-dom";
-// CORREÇÃO: Utilizando os caminhos relativos padrão, como na sua estrutura de projeto.
-import { useAuth } from "../context/AuthContext";
+// CORREÇÃO: Adicionando a extensão .jsx para garantir a resolução dos ficheiros.
+import { useAuth } from "../context/AuthContext.jsx";
 import "./Layout.css";
-import Logo from "./Logo";
-import Footer from "./Footer";
+import Logo from "./Logo.jsx";
+import Footer from "./Footer.jsx";
 import { User, LogOut } from "lucide-react";
 
 export default function Layout() {
@@ -25,6 +25,22 @@ export default function Layout() {
     };
   }, [dropdownRef]);
 
+  // --- NOVA FUNÇÃO AUXILIAR ---
+  // Esta função determina o link correto do painel com base na role do usuário.
+  // É mais limpa e escalável do que múltiplos ternários.
+  const getDashboardPath = (role) => {
+    switch (role) {
+      case 'ADMIN':
+        return '/admin/dashboard';
+      case 'SITTER':
+        return '/sitter/dashboard';
+      case 'OWNER':
+        return '/owner/dashboard';
+      default:
+        // Um fallback seguro, caso a role não seja reconhecida
+        return '/';
+    }
+  };
 
   return (
     <div className="layout">
@@ -49,13 +65,14 @@ export default function Layout() {
               
               {isDropdownOpen && (
                 <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50">
+                   {/* --- CORREÇÃO APLICADA AQUI --- */}
                    <Link 
-                      to={ user.role === 'SITTER' ? '/sitter/dashboard' : '/owner/dashboard' } 
-                      className="w-full text-left flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                      onClick={() => setIsDropdownOpen(false)}
-                    >
-                    Meu Painel
-                  </Link>
+                     to={getDashboardPath(user.role)} 
+                     className="w-full text-left flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                     onClick={() => setIsDropdownOpen(false)}
+                   >
+                     Meu Painel
+                   </Link>
                   <button 
                     onClick={() => {
                       logout();
