@@ -1,39 +1,18 @@
 name: petcare
 
 services:
-  db:
-    image: mysql:8.0
-    container_name: petcare-db
-    environment:
-      MYSQL_DATABASE: petcare
-      MYSQL_USER: petcare
-      MYSQL_PASSWORD: petcare
-      MYSQL_ROOT_PASSWORD: root
-      MYSQL_ROOT_HOST: '%'
-    command: >
-      --default-authentication-plugin=mysql_native_password
-      --character-set-server=utf8mb4
-      --collation-server=utf8mb4_unicode_ci
-    ports:
-      - "3306:3306"
-    volumes:
-      - db-data:/var/lib/mysql
-    healthcheck:
-      test: ["CMD-SHELL", "mysqladmin ping -h localhost -ppetcare --silent"]
-      interval: 5s
-      timeout: 3s
-      retries: 20
-
   backend:
     build:
       context: ./backend
       dockerfile: Dockerfile
     container_name: petcare-backend
-    depends_on:
-      db:
-        condition: service_healthy
-    env_file:
-      - ./backend/.env
+    environment:
+      # valores das  credenciais reais do banco de dados no Railway!
+      - MYSQLHOST=mysql.railway.internal
+      - MYSQLPORT=3306
+      - MYSQLDATABASE=railway
+      - MYSQLUSER=root
+      - MYSQLPASSWORD=wvRzkBEbntsESxxxsuHgDJdTHEATegbH
     ports:
       - "8080:8080"
     restart: unless-stopped
@@ -51,10 +30,8 @@ services:
     volumes:
       - ./frontend:/app
       - /app/node_modules
-    # A MUDANÇA ESTÁ AQUI: Trocamos o script antigo pelo novo "npm run dev"
     command: npm run dev
     depends_on:
       - backend
 
-volumes:
-  db-data:
+# O serviço 'db' e o volume 'db-data' foram removidos.
