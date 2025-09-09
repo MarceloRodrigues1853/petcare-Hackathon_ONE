@@ -7,16 +7,20 @@ services:
       dockerfile: Dockerfile
     container_name: petcare-backend
     environment:
-      # valores das  credenciais reais do banco de dados no Railway!
-      - MYSQLHOST=mysql.railway.internal
-      - MYSQLPORT=3306
+      # --- Credenciais do Banco de Dados do Railway ---
+      - MYSQLHOST=tramway.proxy.rlwy.net
+      - MYSQLPORT=16347
       - MYSQLDATABASE=railway
       - MYSQLUSER=root
       - MYSQLPASSWORD=wvRzkBEbntsESxxxsuHgDJdTHEATegbH
 
-      # --- Chave Secreta para JWT (Adicionada) ---
-      # Pode usar esta chave segura ou gerar a sua própria (https://www.lastpass.com/features/password-generator)
+      # --- Chave Secreta para JWT ---
       - JWT_SECRET=ChaveSuperSecretaParaPetCare2025NaoPartilharComNinguem!
+
+      # --- A LINHA QUE FALTAVA ---
+      # Esta linha diz ao Spring Boot para usar o ficheiro 'application-docker.properties'
+      - SPRING_PROFILES_ACTIVE=docker
+      
     ports:
       - "8080:8080"
     restart: unless-stopped
@@ -38,4 +42,3 @@ services:
     depends_on:
       - backend
 
-# O serviço 'db' e o volume 'db-data' foram removidos.
