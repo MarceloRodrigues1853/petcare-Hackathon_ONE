@@ -13,6 +13,10 @@ services:
       - MYSQLDATABASE=railway
       - MYSQLUSER=root
       - MYSQLPASSWORD=wvRzkBEbntsESxxxsuHgDJdTHEATegbH
+
+      # --- Chave Secreta para JWT (Adicionada) ---
+      # Pode usar esta chave segura ou gerar a sua própria (https://www.lastpass.com/features/password-generator)
+      - JWT_SECRET=ChaveSuperSecretaParaPetCare2025NaoPartilharComNinguem!
     ports:
       - "8080:8080"
     restart: unless-stopped
