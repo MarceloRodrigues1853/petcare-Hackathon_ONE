@@ -16,6 +16,11 @@ services:
 
       # --- Chave Secreta para JWT ---
       - JWT_SECRET=ChaveSuperSecretaParaPetCare2025NaoPartilharComNinguem!
+
+      # --- A LINHA QUE FALTAVA ---
+      # Esta linha diz ao Spring Boot para usar o ficheiro 'application-docker.properties'
+      - SPRING_PROFILES_ACTIVE=docker
+      
     ports:
       - "8080:8080"
     restart: unless-stopped
@@ -36,6 +41,4 @@ services:
     command: npm run dev
     depends_on:
       - backend
-
-# O serviço 'db' e o volume 'db-data' foram removidos.
 
