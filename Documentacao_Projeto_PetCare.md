@@ -105,8 +105,11 @@ services:
 
   frontend-dev:
     # ... configuração do frontend ...
+```
 
-B. application-docker.properties: Este ficheiro em backend/src/main/resources/ foi ajustado para ler as variáveis acima:
+**B. application-docker.properties**: Este ficheiro em `backend/src/main/resources/` foi ajustado para ler as variáveis acima:
+
+```properties
 spring.datasource.url=jdbc:mysql://${MYSQLHOST}:${MYSQLPORT}/${MYSQLDATABASE}
 spring.datasource.username=${MYSQLUSER}
 spring.datasource.password=${MYSQLPASSWORD}
