@@ -1,66 +1,42 @@
 package com.petcare.auth;
 
-import com.petcare.dto.LoginRequest;
 import com.petcare.dto.LoginResponse;
 import com.petcare.dto.RegisterRequest;
 import com.petcare.dto.RegisterResponse;
-import com.petcare.user.Role;
+import com.petcare.user.AuthenticationService;
 import com.petcare.user.User;
 import com.petcare.user.UserRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@RequiredArgsConstructor
 public class AuthService {
 
-    private final UserRepository userRepository;
-    private final JwtService jwtService;
-    private final PasswordEncoder passwordEncoder;
+    private final AuthenticationService authn;   // ainda usamos no register
+    private final JwtService jwt;
+    private final UserRepository userRepository;     // busca direta no JPA
+    private final PasswordEncoder passwordEncoder;   // confere com BCrypt
 
-    public AuthService(UserRepository userRepository, JwtService jwtService, PasswordEncoder passwordEncoder) {
-        this.userRepository = userRepository;
-        this.jwtService = jwtService;
-        this.passwordEncoder = passwordEncoder;
-    }
-
-
-    //Registra um novo usuário .
-    //Valida se o email já existe, aplica hash na senha e salva no banco.
+    @Transactional
     public RegisterResponse register(RegisterRequest req) {
-        if (userRepository.findByEmail(req.email()).isPresent()) {
-            throw new RuntimeException("Email já cadastrado");
-        }
-
-        User user = new User();
-        user.setName(req.name());
-        user.setEmail(req.email());
-        user.setPasswordHash(passwordEncoder.encode(req.password()));
-
-        try {
-            if (req.role() != null) {
-                user.setRole(Role.valueOf(req.role().toUpperCase()));
-            }
-        } catch (IllegalArgumentException e) {
-            throw new RuntimeException("Papel de usuário inválido");
-        }
-
-        userRepository.save(user);
-
-        return new RegisterResponse(user.getId(), user.getName(), user.getEmail(), user.getRole().name());
+        User u = authn.register(req);
+        return new RegisterResponse("Usuário registrado com sucesso: " + u.getEmail());
     }
 
+    public LoginResponse login(String email, String rawPassword) {
+        var user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado"));
 
-     //LOGIN: Autentica o usuário com email e senha.
-    //Gera e retorna o token JWT se as credenciais forem válidas.
-    public LoginResponse login(LoginRequest req) {
-        User user = userRepository.findByEmail(req.email())
-                .orElseThrow(() -> new RuntimeException("Email ou senha inválidos"));
-
-        if (!passwordEncoder.matches(req.password(), user.getPasswordHash())) {
-            throw new RuntimeException("Email ou senha inválidos");
+        if (!passwordEncoder.matches(rawPassword, user.getPasswordHash())) {
+            throw new IllegalArgumentException("Credenciais inválidas");
         }
 
-        String token = jwtService.generateToken(user);
-        return new LoginResponse(token);
+        String token = jwt.generateToken(user.getId(), user.getEmail());
+        String role = user.getRole() != null ? user.getRole().name() : null;
+
+        return new LoginResponse(token, role, user.getName(), user.getEmail());
     }
 }

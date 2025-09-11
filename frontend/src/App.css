@@ -1,9 +1,13 @@
-/* App.css */
-
 .container {
   max-width: 420px;
   margin: 4rem auto;
   font-family: sans-serif;
+}
+
+.main-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1rem;
 }
 
 h1 {

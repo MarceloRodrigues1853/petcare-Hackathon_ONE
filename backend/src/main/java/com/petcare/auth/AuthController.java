@@ -5,45 +5,43 @@ import com.petcare.dto.LoginResponse;
 import com.petcare.dto.RegisterRequest;
 import com.petcare.dto.RegisterResponse;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.authentication.BadCredentialsException;
 
 import java.util.Map;
 
 @RestController
-@RequestMapping("/auth")
+@RequiredArgsConstructor
+@RequestMapping("/api/auth")
 public class AuthController {
 
-    private final AuthService authService;
-
-    public AuthController(AuthService authService) {
-        this.authService = authService;
-    }
+    private final AuthService auth;
 
     @PostMapping("/register")
-    public ResponseEntity<?> register(@Valid @RequestBody RegisterRequest req) {
+    public ResponseEntity<?> register(@Valid @RequestBody RegisterRequest request) {
         try {
-            RegisterResponse response = authService.register(req);
-            return ResponseEntity.ok(response);
-        } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+            RegisterResponse resp = auth.register(request);
+            return ResponseEntity.ok(resp);
+        } catch (IllegalArgumentException e) {
+            // exemplo: e-mail já em uso, payload inválido do ponto de vista de negócio, etc.
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
         }
     }
-
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody LoginRequest req) {
+    public ResponseEntity<?> login(@Valid @RequestBody LoginRequest request) {
         try {
-            LoginResponse response = authService.login(req);
-            return ResponseEntity.ok(response);
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(401).body(Map.of("error", e.getMessage()));
+            LoginResponse resp = auth.login(request.getEmail(), request.getPassword());
+            return ResponseEntity.ok(resp);
+        } catch (UsernameNotFoundException| BadCredentialsException e) {
+            // usuário não encontrado ou senha inválida
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("message", e.getMessage()));
         }
     }
-
-    @GetMapping("/health")
-    public String health() {
-        return "OK";
-    }
 }
-

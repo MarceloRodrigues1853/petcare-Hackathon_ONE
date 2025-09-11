@@ -1,46 +1,75 @@
 package com.petcare.sitter;
 
-import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+import java.net.URI;
+import java.util.List;
+import java.util.stream.Collectors;
+
 @RestController
-@RequestMapping("/api/sitter")
-@RequiredArgsConstructor
+@RequestMapping("/api/sitters") // Boa prática usar um prefixo como /api
 public class SitterController {
 
     private final SitterService sitterService;
 
-    // Ver perfil - apenas sitter autenticado
-    @PreAuthorize("hasRole('SITTER')") // Garante que só usuários com papel 'SITTER' podem executar este método
-    @GetMapping("/profile")
-    public ResponseEntity<SitterResponse> getProfile(Authentication authentication) {
-        SitterResponse response = sitterService.getProfile(authentication.getName());
+    public SitterController(SitterService sitterService) {
+        this.sitterService = sitterService;
+    }
+
+    // --- ENDPOINTS PARA GERENCIAR O PERFIL DO SITTER ---
+
+    @GetMapping("/{sitterId}")
+    public ResponseEntity<SitterProfileResponse> getSitterProfile(@PathVariable Long sitterId) {
+        Sitter sitter = sitterService.getSitterProfile(sitterId);
+        return ResponseEntity.ok(toProfileResponse(sitter));
+    }
+
+    @PutMapping("/{sitterId}")
+    public ResponseEntity<SitterProfileResponse> updateSitterProfile(@PathVariable Long sitterId, @RequestBody SitterProfileRequest request) {
+        Sitter updatedSitter = sitterService.updateSitterProfile(sitterId, request);
+        return ResponseEntity.ok(toProfileResponse(updatedSitter));
+    }
+
+    // --- ENDPOINTS PARA GERENCIAR OS SERVIÇOS E PREÇOS DO SITTER ---
+
+    @GetMapping("/{sitterId}/servicos")
+    public ResponseEntity<List<SitterServicoResponse>> getServicosDoSitter(@PathVariable Long sitterId) {
+        List<SitterServicoPreco> servicos = sitterService.getServicosDoSitter(sitterId);
+        List<SitterServicoResponse> response = servicos.stream()
+                .map(this::toServicoResponse)
+                .collect(Collectors.toList());
         return ResponseEntity.ok(response);
     }
 
-
-    // Editar perfil - apenas sitter autenticado
-    @PreAuthorize("hasRole('SITTER')")
-    @PutMapping("/profile")
-    public ResponseEntity<SitterResponse> updateProfile(
-            Authentication authentication,
-            @RequestBody SitterRequest request) {
-        SitterResponse response = sitterService.updateProfile(authentication.getName(), request);
-        return ResponseEntity.ok(response);
+    @PostMapping("/{sitterId}/servicos")
+    public ResponseEntity<SitterServicoResponse> addServicoParaSitter(@PathVariable Long sitterId, @RequestBody SitterServicoRequest request) {
+        SitterServicoPreco novoServico = sitterService.addServicoParaSitter(sitterId, request);
+        URI location = URI.create(String.format("/api/sitters/%d/servicos/%d", sitterId, novoServico.getId()));
+        return ResponseEntity.created(location).body(toServicoResponse(novoServico));
     }
 
-
-    // Excluir perfil - sitter ou admin
-    @PreAuthorize("hasAnyRole('SITTER', 'ADMIN')")
-    @DeleteMapping("/profile")
-    public ResponseEntity<Void> deleteProfile(Authentication authentication) {
-        sitterService.deleteProfile(authentication.getName());
+    @DeleteMapping("/{sitterId}/servicos/{servicoPrecoId}")
+    public ResponseEntity<Void> deleteServicoDoSitter(@PathVariable Long sitterId, @PathVariable Long servicoPrecoId) {
+        sitterService.deleteServicoDoSitter(sitterId, servicoPrecoId);
         return ResponseEntity.noContent().build();
+    }
+
+
+    // --- MAPPERS SIMPLES (sem reflexão) ---
+
+    private SitterProfileResponse toProfileResponse(Sitter sitter) {
+        // Crie um record/classe DTO SitterProfileResponse com os campos que você quer retornar
+        return new SitterProfileResponse(sitter.getId(), sitter.getName(), sitter.getEmail());
+    }
+
+    private SitterServicoResponse toServicoResponse(SitterServicoPreco servicoPreco) {
+        // Crie um record/classe DTO SitterServicoResponse
+        return new SitterServicoResponse(
+                servicoPreco.getId(),
+                servicoPreco.getServico().getDescricao(), // Pega a descrição do serviço (ex: "Passeio")
+                servicoPreco.getValor()
+        );
     }
 }
 
-//o @PreAuthorize restringe o acesso ao metodo com base no Role do usuario
-//verficiação é feitas antes da execução

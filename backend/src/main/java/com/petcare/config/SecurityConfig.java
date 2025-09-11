@@ -1,74 +1,77 @@
 package com.petcare.config;
 
 import com.petcare.auth.JwtAuthFilter;
-import com.petcare.user.UserDetailsServiceImpl;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.authentication.AuthenticationProvider;
-import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.web.servlet.config.annotation.CorsRegistry;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+
+import java.util.List;
 
 @Configuration
+@EnableWebSecurity
+@RequiredArgsConstructor
 public class SecurityConfig {
 
-  @Autowired
-  private JwtAuthFilter jwtAuthFilter;
+  private final JwtAuthFilter jwtAuthFilter;
 
-
-
-  // Configura o provedor de autenticação usando dados do banco e senha criptografada
-  @Bean
-  public AuthenticationProvider authenticationProvider(UserDetailsServiceImpl userDetailsService) {
-
-    DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
-
-    // Define o serviço que carrega os dados do usuário (email, senha, role)
-    // Esse serviço é a classe UserDetailsServiceImpl
-    authProvider.setUserDetailsService(userDetailsService);
-    authProvider.setPasswordEncoder(new BCryptPasswordEncoder());
-
-    return authProvider;
-  }
-
+  private static final String[] SWAGGER_WHITELIST = {
+      "/swagger-ui.html",
+      "/swagger-ui/**",
+      "/v3/api-docs",
+      "/v3/api-docs/**",
+      "/v3/api-docs.yaml",
+      "/swagger-resources/**",
+      "/webjars/**"
+  };
 
   @Bean
-  public SecurityFilterChain securityFilterChain(HttpSecurity http, AuthenticationProvider authenticationProvider) throws Exception {
-    return http
-            .csrf(csrf -> csrf.disable())
-            .authorizeHttpRequests(auth -> auth
-                    .requestMatchers("/auth/**").permitAll()
-                    .requestMatchers("/admin/**").hasAuthority("ADMIN")
-                    .requestMatchers("/sitter/**").hasAuthority("SITTER")
-                    .requestMatchers("/user/**").hasAuthority("OWNER")
-                    .anyRequest().authenticated()
-            )
-            .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            .authenticationProvider(authenticationProvider)
-            .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
-            .build();
+  SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    http
+        .csrf(csrf -> csrf.disable())
+        .cors(cors -> {})
+        .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+        .authorizeHttpRequests(auth -> auth
+            .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+            .requestMatchers(SWAGGER_WHITELIST).permitAll()
+            .requestMatchers("/api/auth/**", "/auth/**").permitAll()
+            .requestMatchers("/ping").permitAll() // rota de sanity check
+            .anyRequest().authenticated()
+        )
+        .exceptionHandling(e -> e
+            .authenticationEntryPoint((req, res, ex) -> res.sendError(401, "Unauthorized"))
+            .accessDeniedHandler((req, res, ex) -> res.sendError(403, "Forbidden"))
+        )
+        .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+
+    return http.build();
   }
-
-
-  @Bean
-  public WebMvcConfigurer corsConfigurer() {
-    return new WebMvcConfigurer() {
-      @Override public void addCorsMappings(CorsRegistry registry) {
-        registry.addMapping("/**").allowedOrigins("http://localhost:5173").allowedMethods("*");
-      }
-    };
-  }
-
 
   @Bean
   public PasswordEncoder passwordEncoder() {
     return new BCryptPasswordEncoder();
   }
+
+  @Bean
+  CorsConfigurationSource corsConfigurationSource() {
+    CorsConfiguration cfg = new CorsConfiguration();
+    cfg.setAllowedOrigins(List.of("http://localhost:5173","http://127.0.0.1:5173"));
+    cfg.setAllowedMethods(List.of("GET","POST","PUT","DELETE","PATCH","OPTIONS"));
+    cfg.setAllowedHeaders(List.of("*"));
+    cfg.setAllowCredentials(true);
+    UrlBasedCorsConfigurationSource src = new UrlBasedCorsConfigurationSource();
+    src.registerCorsConfiguration("/**", cfg);
+    return src;
+  }
 }
+

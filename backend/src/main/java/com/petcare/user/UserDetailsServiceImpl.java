@@ -5,29 +5,48 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-// Essa classe implementa a interface UserDetailsService do Spring Security
-// Ela é responsável por buscar o usuário no banco de dados durante o processo de login
 @Service
 public class UserDetailsServiceImpl implements UserDetailsService {
 
-    // Repositório que acessa os dados dos usuários no banco
-    private final UserRepository userRepository;
+    private final UserRepository users;
 
-    // Construtor com injeção de dependência
-    public UserDetailsServiceImpl(UserRepository userRepository) {
-        this.userRepository = userRepository;
+    public UserDetailsServiceImpl(UserRepository users) {
+        this.users = users;
     }
 
-    // Método obrigatório da interface UserDetailsService
-    // Recebe o "username" (aqui usamos o email) e retorna um UserDetails
     @Override
-    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        // Busca o usuário pelo email no banco
-        // Se não encontrar, lança uma exceção que o Spring trata automaticamente
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new UsernameNotFoundException("Usuário não encontrado: " + email));
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        User u = users.findByEmail(username)
+                .orElseThrow(() -> new UsernameNotFoundException("Usuário não encontrado"));
+        
+            String email = u.getEmail();
+            String hash  = u.getPasswordHash();
+            String role  = u.getRole() != null ? u.getRole().name() : null;
+            Long id = u.getId();
 
-        // Converte o User para UserDetails usando a classe UserDetailsImpl
-        return new UserDetailsImpl(user);
+            return new UserDetailsImpl(id, email, hash, role);
+            
+                /* 
+        String email = safeString(get(u, "getEmail"));
+        String hash  = safeString(get(u, "getPasswordHash")); // tenta hash
+        if (hash == null) hash = safeString(get(u, "getPassword")); // fallback
+        String role  = null;
+        try {
+            Object r = u.getClass().getMethod("getRole").invoke(u);
+            role = r == null ? null : r.toString();
+        } catch (Exception ignored) {}
+
+        return new UserDetailsImpl(email != null ? email : username, hash != null ? hash : "", role);
+        */
     }
+
+    private static Object get(Object target, String method) {
+        try {
+            return target.getClass().getMethod(method).invoke(target);
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    private static String safeString(Object o) { return o == null ? null : String.valueOf(o); }
 }

@@ -1,0 +1,17 @@
+# Ficheiros de IDEs e Compilação
+.idea/
+.vscode/
+*.swp
+*.log
+target/
+bin/
+
+# Ficheiros do Node.js
+node_modules/
+dist/
+build/
+.vite/
+
+# Ficheiros de Ambiente - NUNCA ENVIAR PARA O GITHUB
+.env
+*.env

@@ -1,32 +1,48 @@
 package com.petcare.user;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
-import lombok.Data;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import lombok.*;
 
-@Entity @Table(name="users")
-@Data
-@Inheritance(strategy = InheritanceType.JOINED)
+@Entity
+@Table(name = "users") // A tabela física no banco de dados
+@Inheritance(strategy = InheritanceType.SINGLE_TABLE) // Estratégia: Todos os filhos na mesma tabela
+@DiscriminatorColumn(name = "user_type", discriminatorType = DiscriminatorType.STRING) // Coluna que diferencia Owner de Sitter
+@Getter @Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@ToString(exclude = "passwordHash")
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class User {
 
-  @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
-  private Long id;
+    public enum Role { OWNER, SITTER, ADMIN }
 
-  @NotBlank
-  private String name;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @EqualsAndHashCode.Include
+    private Long id;
 
-  @Email @Column(unique = true, nullable = false)
-  private String email;
+    @Column(nullable = false)
+    private String name;
 
-  @NotBlank
-  private String passwordHash;
+    @Column(unique = true, nullable = false)
+    @EqualsAndHashCode.Include
+    private String email;
 
-  @Enumerated(EnumType.STRING)
-  private Role role;
+    @Column(nullable = false, name = "password_hash")
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+    private String passwordHash;
 
-  public static String hash(String raw) {
-    return new BCryptPasswordEncoder().encode(raw);
-  }
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private Role role;
+
+    // Construtor principal que as classes filhas (Owner, Sitter) irão chamar
+    public User(String name, String email, String passwordHash, Role role) {
+        this.name = name;
+        this.email = email;
+        this.passwordHash = passwordHash;
+        this.role = role;
+    }
 }
+

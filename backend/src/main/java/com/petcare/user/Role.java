@@ -1,7 +1,8 @@
 package com.petcare.user;
 
 public enum Role {
-    OWNER,
-    SITTER,
-    ADMIN
+  USER,
+  ADMIN,
+  SITTER,
+  OWNER   
 }
