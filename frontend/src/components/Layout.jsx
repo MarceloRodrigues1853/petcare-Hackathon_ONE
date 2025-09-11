@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Outlet, Link } from "react-router-dom";
 // CORREÇÃO: Adicionando a extensão .jsx para garantir a resolução dos ficheiros.
 import { useAuth } from "../context/AuthContext.jsx";
@@ -101,4 +102,6 @@ export default function Layout() {
     </div>
   );
 }
+
+
 

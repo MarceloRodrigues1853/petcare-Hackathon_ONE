@@ -1,25 +1,19 @@
 package com.petcare.owner;
 
-public class OwnerRequest {
-    private String name;
-    private String email;
-    private String password;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 
-    public OwnerRequest() {}
+// Usar 'record' é a forma moderna no Java para criar DTOs.
+// Ele automaticamente cria os campos, construtor, getters (ex: name()), equals, etc.
+public record OwnerRequest(
+    @NotBlank
+    String name,
 
-    public OwnerRequest(String name, String email, String password) {
-        this.name = name;
-        this.email = email;
-        this.password = password;
-    }
+    @NotBlank
+    @Email
+    String email,
 
-    // Getters e Setters
-    public String getName() { return name; }
-    public void setName(String name) { this.name = name; }
-
-    public String getEmail() { return email; }
-    public void setEmail(String email) { this.email = email; }
-
-    public String getPassword() { return password; }
-    public void setPassword(String password) { this.password = password; }
-}
+    @Size(min = 6)
+    String password
+) {}

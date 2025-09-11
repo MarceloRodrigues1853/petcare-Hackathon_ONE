@@ -47,6 +47,7 @@ export default function App() {
             <Route path="login" element={<Login />} />
             <Route path="register" element={<Register />} />
             <Route path="403" element={<Forbidden />} />
+            <Route path="403" element={<Forbidden />} />
 
             {/* autenticado */}
             <Route element={<ProtectedRoute />}>
@@ -66,6 +67,7 @@ export default function App() {
                 <Route path="sitter/appointments" element={<SitterAppointments />} />
                 <Route path="sitter/profile/edit" element={<SitterProfileEdit />} />
                 <Route path="sitter/history" element={<SitterHistory />} />
+                <Route path="sitter/history" element={<SitterHistory />} />
               </Route>
 
               {/* ADMIN */}
@@ -84,4 +86,5 @@ export default function App() {
     </AuthProvider>
   );
 }
+
 

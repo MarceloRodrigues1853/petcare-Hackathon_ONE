@@ -1,12 +1,15 @@
 package com.petcare.owner;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.springframework.security.crypto.password.PasswordEncoder; // Import adicionado
 import org.springframework.stereotype.Service;
 
-import com.petcare.user.User;
+import com.petcare.user.User.Role;
+
+import jakarta.persistence.EntityNotFoundException;
+import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
 
 @Service
 public class OwnerService {
