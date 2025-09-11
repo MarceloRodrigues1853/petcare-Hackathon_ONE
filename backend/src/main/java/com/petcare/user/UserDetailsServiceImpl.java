@@ -18,7 +18,15 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         User u = users.findByEmail(username)
                 .orElseThrow(() -> new UsernameNotFoundException("Usuário não encontrado"));
+        
+            String email = u.getEmail();
+            String hash  = u.getPasswordHash();
+            String role  = u.getRole() != null ? u.getRole().name() : null;
+            Long id = u.getId();
 
+            return new UserDetailsImpl(id, email, hash, role);
+            
+                /* 
         String email = safeString(get(u, "getEmail"));
         String hash  = safeString(get(u, "getPasswordHash")); // tenta hash
         if (hash == null) hash = safeString(get(u, "getPassword")); // fallback
@@ -29,6 +37,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
         } catch (Exception ignored) {}
 
         return new UserDetailsImpl(email != null ? email : username, hash != null ? hash : "", role);
+        */
     }
 
     private static Object get(Object target, String method) {

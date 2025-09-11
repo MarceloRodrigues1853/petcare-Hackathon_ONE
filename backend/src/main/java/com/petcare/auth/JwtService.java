@@ -28,10 +28,11 @@ public class JwtService {
         this.expirationMs = expirationEnv != null ? Long.parseLong(expirationEnv) : 86400000L; // 24 horas como padrão
     }
 
-    public String generateToken(String email) {
+    public String generateToken(Long userId, String email) {
         Date now = new Date();
         Date exp = new Date(now.getTime() + expirationMs);
         return Jwts.builder()
+                .claim("userId", userId)
                 .setSubject(email)
                 .setIssuedAt(now)
                 .setExpiration(exp)

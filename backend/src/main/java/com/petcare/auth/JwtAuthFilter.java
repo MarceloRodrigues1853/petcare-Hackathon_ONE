@@ -33,7 +33,6 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                 || path.startsWith("/auth/")
                 || "/ping".equals(path);
     }
-
     @Override
     protected void doFilterInternal(
             @NonNull HttpServletRequest request,
