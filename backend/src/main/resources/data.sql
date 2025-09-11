@@ -49,3 +49,4 @@ VALUES (
     'CONFIRMADO',
     25.00
 );
+
