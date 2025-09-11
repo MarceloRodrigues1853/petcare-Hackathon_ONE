@@ -4,14 +4,16 @@ public class PetResponse {
     private Long id;
     private String nome;
     private String especie;
+    private Integer idade; 
     private Long ownerId;
 
     public PetResponse() {}
 
-    public PetResponse(Long id, String nome, String especie, Long ownerId) {
+    public PetResponse(Long id, String nome, String especie, Integer idade, Long ownerId) {
         this.id = id;
         this.nome = nome;
         this.especie = especie;
+        this.idade = idade;
         this.ownerId = ownerId;
     }
 
@@ -27,4 +29,7 @@ public class PetResponse {
 
     public Long getOwnerId() { return ownerId; }
     public void setOwnerId(Long ownerId) { this.ownerId = ownerId; }
+
+    public Integer getIdade() { return idade; }
+    public void setIdade(Integer idade) { this.idade = idade; }
 }
