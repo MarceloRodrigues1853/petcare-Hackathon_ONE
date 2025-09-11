@@ -1,43 +1,40 @@
 package com.petcare.owner;
 
-import jakarta.persistence.*;
+import java.util.ArrayList;
+import java.util.List;
+
+import com.petcare.pet.Pet;
+import com.petcare.user.User;
+
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.DiscriminatorValue;
+import jakarta.persistence.Entity;
+import jakarta.persistence.OneToMany;
 
 @Entity
-public class Owner {
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+@DiscriminatorValue("OWNER") // Este valor será salvo na coluna 'user_type' para identificar um Owner
+public class Owner extends User {
 
-    private String name;
-    private String email;
-    private String phone;
+    @OneToMany(mappedBy = "owner", cascade = CascadeType.ALL, orphanRemoval = true) //add para ao excluir o owner, os seus pets tbm sejam excluidos juntos
+    List<Pet> pets = new ArrayList<>();
 
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
-
-    public String getName() { return name; }
-    public void setName(String name) { this.name = name; }
-
-    public String getEmail() { return email; }
-    public void setEmail(String email) { this.email = email; }
-
-    public String getPhone() { return phone; }
-    public void setPhone(String phone) { this.phone = phone; }
-    
-    public Owner() {}
-
-    public Owner(String name, String email, String phone) {
-        this.name = name;
-        this.email = email;
-        this.phone = phone;
+    // Construtor vazio é necessário para o JPA
+    public Owner() {
+        super(); // Chama o construtor da classe pai
+        this.setRole(Role.OWNER); // Define a role padrão para esta classe
     }
-    
-    @Override
-    public String toString() {
-        return "Owner{" +
-                "id=" + id +
-                ", name='" + name + '\'' +
-                ", email='" + email + '\'' +
-                ", phone='" + phone + '\'' +
-                '}';
+
+    // Construtor para criar um novo Owner com dados
+    public Owner(String name, String email, String passwordHash) {
+        super(name, email, passwordHash, Role.OWNER); // Passa os dados para o construtor da classe pai
+    }
+
+    //Getters e Setters
+    public List<Pet> getPets() {
+        return pets;   
+    }
+
+    public void setPets(List<Pet> pets) {
+        this.pets = pets;
     }
 }

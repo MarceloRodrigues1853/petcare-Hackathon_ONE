@@ -19,16 +19,20 @@ public class JwtService {
     public JwtService() {
         String secret = System.getenv("JWT_SECRET");
         if (secret == null || secret.isBlank()) {
-            throw new IllegalStateException("JWT_SECRET não definido");
+            // Este erro era o que estava acontecendo
+            throw new IllegalStateException("Variável de ambiente JWT_SECRET não definida");
         }
         this.key = Keys.hmacShaKeyFor(secret.getBytes());
-        this.expirationMs = 1000L * 60 * 60 * 8; // 8 horas
+        // Vamos usar a variável de ambiente para a expiração também
+        String expirationEnv = System.getenv("JWT_EXPIRATION_MS");
+        this.expirationMs = expirationEnv != null ? Long.parseLong(expirationEnv) : 86400000L; // 24 horas como padrão
     }
 
-    public String generateToken(String email) {
+    public String generateToken(Long userId, String email) {
         Date now = new Date();
         Date exp = new Date(now.getTime() + expirationMs);
         return Jwts.builder()
+                .claim("userId", userId)
                 .setSubject(email)
                 .setIssuedAt(now)
                 .setExpiration(exp)
@@ -36,6 +40,7 @@ public class JwtService {
                 .compact();
     }
 
+    // ... resto do seu código ...
     public String extractEmail(String token) {
         return extractClaim(token, claims -> claims.getSubject());
     }

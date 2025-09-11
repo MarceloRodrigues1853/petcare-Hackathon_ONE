@@ -4,38 +4,52 @@
 FROM node:20-alpine AS dev
 WORKDIR /app
 
-# opcional (teu reaproveitável)
+# opcional
 RUN apk add --no-cache bash
 
-# instala deps sem copiar o código (para funcionar com bind mount)
-# copia só o package.json/lock pra cachear as deps
+# copiar manifests e instalar deps (cache de camadas)
 COPY package*.json ./
 RUN npm ci
 
-# Dica: quando usar bind mount (./frontend:/app) ele vai "tapar" /app,
-# então garanta um volume separado pra /app/node_modules no compose.
-# Comando real fica no docker-compose (npm run dev) ou aqui:
-CMD ["npm","run","dev","--","--host"]
+# copie o resto do código (com bind mount será sobreposto no runtime)
+COPY . .
+
+# garantir binários locais no PATH (vite, tailwindcss, etc.)
+ENV PATH="/app/node_modules/.bin:${PATH}"
+
+# portas do Vite (5173) e HMR (24678)
+EXPOSE 5173 24678
+
+# roda Tailwind (watch) + Vite juntos via scripts npm
+CMD ["npm","run","dev:all"]
+
 
 # =========================
 # Stage BUILD (produção)
 # =========================
 FROM node:20-alpine AS build
 WORKDIR /app
+
 COPY package*.json ./
 RUN npm ci
 COPY . .
+
+# garantir binários locais no PATH
+ENV PATH="/app/node_modules/.bin:${PATH}"
+
+# gera CSS do Tailwind e faz o build do Vite (usa teus scripts)
 RUN npm run build
+
 
 # =========================
 # Stage RUNTIME (Nginx)
 # =========================
 FROM nginx:alpine AS prod
+
 # conf SPA: fallback de rotas pra index.html
 COPY nginx.conf /etc/nginx/conf.d/default.conf
-# artefato do Vite
-COPY --from=build /app/dist /usr/share/nginx/html
-EXPOSE 80
 
-# Se quiser usar este stage diretamente:
-# CMD ["nginx","-g","daemon off;"]
+# artefatos do Vite
+COPY --from=build /app/dist /usr/share/nginx/html
+
+EXPOSE 80

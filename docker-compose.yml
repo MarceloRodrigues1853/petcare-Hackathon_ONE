@@ -1,44 +1,15 @@
 name: petcare
 
 services:
-  db:
-    image: mysql:8.0
-    container_name: petcare-db
-    environment:
-      MYSQL_DATABASE: petcare
-      MYSQL_USER: petcare
-      MYSQL_PASSWORD: petcare
-      MYSQL_ROOT_PASSWORD: root
-      MYSQL_ROOT_HOST: '%'
-    command: >
-      --default-authentication-plugin=mysql_native_password
-      --character-set-server=utf8mb4
-      --collation-server=utf8mb4_unicode_ci
-    ports:
-      - "3306:3306"
-    volumes:
-      - db-data:/var/lib/mysql
-    healthcheck:
-      test: ["CMD-SHELL", "mysqladmin ping -h localhost -ppetcare --silent"]
-      interval: 5s
-      timeout: 3s
-      retries: 20
-
   backend:
     build:
       context: ./backend
       dockerfile: Dockerfile
     container_name: petcare-backend
-    depends_on:
-      db:
-        condition: service_healthy
-    environment:
-      SPRING_PROFILES_ACTIVE: docker
-      DB_URL: jdbc:mysql://petcare-db:3306/petcare?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
-      DB_USER: petcare
-      DB_PASS: petcare
-      JWT_SECRET: VUOFe/VonnmE9uguOCp9jLpDfg20bZlRqVjCoVtd/9E=
-      JWT_EXPIRATION_MS: "86400000"
+    # As variáveis de ambiente agora são lidas automaticamente do ficheiro .env
+    # A opção 'env_file' garante que o Docker Compose o encontre.
+    env_file:
+      - ./.env
     ports:
       - "8080:8080"
     restart: unless-stopped
@@ -52,13 +23,11 @@ services:
     ports:
       - "5173:5173"
     environment:
-      VITE_BACKEND_URL: http://localhost:8080
+      VITE_API_BASE: http://localhost:8080/api
     volumes:
       - ./frontend:/app
       - /app/node_modules
-    command: npm run dev -- --host
+    command: npm run dev
     depends_on:
       - backend
 
-volumes:
-  db-data:

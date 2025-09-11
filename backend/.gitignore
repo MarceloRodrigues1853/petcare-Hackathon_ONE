@@ -1,1 +1,17 @@
 senhas.env
+
+# Eclipse
+.project
+.classpath
+.factorypath
+.settings/
+
+# IntelliJ
+.idea/
+
+# VS Code
+.vscode/
+
+# Outros
+target/
+*.log

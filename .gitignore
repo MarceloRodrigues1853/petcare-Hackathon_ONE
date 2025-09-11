@@ -1,27 +1,17 @@
-# IDEs
+# Ficheiros de IDEs e Compilação
 .idea/
 .vscode/
-.project
-.classpath
-.factorypath
-.settings/
-
-# Java/Maven
+*.swp
+*.log
 target/
-
 bin/
-**/*.class
-*.log
 
-# Node/Vite
-frontend/node_modules/
-frontend/dist/
-frontend/.vite/
+# Ficheiros do Node.js
+node_modules/
+dist/
+build/
+.vite/
 
-# Env
+# Ficheiros de Ambiente - NUNCA ENVIAR PARA O GITHUB
 .env
-**/*.env
-backend/target/
-frontend/node_modules/
-frontend/build/
-*.log
+*.env
