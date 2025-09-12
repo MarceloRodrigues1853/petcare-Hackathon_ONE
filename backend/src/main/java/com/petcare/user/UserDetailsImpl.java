@@ -13,11 +13,13 @@ import java.util.List;
  */
 public class UserDetailsImpl implements UserDetails {
 
+    private final Long id;
     private final String username;      // email
     private final String passwordHash;  // hash
     private final String roleName;      // ex: USER/ADMIN
 
-    public UserDetailsImpl(String username, String passwordHash, String roleName) {
+    public UserDetailsImpl(Long id, String username, String passwordHash, String roleName) {
+        this.id = id;
         this.username = username;
         this.passwordHash = passwordHash;
         this.roleName = roleName == null ? "USER" : roleName;
@@ -27,6 +29,8 @@ public class UserDetailsImpl implements UserDetails {
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of(new SimpleGrantedAuthority("ROLE_" + roleName));
     }
+
+    public Long getId() { return id; }
 
     @Override public String getPassword() { return passwordHash; }
     @Override public String getUsername() { return username; }

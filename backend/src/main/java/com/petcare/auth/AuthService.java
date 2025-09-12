@@ -34,7 +34,7 @@ public class AuthService {
             throw new IllegalArgumentException("Credenciais inválidas");
         }
 
-        String token = jwt.generateToken(user.getEmail());
+        String token = jwt.generateToken(user.getId(), user.getEmail());
         String role = user.getRole() != null ? user.getRole().name() : null;
 
         return new LoginResponse(token, role, user.getName(), user.getEmail());

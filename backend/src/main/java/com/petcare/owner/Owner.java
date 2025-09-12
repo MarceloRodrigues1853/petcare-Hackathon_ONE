@@ -1,12 +1,26 @@
 package com.petcare.owner;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import com.petcare.agendamento.Agendamento;
+import com.petcare.pet.Pet;
 import com.petcare.user.User;
+
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
+import jakarta.persistence.OneToMany;
 
 @Entity
 @DiscriminatorValue("OWNER") // Este valor será salvo na coluna 'user_type' para identificar um Owner
 public class Owner extends User {
+
+    @OneToMany(mappedBy = "owner", cascade = CascadeType.ALL, orphanRemoval = true) //add para ao excluir o owner, os seus pets tbm sejam excluidos juntos
+    List<Pet> pets = new ArrayList<>();
+    
+    @OneToMany(mappedBy = "owner", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Agendamento> agendamentos = new ArrayList<>();
 
     // Construtor vazio é necessário para o JPA
     public Owner() {
@@ -19,6 +33,19 @@ public class Owner extends User {
         super(name, email, passwordHash, Role.OWNER); // Passa os dados para o construtor da classe pai
     }
 
-    // Aqui você pode adicionar campos e métodos específicos apenas para Owners
-    // Ex: @OneToMany List<Pet> pets;
+    //Getters e Setters
+    public List<Pet> getPets() {
+        return pets;   
+    }
+
+    public void setPets(List<Pet> pets) {
+        this.pets = pets;
+    }
+    
+    public List<Agendamento> getAgendamentos() {
+        return agendamentos;
+    }
+    public void setAgendamentos(List<Agendamento> agendamentos) {
+        this.agendamentos = agendamentos;
+    }
 }
