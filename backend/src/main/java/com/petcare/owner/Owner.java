@@ -3,6 +3,7 @@ package com.petcare.owner;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.petcare.agendamento.Agendamento;
 import com.petcare.pet.Pet;
 import com.petcare.user.User;
 
@@ -17,6 +18,9 @@ public class Owner extends User {
 
     @OneToMany(mappedBy = "owner", cascade = CascadeType.ALL, orphanRemoval = true) //add para ao excluir o owner, os seus pets tbm sejam excluidos juntos
     List<Pet> pets = new ArrayList<>();
+    
+    @OneToMany(mappedBy = "owner", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Agendamento> agendamentos = new ArrayList<>();
 
     // Construtor vazio é necessário para o JPA
     public Owner() {
@@ -36,5 +40,12 @@ public class Owner extends User {
 
     public void setPets(List<Pet> pets) {
         this.pets = pets;
+    }
+    
+    public List<Agendamento> getAgendamentos() {
+        return agendamentos;
+    }
+    public void setAgendamentos(List<Agendamento> agendamentos) {
+        this.agendamentos = agendamentos;
     }
 }
