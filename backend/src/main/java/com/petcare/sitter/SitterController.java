@@ -55,6 +55,19 @@ public class SitterController {
         return ResponseEntity.noContent().build();
     }
 
+    // --- ENDPOINTS PARA O FRONTEND USAR ---
+    
+    //lista o sitter + serviços que ele oferece
+    @GetMapping
+    public ResponseEntity<List<SitterListarServicoResponse>> getAllSitters(
+        @RequestParam(name = "servicoId", required = false) Long servicoId
+    ) {
+        List<SitterListarServicoResponse> response = sitterService.listarSittersPorServico(servicoId);
+        return ResponseEntity.ok(response);
+    }
+
+
+
 
     // --- MAPPERS SIMPLES (sem reflexão) ---
 
