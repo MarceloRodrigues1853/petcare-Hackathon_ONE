@@ -26,7 +26,7 @@ export default function About() {
         </p>
       </div>
 
-      {/* Missão (imagem full-width acima do texto) */}
+      {/* Missão */}
       <div className="about-block">
         <div className="about-mission-img">
           <img src={missionImg} alt="Missão" />

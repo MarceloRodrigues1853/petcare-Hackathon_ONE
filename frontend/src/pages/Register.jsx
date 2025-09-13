@@ -34,14 +34,13 @@ export default function Register() {
         userRole: role?.toUpperCase() || "OWNER",
       });
 
-      // faz login automático para obter o JWT real e redirecionar por role
+      // login automático
       const session = await login(email, password);
       const r = (session?.role || session?.user?.role || "").toUpperCase();
       if (r === "OWNER") navigate("/owner/dashboard");
       else if (r === "SITTER") navigate("/sitter/dashboard");
       else if (r === "ADMIN") navigate("/admin/dashboard");
       else navigate("/");
-
     } catch (err) {
       setMsg(err?.message || "Erro ao cadastrar");
     } finally {
@@ -56,19 +55,47 @@ export default function Register() {
       <div className="card">
         <form onSubmit={handleSubmit}>
           <label>Nome</label>
-          <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Nome" required />
+          <input
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="Nome"
+            required
+          />
 
           <label>E-mail</label>
-          <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="E-mail" required />
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="E-mail"
+            required
+          />
 
           <label>Senha</label>
-          <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Senha" required />
+          <input
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="Senha"
+            required
+          />
 
           <label>Confirmar senha</label>
-          <input type="password" value={confirm} onChange={(e) => setConfirm(e.target.value)} placeholder="Confirmar senha" required />
+          <input
+            type="password"
+            value={confirm}
+            onChange={(e) => setConfirm(e.target.value)}
+            placeholder="Confirmar senha"
+            required
+          />
 
           <label>Tipo de usuário</label>
-          <select className="role-select" value={role} onChange={(e) => setRole(e.target.value)} required>
+          <select
+            className="role-select"
+            value={role}
+            onChange={(e) => setRole(e.target.value)}
+            required
+          >
             <option value="OWNER">Dono</option>
             <option value="SITTER">Cuidador(a)</option>
           </select>

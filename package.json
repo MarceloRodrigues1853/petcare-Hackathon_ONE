@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "lucide-react": "^0.542.0",
+    "react-feather": "^2.0.10"
+  }
+}

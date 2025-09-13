@@ -1,7 +1,3 @@
-// src/api/http.js
-
-// 1. CORRETO: Lê a variável de ambiente VITE_API_BASE que agora 
-//    contém a URL completa, como "http://localhost:8080/api".
 const API = import.meta.env.VITE_API_BASE; 
 
 function authHeader() {
@@ -10,8 +6,6 @@ function authHeader() {
 }
 
 async function request(method, path, body, opts = {}) {
-  // 2. CORRETO: Monta a URL final corretamente.
-  //    Exemplo: "http://localhost:8080/api" + "/auth/login"
   const res = await fetch(`${API}${path}`, {
     method,
     headers: {
@@ -31,8 +25,26 @@ async function request(method, path, body, opts = {}) {
   return res.status === 204 ? null : res.json();
 }
 
-// 3. CORRETO: As funções de exportação continuam funcionando perfeitamente.
-export const getJson  = (p, o) => request('GET', p, null, o);
-export const postJson = (p, b, o) => request('POST', p, b, o);
-export const putJson  = (p, b, o) => request('PUT', p, b, o);
-export const delJson  = (p, o) => request('DELETE', p, null, o);
+// Funções principais
+export async function get(path, opts) {
+  return request('GET', path, null, opts);
+}
+
+// Função principal de POST
+export async function postJson(path, body, opts) {
+  return request('POST', path, body, opts);
+}
+
+// Alias 'post' para compatibilidade com código antigo
+export const post = postJson;
+
+export async function put(path, body, opts) {
+  return request('PUT', path, body, opts);
+}
+
+export async function del(path, opts) {
+  return request('DELETE', path, null, opts);
+}
+
+// Default export incluindo todos os métodos
+export default { get, post, postJson, put, del };

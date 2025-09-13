@@ -1,11 +1,9 @@
-// frontend/src/pages/Services.jsx
 import React from "react";
 import "./Services.css";
-
-import imgBaba from "../assets/images/catia-dombaxe-3G9Jb5eMr5E-unsplash.jpg";
-import imgPasseio from "../assets/images/edgar-pimenta-iaRuEbnZajc-unsplash.jpg";
-import imgHospedagem from "../assets/images/jonas-vincent-xulIYVIbYIc-unsplash.jpg";
-import bannerImg from "../assets/images/bailey-burton-8vlc3e_Tv-w-unsplash.jpg";
+import imgBaba from "../assets/images/dicson--R_7O2nk_6A-unsplash.jpg";
+import imgPasseio from "../assets/images/james-kern-wUieL_e_HnY-unsplash.jpg";
+import imgHospedagem from "../assets/images/alexander-grey-42AQP6w8uyI-unsplash.jpg";
+import bannerImg from "../assets/images/vitaly-gariev-TNjWbTBj0MU-unsplash.jpg";
 
 export default function Services() {
   const services = [
@@ -34,7 +32,7 @@ export default function Services() {
 
   return (
     <section className="services-page">
-      {/* Banner no topo */}
+      {/* Banner */}
       <div className="services-banner">
         <img src={bannerImg} alt="Banner PetCare" className="services-banner-img" />
         <div className="services-banner-overlay">
@@ -68,8 +66,8 @@ export default function Services() {
           <strong>bem-estar para seu pet</strong>, com serviços pensados para cada
           necessidade.
         </p>
-        <a href="/contact" className="about-btn">
-          Fale Conosco
+        <a href="/register" className="about-btn">
+          Contrate nossos serviços
         </a>
       </div>
     </section>

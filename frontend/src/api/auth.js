@@ -1,10 +1,16 @@
-// src/api/auth.js
-import { postJson } from './http';
+import http from "./http";
 
-export async function loginApi(email, password) {
-  return postJson('/auth/login', { email, password });
+// Registro
+export async function register(data) {
+  return http.post("/api/auth/register", data);
 }
 
-export async function registerApi(payload) {
-  return postJson('/auth/register', payload);
+// Login
+export async function login(data) {
+  return http.post("/api/auth/login", data);
+}
+
+// Dados do usuário autenticado
+export async function getMe() {
+  return http.get("/api/auth/me"); //precisa existir no backend
 }

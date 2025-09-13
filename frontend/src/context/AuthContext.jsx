@@ -1,6 +1,6 @@
 // src/context/AuthContext.jsx
 import React, { createContext, useContext, useState } from 'react';
-import { postJson } from '../api/http';
+import { postJson } from '../api/http.js';
 
 const AuthCtx = createContext(null);
 
