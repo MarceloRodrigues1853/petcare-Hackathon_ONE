@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class SitterService {
@@ -42,6 +43,7 @@ public class SitterService {
 
     // --- MÉTODOS PARA GERENCIAR OS SERVIÇOS E PREÇOS DO SITTER (LÓGICA DO ANTIGO PrecoPorSitterService) ---
 
+    //retorna lista dos serviços e preços de um sitter especifico
     @Transactional(readOnly = true)
     public List<SitterServicoPreco> getServicosDoSitter(Long sitterId) {
         // Garante que o sitter existe antes de buscar os serviços
@@ -79,6 +81,39 @@ public class SitterService {
                 .orElseThrow(() -> new RuntimeException("Serviço com ID " + servicoPrecoId + " não encontrado para o Sitter ID " + sitterId));
         
         sitterServicoPrecoRepository.delete(servicoPreco);
+    }
+
+    // --- MÉTODOS PARA O FRONTEND USAR ---
+
+    // Lista todos os Sitters, opcionalmente filtrando por um tipo de serviço específico
+   @Transactional(readOnly = true)
+    public List<SitterListarServicoResponse> listarSittersPorServico(Long servicoId) {
+        List<Sitter> sitters;
+
+        if (servicoId != null) {
+            sitters = sitterRepository.findByServicoId(servicoId);
+        } else {
+            sitters = sitterRepository.findAll();
+        }
+
+        return sitters.stream()
+            .map(sitter -> {
+                List<SitterServicoResponse> servicosResponse = sitter.getServicosOferecidos().stream()
+                    .filter(servicoPreco -> servicoId == null || servicoPreco.getServico().getId().equals(servicoId))
+                    .map(servicoPreco -> new SitterServicoResponse(
+                        servicoPreco.getId(),
+                        servicoPreco.getServico().getDescricao(),
+                        servicoPreco.getValor()
+                    ))
+                    .collect(Collectors.toList());
+
+                return new SitterListarServicoResponse(
+                    sitter.getId(),
+                    sitter.getName(),
+                    servicosResponse
+                );
+            })
+            .collect(Collectors.toList());
     }
 }
 

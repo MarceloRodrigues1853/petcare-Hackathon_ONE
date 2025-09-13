@@ -30,4 +30,3 @@ services:
     command: npm run dev
     depends_on:
       - backend
-
