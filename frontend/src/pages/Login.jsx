@@ -32,18 +32,44 @@ export default function Login() {
   return (
     <div className="center">
       <h1>Login</h1>
-      <div className="card">
+      <div className="card form-card">
         <form onSubmit={handleSubmit}>
           <label>Email</label>
-          <input type="email" value={email} onChange={e=>setEmail(e.target.value)} placeholder="Email" required />
+          <input
+            type="email"
+            value={email}
+            onChange={e => setEmail(e.target.value)}
+            placeholder="Email"
+            required
+          />
+
           <label>Senha</label>
-          <input type="password" value={password} onChange={e=>setPassword(e.target.value)} placeholder="Senha" required />
-          <a href="/entrar/esqueci-senha" className="link right">Esqueci minha senha</a>
-          <button className="btn" disabled={loading}>{loading ? "Entrando..." : "Entrar"}</button>
+          <input
+            type="password"
+            value={password}
+            onChange={e => setPassword(e.target.value)}
+            placeholder="Senha"
+            required
+          />
+
+          <div className="form-footer">
+            <a href="/entrar/esqueci-senha" className="link">
+              Esqueci minha senha
+            </a>
+          </div>
+
+          <button className="btn" disabled={loading}>
+            {loading ? "Entrando..." : "Entrar"}
+          </button>
         </form>
+
         {msg && <p className="msg">{msg}</p>}
+
         <p className="footer-link">
-          Ainda não possui uma conta? <Link to="/register" className="link">Cadastre-se</Link>
+          Ainda não possui uma conta?{" "}
+          <Link to="/register" className="link">
+            Cadastre-se
+          </Link>
         </p>
       </div>
     </div>
