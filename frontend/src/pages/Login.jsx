@@ -2,6 +2,7 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { handleRedirectByRole } from "../utils/navigation"; // <- Importando nosso helper
 
 export default function Login() {
   const { login } = useAuth();
@@ -17,11 +18,8 @@ export default function Login() {
     setLoading(true);
     try {
       const session = await login(email, password);
-      const r = (session?.role || "").toUpperCase();
-      if (r === "OWNER") navigate("/owner/dashboard");
-      else if (r === "SITTER") navigate("/sitter/dashboard");
-      else if (r === "ADMIN") navigate("/admin/dashboard");
-      else navigate("/");
+      // Usando o helper!
+      handleRedirectByRole(session, navigate); 
     } catch (err) {
       setMsg(err?.message || "Falha no login");
     } finally {
