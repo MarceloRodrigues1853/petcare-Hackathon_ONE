@@ -1,28 +1,31 @@
-import { useEffect, useState } from "react";
-import { getPets, savePet, removePet } from "../../../api/owner";
+import { useEffect, useState, useCallback } from "react";
 import { Link } from "react-router-dom";
 import { Dog, ArrowLeft } from "lucide-react";
+import { useAuth } from "../../../context/AuthContext";
+import { listPets, createPet, deletePet } from "../../../api/pet.api.js";
 
 export default function PetForm() {
+  const { user } = useAuth();
   const [pets, setPets] = useState([]);
   const [newPet, setNewPet] = useState({ name: "", species: "", age: "" });
   const [feedback, setFeedback] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    async function fetchPets() {
-      try {
-        setLoading(true);
-        const data = await getPets();
-        setPets(data);
-      } catch (error) {
-        setFeedback({ type: "error", message: "Falha ao carregar pets." });
-      } finally {
-        setLoading(false);
-      }
+  const fetchPets = useCallback(async () => {
+    try {
+      setLoading(true);
+      const petsData = await listPets();
+      setPets(petsData);
+    } catch (error) {
+      setFeedback({ type: "error", message: "Falha ao carregar seus pets." });
+    } finally {
+      setLoading(false);
     }
-    fetchPets();
   }, []);
+
+  useEffect(() => {
+    fetchPets();
+  }, [fetchPets]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -31,30 +34,42 @@ export default function PetForm() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!user?.id) {
+      setFeedback({ type: "error", message: "Você precisa estar logado para salvar um pet." });
+      return;
+    }
+    
     try {
-      const res = await savePet(newPet); // salva no backend mock
-      setFeedback({ type: "success", message: res.message });
-      setPets((prev) => [...prev, { ...newPet, id: Date.now() }]); // adiciona na lista local
+      const petPayload = {
+        nome: newPet.name,
+        especie: newPet.species,
+        idade: parseInt(newPet.age, 10),
+        ownerId: user.id,
+      };
+
+      const createdPet = await createPet(petPayload);
+
+      setPets((prevPets) => [...prevPets, createdPet]);
+      setFeedback({ type: "success", message: "Pet salvo com sucesso!" });
       setNewPet({ name: "", species: "", age: "" });
     } catch (error) {
-      setFeedback({ type: "error", message: "Erro ao salvar pet." });
+      setFeedback({ type: "error", message: error.message || "Erro ao salvar pet." });
     }
   };
 
-  const handleRemove = async (id) => {
+  const handleRemove = async (petIdToRemove) => {
     try {
-      const res = await removePet(id); // remove do backend mock
-      setPets((prev) => prev.filter((pet) => pet.id !== id));
-      setFeedback({ type: "success", message: res.message });
+      await deletePet(petIdToRemove);
+      setPets((prevPets) => prevPets.filter((pet) => pet.id !== petIdToRemove));
+      setFeedback({ type: "success", message: "Pet removido com sucesso." });
     } catch (error) {
-      setFeedback({ type: "error", message: "Erro ao remover pet." });
+      setFeedback({ type: "error", message: error.message || "Erro ao remover pet." });
     }
   };
 
   return (
-    <div className="bg-slate-50 min-h-screen p-4 sm:p-8">
+    <div className="bg-slate-50 min-h-screen p-4 sm-p-8">
       <div className="max-w-3xl mx-auto">
-        {/* Botão voltar */}
         <header className="mb-8 relative flex items-center">
           <Link to="/owner/dashboard" className="mr-4 p-2 text-blue-600 hover:bg-gray-200 rounded-full transition-colors" title="Voltar">
             <ArrowLeft size={28} />
@@ -65,14 +80,9 @@ export default function PetForm() {
           </div>
         </header>
         
-        <form
-          onSubmit={handleSubmit}
-          className="bg-white p-6 rounded-xl shadow-md space-y-4"
-        >
+        <form onSubmit={handleSubmit} className="bg-white p-6 rounded-xl shadow-md space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700">
-              Nome
-            </label>
+            <label className="block text-sm font-medium text-gray-700">Nome</label>
             <input
               name="name"
               value={newPet.name}
@@ -82,9 +92,7 @@ export default function PetForm() {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700">
-              Espécie
-            </label>
+            <label className="block text-sm font-medium text-gray-700">Espécie</label>
             <input
               name="species"
               value={newPet.species}
@@ -94,9 +102,7 @@ export default function PetForm() {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700">
-              Idade
-            </label>
+            <label className="block text-sm font-medium text-gray-700">Idade</label>
             <input
               name="age"
               type="number"
@@ -114,7 +120,7 @@ export default function PetForm() {
           </button>
         </form>
 
-        {/* Feedback */}
+        {/* --- Bloco de Feedback CORRIGIDO --- */}
         {feedback && (
           <div
             className={`mt-4 p-3 rounded-lg text-center font-medium ${
@@ -127,7 +133,6 @@ export default function PetForm() {
           </div>
         )}
 
-        {/* Lista de pets */}
         <div className="mt-8">
           <h3 className="text-xl font-bold text-gray-800 mb-3">Lista de Pets</h3>
           {loading ? (
@@ -137,16 +142,13 @@ export default function PetForm() {
           ) : (
             <ul className="space-y-2">
               {pets.map((pet) => (
-                <li
-                  key={pet.id}
-                  className="bg-white p-3 rounded-lg shadow flex justify-between items-center"
-                >
+                <li key={pet.id} className="bg-white p-3 rounded-lg shadow flex justify-between items-center">
                   <div className="flex items-center space-x-3">
                     <div className="bg-green-100 text-green-700 p-2 rounded-full">
                       <Dog size={20} />
                     </div>
                     <span>
-                      {pet.name} - {pet.species} ({pet.age} anos)
+                      {pet.nome} - {pet.especie} ({pet.idade} anos)
                     </span>
                   </div>
                   <button

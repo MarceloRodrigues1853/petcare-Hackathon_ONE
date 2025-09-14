@@ -1,8 +1,15 @@
+// src/pages/owner/Dashboard.jsx
+
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { ClipboardList, User, Calendar, PawPrint, Dog } from "lucide-react";
-import { getAppointments, getPets, getProfile } from "../../api/owner.js";
+import { useAuth } from "../../context/AuthContext"; // 1. Importa o useAuth
 
+// 2. Importa as funções de API NOVAS e CORRETAS
+import { getOwnerById } from "../../api/owner.api.js";
+import { listAppointments } from "../../api/appointment.api.js";
+
+// Componente StatCard (sem mudanças)
 function StatCard({ icon, title, value }) {
   return (
     <div className="bg-white p-6 rounded-xl shadow-md flex items-center space-x-4">
@@ -15,52 +22,65 @@ function StatCard({ icon, title, value }) {
   );
 }
 
-// Função utilitária para exibir datas no formato brasileiro
-function formatDateBR(dateString) {
-  const [year, month, day] = dateString.split("-");
-  return `${day}/${month}/${year}`;
+// Função de cálculo de total (agora muito mais simples)
+function calculateTotal(appointments) {
+  // O preço vem da API, então só precisamos somar
+  return appointments.reduce((total, apt) => total + (apt.sitterServicoPreco?.valor || 0), 0);
 }
 
-// Função para calcular o valor total dos serviços agendados
-function calculateTotal(appointments) {
-  let total = 0;
-  appointments.forEach((apt) => {
-    if (apt.service === "Babá de Pets") total += 50;
-    else if (apt.service === "Passeio") total += 55;
-    else if (apt.service === "Hospedagem") total += 60;
-  });
-  return total;
+// Função de formatar data (versão robusta)
+function formatDateBR(dateString) {
+  const date = new Date(dateString);
+  const userTimezoneOffset = date.getTimezoneOffset() * 60000;
+  return new Date(date.getTime() + userTimezoneOffset).toLocaleDateString('pt-BR');
 }
 
 export default function OwnerDashboard() {
+  const { user } = useAuth(); // 3. Pega o usuário logado do contexto
   const [appointments, setAppointments] = useState([]);
   const [pets, setPets] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [ownerName, setOwnerName] = useState("Owner");
+  const [error, setError] = useState(null);
+  const [ownerName, setOwnerName] = useState("");
 
   useEffect(() => {
+    // Garante que só busca dados se o usuário estiver definido
+    if (!user) {
+      setLoading(false);
+      return;
+    }
+
     async function fetchData() {
       try {
         setLoading(true);
-        const [appointmentsData, petsData, profileData] = await Promise.all([
-          getAppointments(),
-          getPets(),
-          getProfile(),
+        setError(null);
+
+        // 4. Usa as funções NOVAS, passando o ID do usuário logado
+        const [ownerData, appointmentsData] = await Promise.all([
+          getOwnerById(user.id), // A API de owner precisa do ID
+          listAppointments(),   // A API de agendamentos deve filtrar pelo usuário do token
         ]);
+
+        setPets(ownerData.pets || []);
+        setOwnerName(ownerData.name.split(" ")[0]);
         setAppointments(appointmentsData);
-        setPets(petsData);
-        setOwnerName(profileData.name.split(" ")[0]); // Pega o primeiro nome
-      } catch (error) {
-        console.error("Erro ao carregar dados do dashboard:", error);
+
+      } catch (err) {
+        console.error("Erro ao carregar dados do dashboard:", err);
+        setError("Não foi possível carregar seus dados. Tente novamente mais tarde.");
       } finally {
         setLoading(false);
       }
     }
     fetchData();
-  }, []);
+  }, [user]); // O useEffect depende do 'user', então ele roda quando o login é feito
 
   if (loading) {
     return <div className="p-8 text-center text-gray-500">A carregar o seu painel...</div>;
+  }
+  
+  if (error) {
+    return <div className="p-8 text-center text-red-500">{error}</div>;
   }
 
   const totalToPay = calculateTotal(appointments);

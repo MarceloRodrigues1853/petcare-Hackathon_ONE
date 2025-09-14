@@ -1,24 +1,15 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { Link } from "react-router-dom";
 import { Users, UserPlus, DollarSign, ClipboardList, Briefcase, ShieldCheck } from "lucide-react";
+import { useAuth } from "../../context/AuthContext"; // Usado para garantir que o usuário é admin
 
-// Mock da API para simular a busca de dados do admin.
-// Substitua isso pelas suas chamadas de API reais.
-async function getAdminStats() {
-    console.log("Buscando estatísticas do admin...");
-    // Simula um pequeno atraso de rede
-    await new Promise(resolve => setTimeout(resolve, 500));
-    return {
-        totalUsers: 132,
-        totalSitters: 45,
-        totalOwners: 87,
-        totalAppointments: 256,
-        monthlyRevenue: 12540.75,
-        pendingApprovals: 3,
-    };
-}
+// 1. Importando todas as funções de listagem necessárias da nossa API
+import { listAllUsers } from "../../api/user.api.js";
+import { listOwners } from "../../api/owner.api.js";
+import { listSitters } from "../../api/sitter.api.js";
+import { listAppointments } from "../../api/appointment.api.js";
 
-// Componente reutilizável para os cards de estatísticas
+// Componente reutilizável para os cards de estatísticas (sem mudanças)
 function StatCard({ icon, title, value, colorClass = "blue" }) {
     const colors = {
         blue: "bg-blue-100 text-blue-600",
@@ -42,28 +33,61 @@ function StatCard({ icon, title, value, colorClass = "blue" }) {
 
 // Componente principal do Dashboard do Admin
 export default function AdminDashboard() {
+    const { user } = useAuth();
     const [stats, setStats] = useState(null);
     const [loading, setLoading] = useState(true);
-
+    const [error, setError] = useState(null);
     const brl = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" });
 
-    useEffect(() => {
-        async function fetchData() {
-            try {
-                setLoading(true);
-                const statsData = await getAdminStats();
-                setStats(statsData);
-            } catch (error) {
-                console.error("Falha ao carregar dados do dashboard de admin:", error);
-            } finally {
-                setLoading(false);
-            }
+    const fetchData = useCallback(async () => {
+        // Garante que só busca dados se o usuário for um Admin
+        if (user?.role !== 'ADMIN') {
+            setLoading(false);
+            setError("Acesso não autorizado.");
+            return;
         }
+
+        try {
+            setLoading(true);
+            setError(null);
+            // 2. Usando Promise.all para buscar todos os dados em paralelo
+            const [usersData, ownersData, sittersData, appointmentsData] = await Promise.all([
+                listAllUsers(),
+                listOwners(),
+                listSitters(),
+                listAppointments(),
+            ]);
+
+            // 3. Montando o objeto de estatísticas a partir dos dados recebidos
+            const statsObject = {
+                totalUsers: usersData.length,
+                totalSitters: sittersData.length,
+                totalOwners: ownersData.length,
+                totalAppointments: appointmentsData.length,
+                // TODO: A API precisa fornecer estes dados. Por enquanto, valores fixos.
+                monthlyRevenue: 0, 
+                pendingApprovals: 0,
+            };
+            setStats(statsObject);
+
+        } catch (err) {
+            console.error("Falha ao carregar dados do dashboard de admin:", err);
+            setError("Não foi possível carregar os dados do painel de administração.");
+        } finally {
+            setLoading(false);
+        }
+    }, [user]);
+
+    useEffect(() => {
         fetchData();
-    }, []);
+    }, [fetchData]);
 
     if (loading) {
         return <div className="p-8 text-center text-gray-500">A carregar painel de administração...</div>;
+    }
+
+    if (error) {
+        return <div className="p-8 text-center text-red-500">{error}</div>;
     }
 
     return (
@@ -113,7 +137,7 @@ export default function AdminDashboard() {
                                 <Briefcase className="text-blue-600 mb-2" size={28} />
                                 <span className="font-semibold text-center text-gray-700">Tipos de Serviço</span>
                             </Link>
-                             <Link to="/admin/approvals" className="flex flex-col items-center justify-center p-4 bg-red-50 rounded-lg hover:bg-red-100 transition-colors relative">
+                            <Link to="/admin/approvals" className="flex flex-col items-center justify-center p-4 bg-red-50 rounded-lg hover:bg-red-100 transition-colors relative">
                                 {stats?.pendingApprovals > 0 && (
                                     <span className="absolute top-2 right-2 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
                                         {stats.pendingApprovals}
@@ -127,10 +151,10 @@ export default function AdminDashboard() {
                     
                     {/* Seção para listas ou relatórios futuros */}
                     <section className="bg-white p-6 rounded-xl shadow-md">
-                         <h2 className="text-2xl font-semibold text-gray-800 mb-4">Relatórios e Atividades Recentes</h2>
-                         <div className="text-center text-gray-500 py-8">
+                        <h2 className="text-2xl font-semibold text-gray-800 mb-4">Relatórios e Atividades Recentes</h2>
+                        <div className="text-center text-gray-500 py-8">
                             <p>Área para exibir os últimos usuários cadastrados, agendamentos recentes ou gráficos.</p>
-                         </div>
+                        </div>
                     </section>
                 </main>
             </div>

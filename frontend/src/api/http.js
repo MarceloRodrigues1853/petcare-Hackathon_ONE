@@ -1,38 +1,53 @@
-// src/api/http.js
+// api/http.js
+const API_BASE_URL = import.meta.env.VITE_API_BASE; // Ex: VITE_API_BASE=http://localhost:8080
 
-// 1. CORRETO: Lê a variável de ambiente VITE_API_BASE que agora 
-//    contém a URL completa, como "http://localhost:8080/api".
-const API = import.meta.env.VITE_API_BASE; 
-
-function authHeader() {
-  const t = localStorage.getItem('jwt');
-  return t ? { Authorization: `Bearer ${t}` } : {};
+function getAuthHeader() {
+  const token = localStorage.getItem('jwt');
+  return token ? { Authorization: `Bearer ${token}` } : {};
 }
 
 async function request(method, path, body, opts = {}) {
-  // 2. CORRETO: Monta a URL final corretamente.
-  //    Exemplo: "http://localhost:8080/api" + "/auth/login"
-  const res = await fetch(`${API}${path}`, {
+  const url = `${API_BASE_URL}${path}`;
+
+  const response = await fetch(url, {
     method,
     headers: {
       ...(body ? { 'Content-Type': 'application/json' } : {}),
-      ...authHeader(),
+      ...getAuthHeader(),
       ...(opts.headers || {}),
     },
-    credentials: 'include',
     body: body ? JSON.stringify(body) : undefined,
+    ...opts,
   });
 
-  if (!res.ok) {
-    let msg = `HTTP ${res.status}`;
-    try { msg = (await res.json())?.message || msg; } catch {}
-    throw new Error(msg);
+  if (!response.ok) {
+    let errorMessage = `Erro HTTP ${response.status}: ${response.statusText}`;
+    try {
+      const errorBody = await response.json();
+      errorMessage = errorBody.message || errorMessage;
+    } catch (e) {
+      // Ignora erro de parsing se o corpo não for JSON.
+    }
+    throw new Error(errorMessage);
   }
-  return res.status === 204 ? null : res.json();
+
+  return response.status === 204 ? null : response.json();
 }
 
-// 3. CORRETO: As funções de exportação continuam funcionando perfeitamente.
-export const getJson  = (p, o) => request('GET', p, null, o);
-export const postJson = (p, b, o) => request('POST', p, b, o);
-export const putJson  = (p, b, o) => request('PUT', p, b, o);
-export const delJson  = (p, o) => request('DELETE', p, null, o);
+export function get(path, opts) {
+  return request('GET', path, null, opts);
+}
+
+export function post(path, body, opts) {
+  return request('POST', path, body, opts);
+}
+
+export function put(path, body, opts) {
+  return request('PUT', path, body, opts);
+}
+
+export function del(path, opts) {
+  return request('DELETE', path, null, opts);
+}
+
+export default { get, post, put, del };

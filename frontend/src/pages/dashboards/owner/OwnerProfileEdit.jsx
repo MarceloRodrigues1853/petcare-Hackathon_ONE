@@ -1,10 +1,13 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { Link } from "react-router-dom";
 import { ArrowLeft, UploadCloud, Instagram, Facebook } from "lucide-react";
-// O caminho da sua API simulada. Garanta que ela exporta 'getProfile' e 'updateProfile'.
-import { getProfile, updateProfile } from "../../../api/owner";
+import { useAuth } from "../../../context/AuthContext";
+
+// 1. Importando as funções NOVAS e CORRETAS
+import { getOwnerById, updateOwner } from "../../../api/owner.api.js";
 
 export default function OwnerProfileEdit() {
+  const { user } = useAuth(); // 2. Pegando o usuário logado para saber o ID
   const [profile, setProfile] = useState({ 
     name: '', email: '', phone: '', imageUrl: null,
     address: { street: '', number: '', neighborhood: '', city: '', state: '', zip: '' },
@@ -14,45 +17,64 @@ export default function OwnerProfileEdit() {
   const [saving, setSaving] = useState(false);
   const [feedback, setFeedback] = useState({ message: '', type: '' });
 
-  useEffect(() => {
-    async function fetchProfile() {
-      try {
-        setLoading(true);
-        const data = await getProfile();
-        setProfile(prev => ({ ...prev, ...data}));
-      } catch (error) {
-        console.error("Falha ao buscar perfil:", error);
-        setFeedback({ message: 'Não foi possível carregar seu perfil.', type: 'error' });
-      } finally {
-        setLoading(false);
-      }
+  const fetchProfile = useCallback(async () => {
+    if (!user?.id) return; // Só busca se tivermos um ID de usuário
+
+    try {
+      setLoading(true);
+      // 3. Buscando o perfil com a função correta, passando o ID
+      const data = await getOwnerById(user.id);
+      // Merge seguro para preencher o formulário sem quebrar o estado inicial
+      setProfile(prev => ({ ...prev, ...data }));
+    } catch (error) {
+      console.error("Falha ao buscar perfil:", error);
+      setFeedback({ message: 'Não foi possível carregar seu perfil.', type: 'error' });
+    } finally {
+      setLoading(false);
     }
+  }, [user]);
+
+  useEffect(() => {
     fetchProfile();
-  }, []);
+  }, [fetchProfile]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setProfile(prev => ({ ...prev, [name]: value }));
   };
 
+  // Sua função de lidar com inputs aninhados está perfeita, sem mudanças!
   const handleNestedChange = (section) => (e) => {
     const { name, value } = e.target;
     setProfile(prev => ({
-        ...prev,
-        [section]: {
-            ...prev[section],
-            [name]: value
-        }
+      ...prev,
+      [section]: { ...prev[section], [name]: value }
     }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!user?.id) return;
+
     setSaving(true);
     setFeedback({ message: '', type: '' });
     try {
-      const response = await updateProfile(profile);
-      setFeedback({ message: response.message, type: 'success' });
+      // 4. PREPARANDO O PAYLOAD PARA A API
+      // Enviamos apenas os campos que a API aceita no momento (name, email).
+      // O campo 'password' não deve ser enviado vazio. A mudança de senha
+      // geralmente é feita em um formulário separado.
+      const payload = {
+        name: profile.name,
+        email: profile.email,
+        // Quando o backend for atualizado, você adicionará os outros campos aqui:
+        // phone: profile.phone,
+        // address: profile.address,
+        // socials: profile.socials,
+      };
+
+      // 5. Chamando a função de update correta, passando o ID e o payload
+      await updateOwner(user.id, payload);
+      setFeedback({ message: "Perfil atualizado com sucesso!", type: 'success' });
     } catch (error) {
       setFeedback({ message: error.message || 'Falha ao atualizar. Tente novamente.', type: 'error' });
     } finally {
