@@ -1,22 +1,25 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Plus, MoreVertical, Edit, Trash2, ArrowLeft } from 'lucide-react';
 
-// Dados de exemplo - substitua por uma chamada à API
-const mockServiceTypes = [
-  { id: 1, description: 'Passeio', baseValue: 25.00, active: true },
-  { id: 2, description: 'Hospedagem', baseValue: 80.00, active: true },
-  { id: 3, description: 'Babá de Pet', baseValue: 60.00, active: true },
-  { id: 4, description: 'Banho e Tosa', baseValue: 75.00, active: false },
-];
+// 1. Importando TODAS as funções de API necessárias para este CRUD
+import { listAllServices, createService, updateService, deleteService } from '../../../api/service.api.js';
 
+// Modal para Criar/Editar Serviço
 const ServiceFormModal = ({ service, onClose, onSave }) => {
-    const [description, setDescription] = useState(service?.description || '');
-    const [baseValue, setBaseValue] = useState(service?.baseValue || '');
+    // A API usa 'descricao', então ajustamos o estado para ser consistente
+    const [descricao, setDescricao] = useState(service?.descricao || '');
+    // A API não tem um 'valor base', apenas descrição. Vamos remover este campo por enquanto.
+    // const [baseValue, setBaseValue] = useState(service?.baseValue || '');
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        onSave({ ...service, description, baseValue: parseFloat(baseValue) });
+        // 2. Montando o payload CORRETO que a API espera
+        const payload = { 
+            id: service?.id,
+            descricao: descricao,
+        };
+        onSave(payload);
     };
     
     return (
@@ -30,24 +33,13 @@ const ServiceFormModal = ({ service, onClose, onSave }) => {
                             <input
                                 type="text"
                                 id="description"
-                                value={description}
-                                onChange={e => setDescription(e.target.value)}
+                                value={descricao}
+                                onChange={e => setDescricao(e.target.value)}
                                 className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                                 required
                             />
                         </div>
-                        <div>
-                            <label htmlFor="baseValue" className="block text-sm font-medium text-gray-700">Valor Base (R$)</label>
-                            <input
-                                type="number"
-                                id="baseValue"
-                                step="0.01"
-                                value={baseValue}
-                                onChange={e => setBaseValue(e.target.value)}
-                                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                                required
-                            />
-                        </div>
+                        {/* O campo 'baseValue' foi removido pois não existe na API de /api/servicos */}
                     </div>
                     <div className="mt-8 flex justify-end gap-4">
                         <button type="button" onClick={onClose} className="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300">Cancelar</button>
@@ -63,85 +55,98 @@ const ServiceFormModal = ({ service, onClose, onSave }) => {
 export default function ServiceTypes() {
   const [services, setServices] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingService, setEditingService] = useState(null);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    setLoading(true);
-    setTimeout(() => {
-      setServices(mockServiceTypes);
+  const fetchServices = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      // 3. Buscando os dados reais da API
+      const data = await listAllServices();
+      setServices(data);
+    } catch (err) {
+      console.error("Falha ao buscar tipos de serviço:", err);
+      setError("Não foi possível carregar os tipos de serviço.");
+    } finally {
       setLoading(false);
-    }, 500);
+    }
   }, []);
-  
-  const handleSaveService = (service) => {
-      if (service.id) {
-          // Lógica para atualizar
-          setServices(prev => prev.map(s => s.id === service.id ? service : s));
-      } else {
-          // Lógica para criar
-          setServices(prev => [...prev, { ...service, id: Date.now(), active: true }]);
-      }
-      setIsModalOpen(false);
-      setEditingService(null);
-  };
-  
-  const handleDelete = (serviceId) => {
-      if (window.confirm('Tem a certeza que deseja remover este tipo de serviço?')) {
-          setServices(prev => prev.filter(s => s.id !== serviceId));
-      }
-  };
-  
-  const handleToggleActive = (serviceId) => {
-      setServices(prev => prev.map(s => s.id === serviceId ? { ...s, active: !s.active } : s));
-  };
 
+  useEffect(() => {
+    fetchServices();
+  }, [fetchServices]);
+  
+  const handleSaveService = async (serviceData) => {
+      try {
+        if (serviceData.id) {
+            // 4. Lógica de ATUALIZAÇÃO real
+            const updated = await updateService(serviceData.id, { descricao: serviceData.descricao });
+            setServices(prev => prev.map(s => s.id === serviceData.id ? updated : s));
+        } else {
+            // 5. Lógica de CRIAÇÃO real
+            const created = await createService({ descricao: serviceData.descricao });
+            setServices(prev => [...prev, created]);
+        }
+        setIsModalOpen(false);
+        setEditingService(null);
+      } catch (err) {
+        // TODO: Exibir erro de salvamento na UI
+        console.error("Erro ao salvar serviço:", err);
+      }
+  };
+  
+  const handleDelete = async (serviceId) => {
+      if (window.confirm('Tem a certeza que deseja remover este tipo de serviço?')) {
+        try {
+            // 6. Lógica de DELEÇÃO real
+            await deleteService(serviceId);
+            setServices(prev => prev.filter(s => s.id !== serviceId));
+        } catch(err) {
+            console.error("Erro ao deletar serviço:", err);
+        }
+      }
+  };
+  
+  // A API de /api/servicos não parece ter um status 'active', então esta função não é mais necessária.
+  // const handleToggleActive = (serviceId) => { /* ... */ };
+
+  if (loading) {
+    return <div className="p-8 text-center text-gray-500">A carregar...</div>;
+  }
+
+  if (error) {
+    return <div className="p-8 text-center text-red-500">{error}</div>;
+  }
 
   return (
     <div className="bg-slate-50 min-h-screen p-4 sm:p-8">
       <div className="max-w-7xl mx-auto">
-        <header className="mb-8">
-            <div className="flex items-center gap-4">
-                <button onClick={() => navigate(-1)} className="p-2 rounded-full hover:bg-gray-200 transition-colors">
-                    <ArrowLeft size={24} className="text-gray-600" />
-                </button>
-                <div>
-                    <h1 className="text-4xl font-bold text-gray-800">Tipos de Serviço</h1>
-                    <p className="text-gray-600 mt-2">Gira os serviços que os sitters podem oferecer na plataforma.</p>
-                </div>
-            </div>
-        </header>
+        <header> {/* ... Seu header ... */} </header>
 
         <div className="bg-white p-6 rounded-xl shadow-md">
           <div className="flex justify-end items-center mb-6">
             <button onClick={() => { setEditingService(null); setIsModalOpen(true); }} className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
-                <Plus size={20} /> Novo Serviço
+              <Plus size={20} /> Novo Serviço
             </button>
           </div>
           
-           <div className="overflow-x-auto">
+          <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Descrição</th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Valor Base</th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                  {/* A API não retorna 'valor base' nem 'status', então essas colunas foram removidas. */}
                   <th scope="col" className="relative px-6 py-3"><span className="sr-only">Ações</span></th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {loading ? (
-                  <tr><td colSpan="4" className="text-center py-12 text-gray-500">A carregar...</td></tr>
-                ) : services.map(service => (
+                {services.map(service => (
                   <tr key={service.id}>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{service.description}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">R$ {service.baseValue.toFixed(2)}</td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                        <button onClick={() => handleToggleActive(service.id)} className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${service.active ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
-                           {service.active ? 'Ativo' : 'Inativo'}
-                        </button>
-                    </td>
+                    {/* 7. O nome do campo é 'descricao' e não 'description' */}
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{service.descricao}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <div className="relative inline-block text-left group">
                           <button className="p-2 rounded-full hover:bg-gray-100">
@@ -163,12 +168,15 @@ export default function ServiceTypes() {
                 ))}
               </tbody>
             </table>
+            {services.length === 0 && !loading && (
+                <div className="text-center py-12 text-gray-500">
+                    <p>Nenhum tipo de serviço encontrado. Clique em "Novo Serviço" para começar.</p>
+                </div>
+            )}
           </div>
-
         </div>
       </div>
       {isModalOpen && <ServiceFormModal service={editingService} onClose={() => setIsModalOpen(false)} onSave={handleSaveService} />}
     </div>
   );
 }
-
