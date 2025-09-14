@@ -10,6 +10,18 @@ public class AgendamentoRequest {
 
     private LocalDateTime dataInicio;
     private LocalDateTime dataFim;
+/* */
+    public AgendamentoRequest() {}
+
+        public AgendamentoRequest(Long ownerId, Long sitterId, Long petId, Long sitterServicoPrecoId, LocalDateTime dataInicio, LocalDateTime dataFim) {
+        this.ownerId = ownerId;
+        this.sitterId = sitterId;
+        this.petId = petId;
+        this.sitterServicoPrecoId = sitterServicoPrecoId;
+        this.dataInicio = dataInicio;
+        this.dataFim = dataFim;
+    }
+
 
     // Getters e Setters
     public Long getOwnerId() { return ownerId; }

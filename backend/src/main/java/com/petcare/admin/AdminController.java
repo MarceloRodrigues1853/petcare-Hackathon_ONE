@@ -8,106 +8,109 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.petcare.agendamento.AgendamentoRequest;
 import com.petcare.agendamento.AgendamentoResponse;
-import com.petcare.owner.OwnerRepository;
 import com.petcare.owner.OwnerResponse;
 import com.petcare.servico.ServicoRequest;
 import com.petcare.servico.ServicoResponse;
-import com.petcare.sitter.SitterRepository;
+import com.petcare.sitter.SitterProfileResponse;
+
 
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
+import lombok.RequiredArgsConstructor;
 
 @RestController
+@RequiredArgsConstructor 
 @RequestMapping("/api/admin") //PODEM MUDAR OS NOMES DOS ENDPOINTS
 public class AdminController {
     private final AdminService adminService;
 
 
-    public AdminController(AdminService adminService) {
-        this.adminService = adminService;
-    }
-
-    //LISTAR OWNER CADASTRADOS
+    //LISTA TODDOS OS OWNERS
     @GetMapping("/users/owners")
     public ResponseEntity<List<OwnerResponse>> getAllOwners() {
         List<OwnerResponse> owners = adminService.getAllOwners();
         return ResponseEntity.ok(owners);
     }
 
-    //BANIR/DELETAR OWNER
+    //DELETA UM OWNER COM BASE NO ID
     @DeleteMapping("/users/owners/{ownerId}")
     public ResponseEntity<Void> deleteOwner(@PathVariable Long ownerId) {
         adminService.deleteOwner(ownerId);
         return ResponseEntity.noContent().build();
     }
-    
-    //LISTAR SITTER CADASTRADOS
+
+    //LISTA TODOS OS SITTERS
     @GetMapping("/users/sitters")
-    public ResponseEntity<List<SitterResponse>> getAllSitters() {
-        List<SitterResponse> sitters = adminService.getAllSitters();
+    public ResponseEntity<List<SitterProfileResponse>> getAllSitters() {
+        List<SitterProfileResponse> sitters = adminService.getAllSitters();
         return ResponseEntity.ok(sitters);
     }
 
-    //BANIR/DELETAR SITTER
+    //DELETA UM SITTER COM BASE NO ID
     @DeleteMapping("/users/sitters/{sitterId}")
     public ResponseEntity<Void> deleteSitter(@PathVariable Long sitterId) {
         adminService.deleteSitter(sitterId);
         return ResponseEntity.noContent().build();
     }
 
-    //LiSTAR TODOS OS SERVIÇOS CADASTRADOS
-    @GetMapping("/services")
+    // --- ENDPOINTS PARA GERENCIAR O CATÁLOGO DE SERVIÇOS ---
+
+    //LISTA TODOS OS SERVIÇOS
+    @GetMapping("/servicos")
     public ResponseEntity<List<ServicoResponse>> getAllServices() {
         List<ServicoResponse> services = adminService.getAllServices();
         return ResponseEntity.ok(services);
     }
 
-    //CRIAR NOVO SERVIÇO - ja estão criados no BD, mas coloquei aqui
-    @PostMapping("/services")
+    //CRIA UM NOVO SERVIÇO
+    @PostMapping("/servicos")
     public ResponseEntity<ServicoResponse> createService(@RequestBody ServicoRequest serviceRequest) {
         ServicoResponse createdService = adminService.createService(serviceRequest);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdService);
     }
 
-    //EXCLUIR SERVIÇO CADASTRADO
-    @DeleteMapping("/services/{serviceId}")
+    //DELETA UM SERVIÇO COM BASE NO ID
+    @DeleteMapping("/servicos/{serviceId}")
     public ResponseEntity<Void> deleteService(@PathVariable Long serviceId) {
         adminService.deleteService(serviceId);
-        return ResponseEntity.noContent().build(); 
+        return ResponseEntity.noContent().build();
     }
 
-    //LISTAR OD AGENDAMENTOS DO MES
-    @GetMapping("/")
+    // --- ENDPOINTS PARA GERENCIAR AGENDAMENTOS ---
+
+    //LISTA TODOS OS AGENDAMENTOS
+    @GetMapping("/agendamentos")
     public ResponseEntity<List<AgendamentoResponse>> getAllAgendamentos() {
         List<AgendamentoResponse> agendamentos = adminService.getAllAgendamentos();
         return ResponseEntity.ok(agendamentos);
     }
 
-
-    //---- AQUI VAI DEPENDER DOS AJUSTES FINAIS NA PARTE DE AGENDAMENTOS ----
-    // POR ISSO VOU DEIXAR COMENTADO
-
-    //LISTAR AGENDAMENTOS POR STATUS (PENDENTE, APROVADO, CANCELADO, CONCLUIDO)
-    @GetMapping("/agendamentos/status/{status}")
-    public ResponseEntity<List<AgendamentoResponse>> getAgendamentosByStatus(String status) {
-        List<AgendamentoResponse> agendamentos = adminService.getAgendamentosByStatus(status);
-        return ResponseEntity.ok(agendamentos);
+    //ATUALIZA UM AGENDAMENTO
+    @PutMapping("/agendamentos/{agendamentoId}")
+    public ResponseEntity<AgendamentoResponse> atualizarAgendamento(
+            @PathVariable Long agendamentoId,
+            @RequestBody AgendamentoRequest request
+    ) {
+        AgendamentoResponse agendamentoAtualizado = adminService.atualizarAgendamento(agendamentoId, request);
+        return ResponseEntity.ok(agendamentoAtualizado);
     }
-
-    //LISTAR AGENDAMENTOS CONFLITUOSOS  
-    @GetMapping("/agendamentos/conflitos")
-    public ResponseEntity<List<AgendamentoResponse>> getConflictingAgendamentos() {
-        List<AgendamentoResponse> agendamentos = adminService.getConflictingAgendamentos
-        return ResponseEntity.ok(agendamentos);
-    }
-
-    //EXCLUIR AGENDAMENTO
+    
+    //DELETA UM AGENDAMENTO COM BASE NO ID
     @DeleteMapping("/agendamentos/{agendamentoId}")
-    public ResponseEntity<Void> deleteAgendamento(Long agendamentoId) {
+    public ResponseEntity<Void> deleteAgendamento(@PathVariable Long agendamentoId) {
         adminService.deleteAgendamento(agendamentoId);
         return ResponseEntity.noContent().build();
+    }
+    
+    //LISTA OS AGENDAMENTOS QUE ESTÃO COM CONFLITO DE HORÁRIO
+    @GetMapping("/agendamentos/conflitos")
+    public ResponseEntity<List<AgendamentoResponse>> getConflictingAgendamentos() {
+        List<AgendamentoResponse> agendamentos = adminService.getConflictingAgendamentos();
+        return ResponseEntity.ok(agendamentos);
     }
 }

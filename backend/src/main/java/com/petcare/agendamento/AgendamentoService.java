@@ -2,9 +2,14 @@ package com.petcare.agendamento;
 
 import com.petcare.owner.Owner;
 import com.petcare.owner.OwnerRepository;
+import com.petcare.pet.Pet;
 import com.petcare.pet.PetRepository;
-import com.petcare.sitter.SitterRepository; 
-import com.petcare.sitter.SitterServicoPrecoRepository; 
+import com.petcare.sitter.Sitter;
+import com.petcare.sitter.SitterRepository;
+import com.petcare.sitter.SitterServicoPreco;
+import com.petcare.sitter.SitterServicoPrecoRepository;
+
+import org.springframework.transaction.annotation.Transactional;
 
 import org.springframework.stereotype.Service;
 
@@ -34,44 +39,48 @@ public class AgendamentoService {
         this.sitterServicoPrecoRepository = sitterServicoPrecoRepository;
     }
 
+    @Transactional
     public AgendamentoResponse criar(AgendamentoRequest request) {
-        Owner owner = ownerRepository.findById(request.getOwnerId())
-                .orElseThrow(() -> new RuntimeException("Owner não encontrado"));
-
-    
-        var sitter = sitterRepository.findById(request.getSitterId())
-                .orElseThrow(() -> new RuntimeException("Sitter não encontrado"));
-        var pet = petRepository.findById(request.getPetId())
-                .orElseThrow(() -> new RuntimeException("Pet não encontrado"));
-        var servicoPreco = sitterServicoPrecoRepository.findById(request.getSitterServicoPrecoId())
-                .orElseThrow(() -> new RuntimeException("Serviço não encontrado"));
-
-        // Cria a entidade Agendamento
-        Agendamento agendamento = new Agendamento();
-        agendamento.setDataInicio(request.getDataInicio());
-        agendamento.setDataFim(request.getDataFim());
-        agendamento.setStatus(Agendamento.Status.AGENDADO);
-        agendamento.setSitter(sitter);
-        agendamento.setPet(pet);
-        agendamento.setSitterServicoPreco(servicoPreco);
-
-        // Valida conflito no mesmo horário
-        var conflitos = agendamentoRepository.findConflitos(
-                agendamento.getSitter().getId(),
-                agendamento.getDataInicio(),
-                agendamento.getDataFim()
-        );
-        if (!conflitos.isEmpty()) {
-            throw new RuntimeException("Sitter indisponível neste horário.");
-        }
-       
-        owner.addAgendamento(agendamento);
-        
-        ownerRepository.save(owner); 
-
-        return new AgendamentoResponse(agendamento);
+    // VALIDAÇÃO 1: Datas
+    if (request.getDataInicio().isAfter(request.getDataFim())) {
+        throw new IllegalArgumentException("A data de início não pode ser depois da data de fim.");
     }
 
+    Owner owner = ownerRepository.findById(request.getOwnerId())
+            .orElseThrow(() -> new RuntimeException("Owner não encontrado"));
+    Sitter sitter = sitterRepository.findById(request.getSitterId())
+            .orElseThrow(() -> new RuntimeException("Sitter não encontrado"));
+    Pet pet = petRepository.findById(request.getPetId())
+            .orElseThrow(() -> new RuntimeException("Pet não encontrado"));
+    SitterServicoPreco servicoPreco = sitterServicoPrecoRepository.findById(request.getSitterServicoPrecoId())
+            .orElseThrow(() -> new RuntimeException("Serviço não encontrado"));
+
+    // VALIDAÇÃO 2: Conflitos (agora com a query melhorada)
+    List<Agendamento> conflitos = agendamentoRepository.findConflitos(
+            sitter.getId(),
+            request.getDataInicio(),
+            request.getDataFim()
+    );
+    if (!conflitos.isEmpty()) {
+        throw new RuntimeException("Sitter indisponível neste horário.");
+    }
+    
+    // Se passou por todas as validações, cria e salva
+    Agendamento agendamento = new Agendamento();
+    agendamento.setOwner(owner);
+    agendamento.setSitter(sitter);
+    agendamento.setPet(pet);
+    agendamento.setSitterServicoPreco(servicoPreco);
+    agendamento.setDataInicio(request.getDataInicio());
+    agendamento.setDataFim(request.getDataFim());
+    agendamento.setStatus(Agendamento.Status.AGENDADO);
+    
+    Agendamento agendamentoSalvo = agendamentoRepository.save(agendamento);
+
+    return new AgendamentoResponse(agendamentoSalvo);
+}
+
+    @Transactional
     public AgendamentoResponse atualizar(Long id, AgendamentoRequest request) {
         Agendamento agendamento = agendamentoRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Agendamento não encontrado"));
@@ -118,6 +127,7 @@ public class AgendamentoService {
         return new AgendamentoResponse(agendamento);
     }
 
+    @Transactional
     public void deletar(Long id, Long ownerId) {
         var agendamento = agendamentoRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Agendamento não encontrado"));
@@ -133,12 +143,14 @@ public class AgendamentoService {
         agendamentoRepository.delete(agendamento);
     }
     
+    @Transactional(readOnly = true)
     public List<AgendamentoResponse> listarTodos() {
         return agendamentoRepository.findAll().stream()
             .map(AgendamentoResponse::new) 
             .collect(Collectors.toList());
     }
     
+    @Transactional(readOnly = true)
     public AgendamentoResponse buscarPorId(Long id) {
         Agendamento agendamento = agendamentoRepository.findById(id)
             .orElseThrow(() -> new RuntimeException("Agendamento não encontrado"));
