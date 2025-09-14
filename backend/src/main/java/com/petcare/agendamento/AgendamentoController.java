@@ -2,6 +2,7 @@ package com.petcare.agendamento;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.http.HttpStatus;
 
 import java.util.List;
 
@@ -16,28 +17,42 @@ public class AgendamentoController {
     }
 
     @PostMapping
-    public ResponseEntity<Agendamento> criar(@RequestBody Agendamento agendamento) {
-        return ResponseEntity.ok(agendamentoService.criar(agendamento));
+    public ResponseEntity<AgendamentoResponse> criar(
+            @RequestBody AgendamentoRequest request
+    ) {
+        
+        AgendamentoResponse response = agendamentoService.criar(request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Agendamento> buscarPorId(@PathVariable Long id) {
-        return ResponseEntity.ok(agendamentoService.buscarPorId(id));
+    public ResponseEntity<AgendamentoResponse> buscarPorId(@PathVariable Long id) {
+        AgendamentoResponse response = agendamentoService.buscarPorId(id);
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping
-    public ResponseEntity<List<Agendamento>> listarTodos() {
-        return ResponseEntity.ok(agendamentoService.listarTodos());
+    public ResponseEntity<List<AgendamentoResponse>> listarTodos() {
+        List<AgendamentoResponse> responseList = agendamentoService.listarTodos();
+        return ResponseEntity.ok(responseList);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Agendamento> atualizar(@PathVariable Long id, @RequestBody Agendamento agendamento) {
-        return ResponseEntity.ok(agendamentoService.atualizar(id, agendamento));
+    public ResponseEntity<AgendamentoResponse> atualizar(
+            @PathVariable Long id,
+            @RequestBody AgendamentoRequest request
+    ) {
+
+        AgendamentoResponse response = agendamentoService.atualizar(id, request);
+        return ResponseEntity.ok(response);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deletar(@PathVariable Long id) {
-        agendamentoService.deletar(id);
+    public ResponseEntity<Void> deletar(
+            @PathVariable Long id,
+            @RequestParam Long ownerId
+    ) {
+        agendamentoService.deletar(id, ownerId);
         return ResponseEntity.noContent().build();
     }
 }

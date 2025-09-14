@@ -38,8 +38,6 @@ public class Agendamento {
     @JoinColumn(name = "pet_id", nullable = false)
     private Pet pet;
 
-    // Esta é a ligação correta: o agendamento aponta para o serviço específico
-    // que o Sitter oferece, que já contém o preço.
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "sitter_servico_preco_id", nullable = false)
     private SitterServicoPreco sitterServicoPreco;

@@ -40,7 +40,7 @@ public class Servico {
         this.descricao = descricao;
     }
 
-    // --- equals() e hashCode() são importantes para o bom funcionamento das entidades ---
+   
 
     @Override
     public boolean equals(Object o) {

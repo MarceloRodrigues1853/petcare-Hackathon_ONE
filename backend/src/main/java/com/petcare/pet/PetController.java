@@ -1,14 +1,10 @@
 package com.petcare.pet;
 
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
 import java.util.List;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/pets")
@@ -21,27 +17,34 @@ public class PetController {
     }
 
     @GetMapping
-    public List<PetResponse> listar() {
-        return petService.listarTodos();
+    public ResponseEntity<List<PetResponse>> listar() {
+        List<PetResponse> pets = petService.listarTodos();
+        return ResponseEntity.ok(pets);
     }
 
     @GetMapping("/{id}")
-    public PetResponse buscarPorId(@PathVariable Long id) {
-        return petService.buscarPorId(id);
+    public ResponseEntity<PetResponse> buscarPorId(@PathVariable Long id) {
+        PetResponse pet = petService.buscarPorId(id);
+        return ResponseEntity.ok(pet);
     }
 
     @PostMapping
-    public PetResponse criar(@RequestBody PetRequest request) {
-        return petService.criar(request);
+    public ResponseEntity<PetResponse> criar(@RequestBody PetRequest request) {
+        PetResponse novoPet = petService.criar(request);
+        // Retorna o status 201 Created para indicar que um novo recurso foi criado
+        return ResponseEntity.status(HttpStatus.CREATED).body(novoPet);
     }
 
     @PutMapping("/{id}")
-    public PetResponse atualizar(@PathVariable Long id, @RequestBody PetRequest request) {
-        return petService.atualizar(id, request);
+    public ResponseEntity<PetResponse> atualizar(@PathVariable Long id, @RequestBody PetRequest request) {
+        PetResponse petAtualizado = petService.atualizar(id, request);
+        return ResponseEntity.ok(petAtualizado);
     }
 
     @DeleteMapping("/{id}")
-    public void deletar(@PathVariable Long id) {
+    public ResponseEntity<Void> deletar(@PathVariable Long id) {
         petService.deletar(id);
+        // Retorna o status 204 No Content, indicando sucesso sem conteúdo na resposta
+        return ResponseEntity.noContent().build();
     }
 }

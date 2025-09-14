@@ -17,6 +17,14 @@ public class PetResponse {
         this.ownerId = ownerId;
     }
 
+    public PetResponse(Pet pet) {
+        this.id = pet.getId();
+        this.nome = pet.getNome();
+        this.especie = pet.getEspecie();
+        this.idade = pet.getIdade();
+        this.ownerId = pet.getOwner().getId();
+    }
+
     // Getters e Setters
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }

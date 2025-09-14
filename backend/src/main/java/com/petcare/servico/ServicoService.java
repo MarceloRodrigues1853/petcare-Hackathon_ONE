@@ -1,40 +1,57 @@
 package com.petcare.servico;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class ServicoService {
 
-    @Autowired
-    private ServicoRepository servicoRepository;
+    private final ServicoRepository servicoRepository;
 
-    public List<Servico> listarTodos() {
-        return servicoRepository.findAll();
+    public ServicoService(ServicoRepository servicoRepository) {
+        this.servicoRepository = servicoRepository;
     }
 
-    public Optional<Servico> buscarPorId(Long id) {
-        return servicoRepository.findById(id);
+    public List<ServicoResponse> listarTodos() {
+        return servicoRepository.findAll().stream()
+                .map(servico -> new ServicoResponse(servico.getId(), servico.getDescricao()))
+                .collect(Collectors.toList());
     }
 
-    public Servico criar(Servico servico) {
-        return servicoRepository.save(servico);
+    public ServicoResponse buscarPorId(Long id) {
+        Servico servico = servicoRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Serviço não encontrado"));
+        return new ServicoResponse(servico.getId(), servico.getDescricao());
     }
 
-    public Optional<Servico> atualizar(Long id, Servico servicoDetalhes) {
-        return servicoRepository.findById(id).map(servico -> {
-            servico.setDescricao(servicoDetalhes.getDescricao());
-            return servicoRepository.save(servico);
-        });
+    public ServicoResponse criar(ServicoRequest request) {
+        // Verifica se já existe um serviço com a mesma descrição
+        if (servicoRepository.findByDescricao(request.getDescricao()).isPresent()) {
+            throw new RuntimeException("Já existe um serviço com esta descrição.");
+        }
+        
+        Servico servico = new Servico();
+        servico.setDescricao(request.getDescricao());
+        Servico novoServico = servicoRepository.save(servico);
+
+        return new ServicoResponse(novoServico.getId(), novoServico.getDescricao());
     }
 
-    public boolean deletar(Long id) {
-        return servicoRepository.findById(id).map(servico -> {
-            servicoRepository.delete(servico);
-            return true;
-        }).orElse(false);
+    public ServicoResponse atualizar(Long id, ServicoRequest request) {
+        Servico servico = servicoRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Serviço não encontrado"));
+
+        servico.setDescricao(request.getDescricao());
+        Servico servicoAtualizado = servicoRepository.save(servico);
+        
+        return new ServicoResponse(servicoAtualizado.getId(), servicoAtualizado.getDescricao());
+    }
+
+    public void deletar(Long id) {
+        Servico servico = servicoRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Serviço não encontrado"));
+        servicoRepository.delete(servico);
     }
 }

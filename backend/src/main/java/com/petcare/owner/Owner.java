@@ -13,29 +13,49 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.OneToMany;
 
 @Entity
-@DiscriminatorValue("OWNER") // Este valor será salvo na coluna 'user_type' para identificar um Owner
+@DiscriminatorValue("OWNER")
 public class Owner extends User {
 
-    @OneToMany(mappedBy = "owner", cascade = CascadeType.ALL, orphanRemoval = true) //add para ao excluir o owner, os seus pets tbm sejam excluidos juntos
+    @OneToMany(mappedBy = "owner", cascade = CascadeType.ALL, orphanRemoval = true)
     List<Pet> pets = new ArrayList<>();
     
     @OneToMany(mappedBy = "owner", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Agendamento> agendamentos = new ArrayList<>();
 
-    // Construtor vazio é necessário para o JPA
     public Owner() {
-        super(); // Chama o construtor da classe pai
-        this.setRole(Role.OWNER); // Define a role padrão para esta classe
+        super();
+        this.setRole(Role.OWNER);
     }
 
-    // Construtor para criar um novo Owner com dados
     public Owner(String name, String email, String passwordHash) {
-        super(name, email, passwordHash, Role.OWNER); // Passa os dados para o construtor da classe pai
+        super(name, email, passwordHash, Role.OWNER);
     }
 
-    //Getters e Setters
+    // Gerenciamento de Pets
+    public void addPet(Pet pet) {
+        pets.add(pet);
+        pet.setOwner(this); 
+    }
+
+    public void removePet(Pet pet) {
+        pets.remove(pet);
+        pet.setOwner(null); 
+    }
+    
+    // Gerenciamento de Agendamentos 
+    public void addAgendamento(Agendamento agendamento) {
+        agendamentos.add(agendamento);
+        agendamento.setOwner(this); 
+    }
+    
+    public void removeAgendamento(Agendamento agendamento) {
+        agendamentos.remove(agendamento);
+        agendamento.setOwner(null); 
+    }
+
+    // --- Getters e Setters ---
     public List<Pet> getPets() {
-        return pets;   
+        return pets;    
     }
 
     public void setPets(List<Pet> pets) {

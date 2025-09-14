@@ -3,16 +3,15 @@ package com.petcare.owner;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.springframework.security.crypto.password.PasswordEncoder; // Import adicionado
+import org.springframework.security.crypto.password.PasswordEncoder; 
 import org.springframework.stereotype.Service;
 
-import com.petcare.user.User;
 
 @Service
 public class OwnerService {
 
     private final OwnerRepository ownerRepository;
-    private final PasswordEncoder passwordEncoder; // Campo adicionado
+    private final PasswordEncoder passwordEncoder; 
 
     // Construtor atualizado
     public OwnerService(OwnerRepository ownerRepository, PasswordEncoder passwordEncoder) {
