@@ -1,27 +1,18 @@
-import { useEffect, useState } from "react";
+JavaScript
+
+import { useEffect, useState, useCallback } from "react";
 import { Link } from "react-router-dom";
 import { ArrowLeft, UploadCloud, Instagram, Facebook } from "lucide-react";
-// O caminho da sua API simulada. Garanta que ela exporta 'getProfile' e 'updateProfile'.
-import { getProfile, updateProfile } from "../../../api/sitter.js";
+import { useAuth } from "../../../context/AuthContext";
 
-// Componente para os botões de preferência de pet
-function PreferenceButton({ label, isActive, onClick }) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={`flex-1 p-3 text-sm font-semibold rounded-lg border-2 transition-colors ${
-        isActive 
-        ? 'bg-blue-600 text-white border-blue-600' 
-        : 'bg-gray-100 text-gray-700 hover:bg-gray-200 border-transparent'
-      }`}
-    >
-      {label}
-    </button>
-  );
-}
+// 1. Importando as funções NOVAS e CORRETAS do nosso arquivo de API
+import { getSitterById, updateSitter } from "../../../api/sitter.api.js";
+
+// Componente PreferenceButton (seu código já está ótimo)
+function PreferenceButton({ label, isActive, onClick }) { /* ... seu código ... */ }
 
 export default function SitterProfileEdit() {
+  const { user } = useAuth(); // 2. Pegando o usuário logado para obter o ID
   const [profile, setProfile] = useState({ 
     name: '', email: '', phone: '', bio: '', imageUrl: null,
     address: { street: '', number: '', neighborhood: '', city: '', state: '', zip: '' },
@@ -32,52 +23,52 @@ export default function SitterProfileEdit() {
   const [saving, setSaving] = useState(false);
   const [feedback, setFeedback] = useState({ message: '', type: '' });
 
-  useEffect(() => {
-    async function fetchProfile() {
-      try {
-        setLoading(true);
-        const data = await getProfile();
-        setProfile(prev => ({ ...prev, ...data }));
-      } catch (error) {
-        console.error("Falha ao buscar perfil:", error);
-        setFeedback({ message: 'Não foi possível carregar seu perfil.', type: 'error' });
-      } finally {
-        setLoading(false);
-      }
+  const fetchProfile = useCallback(async () => {
+    if (!user?.id) return;
+
+    try {
+      setLoading(true);
+      // 3. Buscando o perfil com a função correta, passando o ID do sitter
+      const data = await getSitterById(user.id);
+      // O merge garante que o formulário não quebre se a API retornar menos campos
+      setProfile(prev => ({ ...prev, ...data }));
+    } catch (error) {
+      console.error("Falha ao buscar perfil:", error);
+      setFeedback({ message: 'Não foi possível carregar seu perfil.', type: 'error' });
+    } finally {
+      setLoading(false);
     }
+  }, [user]);
+
+  useEffect(() => {
     fetchProfile();
-  }, []);
+  }, [fetchProfile]);
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setProfile(prev => ({ ...prev, [name]: value }));
-  };
-
-  const handleNestedChange = (section) => (e) => {
-    const { name, value } = e.target;
-    setProfile(prev => ({
-        ...prev,
-        [section]: {
-            ...prev[section],
-            [name]: value
-        }
-    }));
-  };
-  
-  const handlePreferenceToggle = (preferenceKey) => {
-      setProfile(prev => ({
-          ...prev,
-          preferences: { ...prev.preferences, [preferenceKey]: !prev.preferences[preferenceKey] }
-      }));
-  };
+  // Suas funções de manipulação de estado (handleChange, handleNestedChange, etc.)
+  // já estão perfeitas e não precisam de alteração.
+  const handleChange = (e) => { /* ... */ };
+  const handleNestedChange = (section) => (e) => { /* ... */ };
+  const handlePreferenceToggle = (preferenceKey) => { /* ... */ };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!user?.id) return;
+
     setSaving(true);
     setFeedback({ message: '', type: '' });
     try {
-      const response = await updateProfile(profile);
-      setFeedback({ message: response.message, type: 'success' });
+      // 4. PREPARANDO O PAYLOAD PARA A API ATUAL
+      // Criamos um objeto 'payload' apenas com os campos que a API aceita: name e email.
+      const payload = {
+        name: profile.name,
+        email: profile.email,
+        // NOTA: Quando o backend for atualizado para aceitar mais campos,
+        // você os adicionará aqui. Ex: bio: profile.bio, address: profile.address, etc.
+      };
+
+      // 5. Chamando a função de update correta, passando o ID e o payload filtrado
+      await updateSitter(user.id, payload);
+      setFeedback({ message: "Perfil atualizado com sucesso!", type: 'success' });
     } catch (error) {
       setFeedback({ message: error.message || 'Falha ao atualizar. Tente novamente.', type: 'error' });
     } finally {
@@ -89,6 +80,10 @@ export default function SitterProfileEdit() {
   if (loading) {
     return <div className="p-8 text-center text-gray-500">A carregar o seu perfil...</div>;
   }
+
+  // O seu código JSX abaixo é excelente e não precisa de mudanças.
+  // Ele refletirá o estado 'profile', carregando os dados que a API envia
+  // e permitindo que o usuário edite todos os campos visualmente.
 
   return (
     <div className="bg-slate-50 min-h-screen p-4 sm:p-8">
