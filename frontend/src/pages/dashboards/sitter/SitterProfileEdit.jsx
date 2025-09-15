@@ -1,18 +1,28 @@
-JavaScript
-
 import { useEffect, useState, useCallback } from "react";
 import { Link } from "react-router-dom";
 import { ArrowLeft, UploadCloud, Instagram, Facebook } from "lucide-react";
-import { useAuth } from "../../../context/AuthContext";
+import { useAuth } from "@/context/AuthContext";
+import { getSitterById, updateSitter } from "@/api/sitter.api.js";
 
-// 1. Importando as funções NOVAS e CORRETAS do nosso arquivo de API
-import { getSitterById, updateSitter } from "../../../api/sitter.api.js";
-
-// Componente PreferenceButton (seu código já está ótimo)
-function PreferenceButton({ label, isActive, onClick }) { /* ... seu código ... */ }
+// Componente PreferenceButton
+function PreferenceButton({ label, isActive, onClick }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`flex-1 p-3 text-sm font-semibold rounded-lg border-2 transition-colors ${
+        isActive 
+        ? 'bg-blue-600 text-white border-blue-600' 
+        : 'bg-gray-100 text-gray-700 hover:bg-gray-200 border-transparent'
+      }`}
+    >
+      {label}
+    </button>
+  );
+}
 
 export default function SitterProfileEdit() {
-  const { user } = useAuth(); // 2. Pegando o usuário logado para obter o ID
+  const { user } = useAuth();
   const [profile, setProfile] = useState({ 
     name: '', email: '', phone: '', bio: '', imageUrl: null,
     address: { street: '', number: '', neighborhood: '', city: '', state: '', zip: '' },
@@ -28,9 +38,7 @@ export default function SitterProfileEdit() {
 
     try {
       setLoading(true);
-      // 3. Buscando o perfil com a função correta, passando o ID do sitter
       const data = await getSitterById(user.id);
-      // O merge garante que o formulário não quebre se a API retornar menos campos
       setProfile(prev => ({ ...prev, ...data }));
     } catch (error) {
       console.error("Falha ao buscar perfil:", error);
@@ -44,11 +52,25 @@ export default function SitterProfileEdit() {
     fetchProfile();
   }, [fetchProfile]);
 
-  // Suas funções de manipulação de estado (handleChange, handleNestedChange, etc.)
-  // já estão perfeitas e não precisam de alteração.
-  const handleChange = (e) => { /* ... */ };
-  const handleNestedChange = (section) => (e) => { /* ... */ };
-  const handlePreferenceToggle = (preferenceKey) => { /* ... */ };
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setProfile(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleNestedChange = (section) => (e) => {
+    const { name, value } = e.target;
+    setProfile(prev => ({
+      ...prev,
+      [section]: { ...prev[section], [name]: value }
+    }));
+  };
+  
+  const handlePreferenceToggle = (preferenceKey) => {
+      setProfile(prev => ({
+        ...prev,
+        preferences: { ...prev.preferences, [preferenceKey]: !prev.preferences[preferenceKey] }
+      }));
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -57,16 +79,12 @@ export default function SitterProfileEdit() {
     setSaving(true);
     setFeedback({ message: '', type: '' });
     try {
-      // 4. PREPARANDO O PAYLOAD PARA A API ATUAL
-      // Criamos um objeto 'payload' apenas com os campos que a API aceita: name e email.
       const payload = {
         name: profile.name,
         email: profile.email,
-        // NOTA: Quando o backend for atualizado para aceitar mais campos,
-        // você os adicionará aqui. Ex: bio: profile.bio, address: profile.address, etc.
+        // NOTA: Adicione outros campos aqui quando o backend os suportar
       };
 
-      // 5. Chamando a função de update correta, passando o ID e o payload filtrado
       await updateSitter(user.id, payload);
       setFeedback({ message: "Perfil atualizado com sucesso!", type: 'success' });
     } catch (error) {
@@ -76,6 +94,10 @@ export default function SitterProfileEdit() {
       setTimeout(() => setFeedback({ message: '', type: '' }), 4000);
     }
   };
+
+  if (loading) {
+    return <div className="p-8 text-center text-gray-500">A carregar o seu perfil...</div>;
+  }
 
   if (loading) {
     return <div className="p-8 text-center text-gray-500">A carregar o seu perfil...</div>;

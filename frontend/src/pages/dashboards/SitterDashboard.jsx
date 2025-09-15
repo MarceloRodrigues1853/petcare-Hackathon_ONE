@@ -1,15 +1,11 @@
 import { useEffect, useState, useCallback } from "react";
 import { Link } from "react-router-dom";
-import { Calendar, Cog, DollarSign, User, ClipboardList, History, Dog } from "lucide-react";
-import { useAuth } from "../../context/AuthContext";
+import { Calendar, Cog, User, ClipboardList, History, Dog } from "lucide-react";
+import { useAuth } from "@/context/AuthContext";
+// 1. Removendo a importação da função que não existe
+import { listAppointments } from "@/api/appointment.api.js";
 
-// 1. Importando as funções corretas dos arquivos de API corretos
-import { getSitterStats } from "../../api/sitter.api.js";
-import { listAppointments } from "../../api/appointment.api.js";
-
-const brl = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" });
-
-// Componente StatCard (sem mudanças)
+// O componente StatCard continua útil, então podemos mantê-lo para uso futuro
 function StatCard({ icon, title, value }) {
   return (
     <div className="bg-white p-6 rounded-xl shadow-md flex items-center space-x-4">
@@ -23,14 +19,13 @@ function StatCard({ icon, title, value }) {
 }
 
 export default function SitterDashboard() {
-  const { user } = useAuth(); // 2. Pegando o usuário logado para saber o ID
-  const [stats, setStats] = useState(null);
+  const { user } = useAuth();
+  // 2. Removendo o estado 'stats', que não podemos mais buscar
   const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   const fetchData = useCallback(async () => {
-    // Garante que só busca dados se o usuário (sitter) estiver definido
     if (!user?.id) {
       setLoading(false);
       return;
@@ -39,12 +34,8 @@ export default function SitterDashboard() {
     try {
       setLoading(true);
       setError(null);
-      // 3. Usando as funções NOVAS e passando o ID do sitter quando necessário
-      const [statsData, appointmentsData] = await Promise.all([
-        getSitterStats(user.id),
-        listAppointments(), // A API deve filtrar e retornar apenas os agendamentos do sitter logado
-      ]);
-      setStats(statsData);
+      // 3. Buscando apenas os agendamentos, que é o dado que temos
+      const appointmentsData = await listAppointments();
       setAppointments(appointmentsData);
     } catch (err) {
       console.error("Falha ao carregar dados do dashboard:", err);
@@ -74,12 +65,8 @@ export default function SitterDashboard() {
           <p className="text-gray-600 mt-2">Bem-vindo(a) ao seu painel. Aqui está um resumo da sua atividade.</p>
         </header>
 
-        <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-          <StatCard icon={<ClipboardList size={24} />} title="Total de Agendamentos" value={stats?.totalAppointments || 0} />
-          <StatCard icon={<DollarSign size={24} />} title="Receita do Mês" value={brl.format(stats?.monthlyRevenue || 0)} />
-          <StatCard icon={<User size={24} />} title="Sua Avaliação" value={`${stats?.rating?.toFixed(1) || 'N/A'} / 5.0`} />
-        </section>
-
+        {/* 4. Removendo a seção de estatísticas que não podem ser carregadas */}
+        
         <main className="space-y-8">
           <section className="bg-white p-6 rounded-xl shadow-md">
             <h2 className="text-2xl font-semibold text-gray-800 mb-4">Ações Rápidas</h2>
@@ -112,7 +99,6 @@ export default function SitterDashboard() {
                     <div className="flex items-center space-x-4">
                       <div className="bg-green-100 text-green-700 p-3 rounded-full"><Dog size={24} /></div>
                       <div>
-                        {/* 4. Corrigindo o acesso aos dados para bater com a API real */}
                         <p className="font-bold text-gray-800">
                           {apt.owner?.name || 'Cliente'} - <span className="text-gray-600 font-medium">{apt.pet?.nome || 'Pet'}</span>
                         </p>
