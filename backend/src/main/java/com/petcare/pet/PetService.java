@@ -4,12 +4,11 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.petcare.owner.Owner;
 import com.petcare.owner.OwnerRepository;
-import com.petcare.user.User;
-import com.petcare.user.UserDetailsImpl;
-import com.petcare.user.UserRepository;
+
 
 @Service
 public class PetService {
@@ -17,12 +16,10 @@ public class PetService {
     private final PetRepository petRepository;
     private final OwnerRepository ownerRepository;
 
-    private final UserRepository userRepository;
 
-    public PetService(PetRepository petRepository, OwnerRepository ownerRepository, UserRepository userRepository) {
+    public PetService(PetRepository petRepository, OwnerRepository ownerRepository) {
         this.petRepository = petRepository;
         this.ownerRepository = ownerRepository;
-        this.userRepository = userRepository;
     }
 
     public List<PetResponse> listarTodos() {
@@ -37,12 +34,10 @@ public class PetService {
         return new PetResponse(pet.getId(), pet.getNome(), pet.getEspecie(), pet.getIdade(), pet.getOwner().getId());
     }
 
+    @Transactional
     public PetResponse criar(PetRequest request) {
         Owner owner = ownerRepository.findById(request.getOwnerId())
                 .orElseThrow(() -> new RuntimeException("Owner não encontrado"));
-
-        //User user = userRepository.findById(request.getOwnerId())
-        //        .orElseThrow(() -> new RuntimeException("Owner não encontrado"));
 
         Pet pet = new Pet(request.getNome(), request.getEspecie(), request.getIdade(), owner);
         petRepository.save(pet);
@@ -50,6 +45,7 @@ public class PetService {
         return new PetResponse(pet.getId(), pet.getNome(), pet.getEspecie(), pet.getIdade(), owner.getId());
     }
 
+    @Transactional
     public PetResponse atualizar(Long id, PetRequest request) {
         Pet pet = petRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Pet não encontrado"));
