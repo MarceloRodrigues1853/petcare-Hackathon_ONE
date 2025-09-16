@@ -12,11 +12,12 @@ services:
       - "8080:8080"
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "curl", "-fsS", "http://localhost:8080/api/health"]
+      # usa o seu HealthController (/api/health)
+      test: ["CMD", "curl", "-f", "http://localhost:8080/api/health"]
       interval: 10s
       timeout: 3s
       retries: 10
-      start_period: 90s
+      start_period: 15s
 
   frontend-dev:
     build:
@@ -31,7 +32,8 @@ services:
       - /app/node_modules
     command: npm run dev
     environment:
-      - VITE_API_BASE=http://localhost:8080
+      # front vai chamar o backend no prefixo /api
+      - VITE_API_BASE=http://localhost:8080/api
     depends_on:
       backend:
         condition: service_healthy

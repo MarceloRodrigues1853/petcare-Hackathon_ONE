@@ -28,7 +28,7 @@ public class SecurityConfig {
     private final JwtAuthFilter jwtAuthFilter;
 
     private static final String[] SWAGGER_WHITELIST = {
-        "/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs", "/v3/api-docs/**"
+            "/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs", "/v3/api-docs/**"
     };
 
     @Bean
@@ -39,21 +39,12 @@ public class SecurityConfig {
             .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-
-                // Health endpoints (para o Docker healthcheck)
-                .requestMatchers("/api/health").permitAll()
-                .requestMatchers("/actuator/health", "/actuator/health/**").permitAll() // opcional se habilitar Actuator
-
-                // Swagger / Docs
-                .requestMatchers(SWAGGER_WHITELIST).permitAll()
-
-                // Auth público
-                .requestMatchers("/api/auth/**").permitAll()
-
-                // Remova /ping se não existir
+                // health públicos
+                .requestMatchers("/api/health", "/api/health/**", "/actuator/health", "/actuator/health/**").permitAll()
+                // auth públicos (com e sem /api por segurança)
+                .requestMatchers("/api/auth/**", "/auth/**").permitAll()
                 .requestMatchers("/ping").permitAll()
-
-                // Demais endpoints exigem JWT
+                .requestMatchers(SWAGGER_WHITELIST).permitAll()
                 .anyRequest().authenticated()
             )
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
@@ -75,9 +66,8 @@ public class SecurityConfig {
     CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration cfg = new CorsConfiguration();
         cfg.setAllowedOrigins(List.of("http://localhost:5173", "http://127.0.0.1:5173"));
-        cfg.setAllowedMethods(List.of("GET","POST","PUT","PATCH","DELETE","OPTIONS"));
+        cfg.setAllowedMethods(List.of("*"));
         cfg.setAllowedHeaders(List.of("*"));
-        cfg.setExposedHeaders(List.of("Authorization","Location"));
         cfg.setAllowCredentials(true);
         UrlBasedCorsConfigurationSource src = new UrlBasedCorsConfigurationSource();
         src.registerCorsConfiguration("/**", cfg);
