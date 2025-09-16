@@ -2,12 +2,10 @@ package com.petcare.admin;
 
 import com.petcare.agendamento.Agendamento;
 import com.petcare.agendamento.AgendamentoRepository;
-import com.petcare.agendamento.AgendamentoRequest;
 import com.petcare.agendamento.AgendamentoResponse;
 import com.petcare.owner.Owner;
 import com.petcare.owner.OwnerRepository;
 import com.petcare.owner.OwnerResponse;
-import com.petcare.pet.Pet;
 import com.petcare.pet.PetRepository;
 import com.petcare.servico.ServicoService;
 import com.petcare.servico.Servico;
@@ -16,7 +14,6 @@ import com.petcare.servico.ServicoResponse;
 import com.petcare.sitter.Sitter;
 import com.petcare.sitter.SitterProfileResponse;
 import com.petcare.sitter.SitterRepository;
-import com.petcare.sitter.SitterServicoPreco;
 import com.petcare.sitter.SitterServicoPrecoRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -29,7 +26,6 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-
 @Service
 @RequiredArgsConstructor
 public class AdminService {
@@ -38,9 +34,6 @@ public class AdminService {
     private final SitterRepository sitterRepository;
     private final ServicoService servicoService;     
     private final AgendamentoRepository agendamentoRepository;
-    private final PetRepository petRepository;
-    private final SitterServicoPrecoRepository sitterServicoPrecoRepository;
-    
 
     // --- MÉTODOS PARA GERENCIAR USUÁRIOS ---
 
@@ -104,61 +97,6 @@ public class AdminService {
         return agentamentoOrdenado.stream()
                 .map(this::toAgendamentoResponse)
                 .collect(Collectors.toList());
-    }
-
-    //EDITAR UM AGENDAMENTO
-     public AgendamentoResponse atualizarAgendamento(Long agendamentoId, AgendamentoRequest request) {
-        
-        // =============================================================
-        // LOG DE DEPURAÇÃO - VAMOS VER O QUE ESTÁ CHEGANDO AQUI
-        // =============================================================
-        System.out.println("--- DEBUG: DTO Recebido no Serviço ---");
-        System.out.println("Sitter ID recebido: " + request.getSitterId());
-        System.out.println("Pet ID recebido: " + request.getPetId());
-        System.out.println("Serviço Preço ID recebido: " + request.getSitterServicoPrecoId());
-        System.out.println("------------------------------------");
-        // =============================================================
-            
-        // Busca o agendamento que será editado
-        Agendamento agendamento = agendamentoRepository.findById(agendamentoId)
-                .orElseThrow(() -> new RuntimeException("Agendamento com ID " + agendamentoId + " não encontrado."));
-
-        // Busca as novas entidades relacionadas com base nos IDs da requisição
-        Sitter newSitter = sitterRepository.findById(request.getSitterId())
-                .orElseThrow(() -> new RuntimeException("Sitter não encontrado"));
-        
-        Pet newPet = petRepository.findById(request.getPetId())
-                .orElseThrow(() -> new RuntimeException("Pet não encontrado"));
-        
-        SitterServicoPreco newServicoPreco = sitterServicoPrecoRepository.findById(request.getSitterServicoPrecoId())
-                .orElseThrow(() -> new RuntimeException("Serviço não encontrado"));
-
-        // Valida se o novo horário tem conflito, usando o metodo findConflitosParaEdicao da agendamentoRepository
-        List<Agendamento> conflitos = agendamentoRepository.findConflitosParaEdicao(
-            request.getSitterId(),
-            agendamentoId, // Passa o ID do agendamento atual para ser ignorado na busca
-            request.getDataInicio(),
-            request.getDataFim()
-        );
-
-        if (!conflitos.isEmpty()) {
-            throw new RuntimeException("Sitter já possui um agendamento conflitante neste novo horário.");
-        }
-
-        // Atualiza os dados da entidade com os novos valores
-        agendamento.setSitter(newSitter);
-        agendamento.setPet(newPet);
-        agendamento.setSitterServicoPreco(newServicoPreco);
-        agendamento.setDataInicio(request.getDataInicio());
-        agendamento.setDataFim(request.getDataFim());
-        // Aqui o Admin poderia também atualizar o status, se necessário
-        // ex: agendamento.setStatus(request.getStatus());
-
-        // Salva a entidade atualizada no banco
-        Agendamento agendamentoAtualizado = agendamentoRepository.save(agendamento);
-
-        // Retorna o DTO de resposta para o controller
-        return new AgendamentoResponse(agendamentoAtualizado);
     }
 
 
@@ -242,22 +180,18 @@ public class AdminService {
 
     // --- MÉTODOS AUXILIARES DE CONVERSÃO ---
      private OwnerResponse toOwnerResponse(Owner owner) {
-        // Supondo que OwnerResponse tem um construtor (id, name, email)
         return new OwnerResponse(owner.getId(), owner.getName(), owner.getEmail());
     }
 
     private SitterProfileResponse toSitterProfileResponse(Sitter sitter) {
-        // Supondo que SitterProfileResponse tem um construtor (id, name, email)
         return new SitterProfileResponse(sitter.getId(), sitter.getName(), sitter.getEmail());
     }
 
     private ServicoResponse toServicoResponse(Servico servico) {
-        // Supondo que ServicoResponse tem um construtor (id, descricao)
         return new ServicoResponse(servico.getId(), servico.getDescricao());
     }
 
     private AgendamentoResponse toAgendamentoResponse(Agendamento agendamento) {
-    // Simplesmente chame o construtor que você já criou no DTO.
     return new AgendamentoResponse(agendamento);
     }
 }

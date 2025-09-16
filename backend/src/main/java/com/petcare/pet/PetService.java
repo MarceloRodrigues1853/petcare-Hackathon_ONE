@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 
 import com.petcare.owner.Owner;
 import com.petcare.owner.OwnerRepository;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class PetService {
@@ -31,6 +32,7 @@ public class PetService {
         return new PetResponse(pet);
     }
 
+    @Transactional
     public PetResponse criar(PetRequest request) {
         Owner owner = ownerRepository.findById(request.getOwnerId())
                 .orElseThrow(() -> new RuntimeException("Owner não encontrado"));
@@ -43,6 +45,7 @@ public class PetService {
         return new PetResponse(pet);
     }
 
+    @Transactional
     public PetResponse atualizar(Long id, PetRequest request) {
         Pet pet = petRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Pet não encontrado"));

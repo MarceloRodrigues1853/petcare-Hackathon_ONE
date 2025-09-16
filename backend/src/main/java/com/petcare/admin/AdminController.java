@@ -8,11 +8,9 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.petcare.agendamento.AgendamentoRequest;
 import com.petcare.agendamento.AgendamentoResponse;
 import com.petcare.owner.OwnerResponse;
 import com.petcare.servico.ServicoRequest;
@@ -90,16 +88,6 @@ public class AdminController {
         return ResponseEntity.ok(agendamentos);
     }
 
-    //ATUALIZA UM AGENDAMENTO
-    @PutMapping("/agendamentos/{agendamentoId}")
-    public ResponseEntity<AgendamentoResponse> atualizarAgendamento(
-            @PathVariable Long agendamentoId,
-            @RequestBody AgendamentoRequest request
-    ) {
-        AgendamentoResponse agendamentoAtualizado = adminService.atualizarAgendamento(agendamentoId, request);
-        return ResponseEntity.ok(agendamentoAtualizado);
-    }
-    
     //DELETA UM AGENDAMENTO COM BASE NO ID
     @DeleteMapping("/agendamentos/{agendamentoId}")
     public ResponseEntity<Void> deleteAgendamento(@PathVariable Long agendamentoId) {

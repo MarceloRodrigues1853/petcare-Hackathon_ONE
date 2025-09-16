@@ -2,15 +2,28 @@ package com.petcare.agendamento;
 
 import java.time.LocalDateTime;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public class AgendamentoRequest {
+
+    @JsonProperty("ownerId")
     private Long ownerId;
+
+    @JsonProperty("sitterId")
     private Long sitterId;
+
+    @JsonProperty("petId")
     private Long petId;
+
+    @JsonProperty("sitterServicoPrecoId")
     private Long sitterServicoPrecoId;
 
+    @JsonProperty("dataInicio")
     private LocalDateTime dataInicio;
+
+    @JsonProperty("dataFim")
     private LocalDateTime dataFim;
-/* */
+
     public AgendamentoRequest() {}
 
         public AgendamentoRequest(Long ownerId, Long sitterId, Long petId, Long sitterServicoPrecoId, LocalDateTime dataInicio, LocalDateTime dataFim) {
