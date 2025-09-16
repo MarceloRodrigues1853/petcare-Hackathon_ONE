@@ -1,24 +1,19 @@
-// api/owner.api.js
-import { get, post, put, del } from './http.js';
+// frontend/src/api/owner.api.js
+import { get, del, put } from './http.js';
 
-/**
- * Busca os dados de um owner pelo ID. Usado para carregar o perfil.
- * Endpoint: GET /owners/{id}
- */
-export function getOwnerById(ownerId) {
-  return get(`/owners/${ownerId}`);
+export function listOwners(params = {}) {
+  const qs = new URLSearchParams(params).toString();
+  return get(`/admin/owners${qs ? `?${qs}` : ''}`);
 }
 
-/**
- * Atualiza o perfil de um owner.
- * Endpoint: PUT /owners/{id}
- */
-export function updateOwner(ownerId, profileData) {
-  // A API espera: { name, email, password }
-  return put(`/owners/${ownerId}`, profileData);
+export function deleteOwner(id) {
+  return del(`/admin/owners/${id}`);
 }
 
-// Outras funções de gerenciamento (mais usadas por admins)
-export function listOwners() { return get('/owners'); }
-export function createOwner(ownerData) { return post('/owners', ownerData); }
-export function deleteOwner(ownerId) { return del(`/owners/${ownerId}`); }
+export function getOwnerById(id) {
+  return get(`/owners/${id}`);
+}
+
+export function updateOwner(id, payload) {
+  return put(`/owners/${id}`, payload);
+}

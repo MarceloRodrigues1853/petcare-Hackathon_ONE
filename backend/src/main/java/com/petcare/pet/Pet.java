@@ -1,18 +1,20 @@
 package com.petcare.pet;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.petcare.owner.Owner;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
 @Table(name = "pets")
+@Getter // Gera todos os getters
+@Setter // Gera todos os setters
+@NoArgsConstructor // Gera o construtor vazio
+@AllArgsConstructor // Gera o construtor com todos os campos
 public class Pet {
 
     @Id
@@ -27,32 +29,11 @@ public class Pet {
 
     private Integer idade;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "owner_id", nullable = false)
+    @JsonBackReference("owner-pets")
     private Owner owner;
-
-    public Pet() {}
-
-    public Pet(String nome, String especie, Integer idade, Owner owner) {
-        this.nome = nome;
-        this.especie = especie;
-        this.idade = idade;
-        this.owner = owner;
-    }
-
-    // Getters e Setters
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
-
-    public String getNome() { return nome; }
-    public void setNome(String nome) { this.nome = nome; }
-
-    public String getEspecie() { return especie; }
-    public void setEspecie(String especie) { this.especie = especie; }
-
-    public Integer getIdade() { return idade; }
-    public void setIdade(Integer idade) { this.idade = idade; }
-
-    public Owner getOwner() { return owner; }
-    public void setOwner(Owner owner) { this.owner = owner; }
+    
+    // O Lombok gera os construtores e getters/setters automaticamente.
+    // Não precisamos de os escrever manualmente.
 }

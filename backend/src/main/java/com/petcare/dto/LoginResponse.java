@@ -1,3 +1,4 @@
 package com.petcare.dto;
 
-public record LoginResponse(String token, String role, String name, String email) {}
+// O tipo do ID geralmente é Long em Java
+public record LoginResponse(Long id, String token, String role, String name, String email) {}

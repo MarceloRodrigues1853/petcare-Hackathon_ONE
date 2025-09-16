@@ -7,23 +7,15 @@ import org.springframework.stereotype.Service;
 
 import com.petcare.owner.Owner;
 import com.petcare.owner.OwnerRepository;
-import com.petcare.user.User;
-import com.petcare.user.UserDetailsImpl;
-import com.petcare.user.UserRepository;
+import lombok.RequiredArgsConstructor; // Usando Lombok para o construtor
 
 @Service
+@RequiredArgsConstructor // Anotação do Lombok que cria o construtor para nós
 public class PetService {
 
     private final PetRepository petRepository;
     private final OwnerRepository ownerRepository;
-
-    private final UserRepository userRepository;
-
-    public PetService(PetRepository petRepository, OwnerRepository ownerRepository, UserRepository userRepository) {
-        this.petRepository = petRepository;
-        this.ownerRepository = ownerRepository;
-        this.userRepository = userRepository;
-    }
+    // O UserRepository não era necessário aqui
 
     public List<PetResponse> listarTodos() {
         return petRepository.findAll().stream()
@@ -38,13 +30,19 @@ public class PetService {
     }
 
     public PetResponse criar(PetRequest request) {
-        Owner owner = ownerRepository.findById(request.getOwnerId())
+        Owner owner = ownerRepository.findById(request.ownerId()) // Usando getter do record
                 .orElseThrow(() -> new RuntimeException("Owner não encontrado"));
 
-        //User user = userRepository.findById(request.getOwnerId())
-        //        .orElseThrow(() -> new RuntimeException("Owner não encontrado"));
-
-        Pet pet = new Pet(request.getNome(), request.getEspecie(), request.getIdade(), owner);
+        // =======================================================
+        // A CORREÇÃO FINAL ESTÁ AQUI
+        // Usando o construtor vazio e setters, que é compatível com o Lombok
+        // =======================================================
+        Pet pet = new Pet();
+        pet.setNome(request.nome());
+        pet.setEspecie(request.especie());
+        pet.setIdade(request.idade());
+        pet.setOwner(owner);
+        
         petRepository.save(pet);
 
         return new PetResponse(pet.getId(), pet.getNome(), pet.getEspecie(), pet.getIdade(), owner.getId());
@@ -54,12 +52,12 @@ public class PetService {
         Pet pet = petRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Pet não encontrado"));
 
-        Owner owner = ownerRepository.findById(request.getOwnerId())
+        Owner owner = ownerRepository.findById(request.ownerId())
                 .orElseThrow(() -> new RuntimeException("Owner não encontrado"));
 
-        pet.setNome(request.getNome());
-        pet.setEspecie(request.getEspecie());
-        pet.setIdade(request.getIdade());
+        pet.setNome(request.nome());
+        pet.setEspecie(request.especie());
+        pet.setIdade(request.idade());
         pet.setOwner(owner);
 
         petRepository.save(pet);

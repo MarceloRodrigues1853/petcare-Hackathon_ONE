@@ -1,58 +1,67 @@
 package com.petcare.owner;
 
+import com.petcare.dto.OwnerDTO;
+import com.petcare.dto.PetDTO;
+import com.petcare.dto.UpdateOwnerRequest;
+import com.petcare.user.User;
+import com.petcare.user.UserRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.springframework.security.crypto.password.PasswordEncoder; // Import adicionado
-import org.springframework.stereotype.Service;
-
-import com.petcare.user.User;
-
 @Service
+@RequiredArgsConstructor
 public class OwnerService {
 
     private final OwnerRepository ownerRepository;
-    private final PasswordEncoder passwordEncoder; // Campo adicionado
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
-    // Construtor atualizado
-    public OwnerService(OwnerRepository ownerRepository, PasswordEncoder passwordEncoder) {
-        this.ownerRepository = ownerRepository;
-        this.passwordEncoder = passwordEncoder;
-    }
-
-    public List<OwnerResponse> listarTodos() {
+    public List<OwnerDTO> findAll() {
         return ownerRepository.findAll().stream()
-                .map(o -> new OwnerResponse(o.getId(), o.getName(), o.getEmail()))
+                .map(this::toOwnerDTO)
                 .collect(Collectors.toList());
     }
 
-    public OwnerResponse buscarPorId(Long id) {
-        Owner owner = ownerRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Owner não encontrado"));
-        return new OwnerResponse(owner.getId(), owner.getName(), owner.getEmail());
+    public OwnerDTO findById(Long id) {
+        return ownerRepository.findById(id)
+                .map(this::toOwnerDTO)
+                .orElseThrow(() -> new RuntimeException("Owner not found with id: " + id));
     }
 
-    public OwnerResponse criar(OwnerRequest request) {
-        // Correção aplicada
-        Owner owner = new Owner(request.getName(), request.getEmail(), passwordEncoder.encode(request.getPassword()));
-        ownerRepository.save(owner);
-        return new OwnerResponse(owner.getId(), owner.getName(), owner.getEmail());
+    @Transactional
+    public void deleteById(Long id) {
+        userRepository.deleteById(id);
     }
 
-    public OwnerResponse atualizar(Long id, OwnerRequest request) {
-        Owner owner = ownerRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Owner não encontrado"));
+    @Transactional
+    public OwnerDTO update(Long id, UpdateOwnerRequest request) {
+        // Buscamos o User geral, pois Owner pode não ter todos os campos
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
 
-        owner.setName(request.getName());
-        owner.setEmail(request.getEmail());
-        // Correção aplicada
-        owner.setPasswordHash(passwordEncoder.encode(request.getPassword()));
+        user.setName(request.name());
+        user.setEmail(request.email());
 
-        ownerRepository.save(owner);
-        return new OwnerResponse(owner.getId(), owner.getName(), owner.getEmail());
+        if (request.password() != null && !request.password().isEmpty()) {
+            user.setPasswordHash(passwordEncoder.encode(request.password()));
+        }
+
+        User updatedUser = userRepository.save(user);
+        // Garantimos que estamos a devolver um Owner
+        Owner updatedOwner = ownerRepository.findById(updatedUser.getId()).get();
+        return toOwnerDTO(updatedOwner);
     }
+    
+    private OwnerDTO toOwnerDTO(Owner owner) {
+        List<PetDTO> petDTOs = owner.getPets().stream()
+            .map(pet -> new PetDTO(pet.getId(), pet.getNome(), pet.getEspecie(), pet.getIdade()))
+            .collect(Collectors.toList());
 
-    public void deletar(Long id) {
-        ownerRepository.deleteById(id);
+        return new OwnerDTO(owner.getId(), owner.getName(), owner.getEmail(), petDTOs);
     }
 }

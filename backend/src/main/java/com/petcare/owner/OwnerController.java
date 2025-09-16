@@ -1,48 +1,35 @@
 package com.petcare.owner;
 
+import com.petcare.dto.OwnerDTO;
+import com.petcare.dto.UpdateOwnerRequest; // Import corrigido
+import lombok.RequiredArgsConstructor; // Usando Lombok para o construtor
+import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
 @RestController
-@RequestMapping("/owners")
+@RequestMapping("/api/owners") // Adicionando /api para padronização
+@RequiredArgsConstructor
 public class OwnerController {
 
     private final OwnerService ownerService;
 
-    public OwnerController(OwnerService ownerService) {
-        this.ownerService = ownerService;
-    }
-
     @GetMapping
-    public List<OwnerResponse> listar() {
-        return ownerService.listarTodos();
+    public List<OwnerDTO> findAll() {
+        return ownerService.findAll(); // Nome do método corrigido
     }
 
     @GetMapping("/{id}")
-    public OwnerResponse buscarPorId(@PathVariable Long id) {
-        return ownerService.buscarPorId(id);
-    }
-
-    @PostMapping
-    public OwnerResponse criar(@RequestBody OwnerRequest request) {
-        return ownerService.criar(request);
+    public OwnerDTO findById(@PathVariable Long id) {
+        return ownerService.findById(id); // Nome do método corrigido
     }
 
     @PutMapping("/{id}")
-    public OwnerResponse atualizar(@PathVariable Long id, @RequestBody OwnerRequest request) {
-        return ownerService.atualizar(id, request);
+    public OwnerDTO update(@PathVariable Long id, @RequestBody UpdateOwnerRequest request) {
+        return ownerService.update(id, request); // Nome do método corrigido
     }
 
     @DeleteMapping("/{id}")
-    public void deletar(@PathVariable Long id) {
-        ownerService.deletar(id);
+    public void deleteById(@PathVariable Long id) {
+        ownerService.deleteById(id); // Nome do método corrigido
     }
 }

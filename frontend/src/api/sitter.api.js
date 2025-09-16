@@ -1,55 +1,39 @@
-// api/sitter.api.js
-import { get, post, put, del } from './http.js';
+// frontend/src/api/sitter.api.js
+import { get, put, post, del } from './http.js'; // Verifique se o caminho para http.js está correto
 
-/**
- * Lista todos os sitters, com filtro opcional por serviço.
- * Endpoint: GET /api/sitters
- */
-export function listSitters(servicoId = null) {
-  const path = servicoId ? `/api/sitters?servicoId=${servicoId}` : '/api/sitters';
-  return get(path);
+// [NOVO] Função adicionada para listar todos os sitters (para o admin)
+export function listSitters(params = {}) {
+  const qs = new URLSearchParams(params).toString();
+  // A rota no backend provavelmente será protegida e semelhante à de owners
+  return get(`/admin/sitters${qs ? `?${qs}` : ''}`);
 }
 
-/**
- * Busca os dados de um sitter pelo ID.
- * Endpoint: GET /api/sitters/{sitterId}
- */
-export function getSitterById(sitterId) {
-  return get(`/api/sitters/${sitterId}`);
+// No backend, você precisará de uma rota /api/sitters/{id} que retorna
+// os dados de um usuário cujo papel (role) é SITTER.
+export function getSitterById(id) {
+  return get(`/sitters/${id}`);
 }
 
-/**
- * Atualiza o perfil de um sitter.
- * Endpoint: PUT /api/sitters/{sitterId}
- */
-export function updateSitter(sitterId, profileData) {
-  // A API espera: { name, email }
-  return put(`/api/sitters/${sitterId}`, profileData);
-}
-
-// === Serviços de um Sitter ===
-
-/**
- * Lista os serviços que um sitter oferece (com preços).
- * Endpoint: GET /api/sitters/{sitterId}/servicos
- */
+// [NOVO] Função para buscar os serviços de um sitter específico.
+// Essencial para a tela de novo agendamento.
 export function getSitterServices(sitterId) {
-  return get(`/api/sitters/${sitterId}/servicos`);
+  return get(`/sitters/${sitterId}/services`);
 }
 
-/**
- * Adiciona um serviço ao portfólio de um sitter.
- * Endpoint: POST /api/sitters/{sitterId}/servicos
- */
-export function addSitterService(sitterId, serviceData) {
-  // A API espera: { servicoId, valor }
-  return post(`/api/sitters/${sitterId}/servicos`, serviceData);
+// [NOVO] Função para um sitter adicionar um novo serviço ao seu perfil.
+export function addSitterService(payload) {
+  // O backend receberá o ID do sitter pelo token de autenticação
+  // O payload deve conter o ID do serviço e o preço. Ex: { servicoId, preco }
+  return post('/sitters/services', payload);
 }
 
-/**
- * Remove um serviço do portfólio de um sitter.
- * Endpoint: DELETE /api/sitters/{sitterId}/servicos/{servicoPrecoId}
- */
-export function deleteSitterService(sitterId, servicoPrecoId) {
-  return del(`/api/sitters/${sitterId}/servicos/${servicoPrecoId}`);
+// [NOVO] Função para um sitter remover um de seus serviços.
+export function deleteSitterService(servicePriceId) {
+  // O ID aqui é o da tabela 'sitter_servicos_precos'
+  return del(`/sitters/services/${servicePriceId}`);
 }
+
+export function updateSitter(id, payload) {
+  return put(`/sitters/${id}`, payload);
+}
+

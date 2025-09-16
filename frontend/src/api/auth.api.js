@@ -1,28 +1,19 @@
-// api/auth.api.js
+// frontend/src/api/auth.api.js
 import { post } from './http.js';
 
-/**
- * Registra um novo usuário.
- * Endpoint: POST /api/auth/register
- */
-export function register(userData) {
-  // A API espera: { name, email, password, role }
-  return post("/api/auth/register", userData);
+export async function login({ email, password }) {
+  const data = await post('/auth/login', { email, password });
+  if (data?.token) localStorage.setItem('jwt', data.token);
+  return data;
 }
 
-/**
- * Realiza o login do usuário.
- * Endpoint: POST /api/auth/login
- */
-export function login(credentials) {
-  // A API espera: { email, password }
-  // O Frontend espera a resposta: { token, role, name, email }
-  return post("/api/auth/login", credentials);
+export async function register(payload) {
+  // payload: { name, email, password, role }
+  return post('/auth/register', payload);
 }
 
-/**
- * Remove o token do localStorage para deslogar.
- */
-export function logout() {
+export async function logout() {
   localStorage.removeItem('jwt');
+  // se tiver logout no backend: await post('/auth/logout');
+  return { ok: true };
 }

@@ -1,52 +1,45 @@
--- Este ficheiro é executado automaticamente pelo Spring Boot para popular o banco de dados no arranque.
--- NOTA: Os hashes de senha para Owner/Sitter são para a senha "senha123".
+-- Este ficheiro popula o banco com dados iniciais de forma segura (idempotente).
 
--- Cria um Owner (user_type='OWNER')
-INSERT INTO users (user_type, name, email, password_hash, role)
-VALUES ('OWNER', 'Carlos Silva', 'carlos@petcare.com', '$2a$10$CnUrdUylE9QFftHgoSkH9.0wnY9IX/ovnm78XJo3UoR1XUmWJYp1a', 'OWNER');
+-- ===================== USUÁRIOS =====================
+-- Senhas: "senha123" para carlos/maria, "admin123" para admin.
+-- Adicionado o campo 'status' explicitamente para clareza.
+INSERT INTO users (user_type, name, email, password_hash, role, status)
+SELECT 'OWNER', 'Carlos Silva', 'carlos@petcare.com', '$2a$10$CnUrdUylE9QFftHgoSkH9.0wnY9IX/ovnm78XJo3UoR1XUmWJYp1a', 'OWNER', 'APPROVED'
+WHERE NOT EXISTS (SELECT 1 FROM users WHERE email = 'carlos@petcare.com');
 
--- Cria um Sitter (user_type='SITTER')
-INSERT INTO users (user_type, name, email, password_hash, role)
-VALUES ('SITTER', 'Maria Souza', 'maria@petcare.com', '$2a$10$CnUrdUylE9QFftHgoSkH9.0wnY9IX/ovnm78XJo3UoR1XUmWJYp1a', 'SITTER');
+INSERT INTO users (user_type, name, email, password_hash, role, status)
+SELECT 'SITTER', 'Maria Souza', 'maria@petcare.com', '$2a$10$CnUrdUylE9QFftHgoSkH9.0wnY9IX/ovnm78XJo3UoR1XUmWJYp1a', 'SITTER', 'APPROVED'
+WHERE NOT EXISTS (SELECT 1 FROM users WHERE email = 'maria@petcare.com');
 
--- Cria um Admin (user_type='User')
--- A senha aqui é 'admin123'
-INSERT INTO users (user_type, name, email, password_hash, role)
-VALUES ('User', 'Administrador', 'admin@petcare.com', '$2a$10$G5n3f.i5L9Q.V8Qz.A5f7uCLveIM081jH.02w5b.xV.t3Y8r.8/aW', 'ADMIN');
+INSERT INTO users (user_type, name, email, password_hash, role, status)
+SELECT 'ADMIN', 'Administrador', 'admin@petcare.com', '$2a$10$G5n3f.i5L9Q.V8Qz.A5f7uCLveIM081jH.02w5b.xV.t3Y8r.8/aW', 'ADMIN', 'APPROVED'
+WHERE NOT EXISTS (SELECT 1 FROM users WHERE email = 'admin@petcare.com');
 
--- Adiciona os TIPOS de serviço disponíveis na plataforma
-INSERT INTO servicos (descricao) VALUES ('Passeio'), ('Hospedagem'), ('Babá de Pet');
+-- ===================== SERVIÇOS =====================
+INSERT INTO servicos (id, descricao) SELECT 1, 'Passeio' WHERE NOT EXISTS (SELECT 1 FROM servicos WHERE id = 1);
+INSERT INTO servicos (id, descricao) SELECT 2, 'Hospedagem' WHERE NOT EXISTS (SELECT 1 FROM servicos WHERE id = 2);
+INSERT INTO servicos (id, descricao) SELECT 3, 'Babá de Pet' WHERE NOT EXISTS (SELECT 1 FROM servicos WHERE id = 3);
 
--- Adiciona um Pet para o Owner 'Carlos Silva'
-INSERT INTO pets (name, species, owner_id)
-SELECT 'Rex', 'Cão', id FROM users WHERE email = 'carlos@petcare.com';
+-- ===================== PET DO CARLOS =====================
+INSERT INTO pets (nome, especie, idade, owner_id)
+SELECT 'Rex', 'Cão', 5, u.id FROM users u
+WHERE u.email = 'carlos@petcare.com' AND NOT EXISTS (SELECT 1 FROM pets p WHERE p.nome = 'Rex' AND p.owner_id = u.id);
 
--- Define os serviços que a Sitter 'Maria Souza' oferece e os seus preços
--- Vincula o serviço "Passeio" à Sitter Maria com o preço 25.00
+-- ===================== PREÇOS DA SITTER MARIA =====================
 INSERT INTO sitter_servicos_precos (sitter_id, servico_id, valor)
-VALUES (
-    (SELECT id FROM users WHERE email = 'maria@petcare.com'),
-    (SELECT id FROM servicos WHERE descricao = 'Passeio'),
-    25.00
-);
+SELECT u.id, s.id, 25.00 FROM users u JOIN servicos s ON s.descricao = 'Passeio'
+WHERE u.email = 'maria@petcare.com' AND NOT EXISTS (SELECT 1 FROM sitter_servicos_precos x WHERE x.sitter_id = u.id AND x.servico_id = s.id);
 
--- Vincula o serviço "Hospedagem" à Sitter Maria com o preço 150.00
 INSERT INTO sitter_servicos_precos (sitter_id, servico_id, valor)
-VALUES (
-    (SELECT id FROM users WHERE email = 'maria@petcare.com'),
-    (SELECT id FROM servicos WHERE descricao = 'Hospedagem'),
-    150.00
-);
+SELECT u.id, s.id, 150.00 FROM users u JOIN servicos s ON s.descricao = 'Hospedagem'
+WHERE u.email = 'maria@petcare.com' AND NOT EXISTS (SELECT 1 FROM sitter_servicos_precos x WHERE x.sitter_id = u.id AND x.servico_id = s.id);
 
--- Cria um agendamento de exemplo: Carlos (dono) agenda um Passeio para o pet Rex com a sitter Maria
-INSERT INTO agendamentos (owner_id, sitter_id, pet_id, servico_id, data_hora_inicio, status, preco_final)
-VALUES (
-    (SELECT id FROM users WHERE email = 'carlos@petcare.com'),
-    (SELECT id FROM users WHERE email = 'maria@petcare.com'),
-    (SELECT id FROM pets WHERE name = 'Rex'),
-    (SELECT id FROM servicos WHERE descricao = 'Passeio'),
-    '2025-09-15 10:00:00',
-    'CONFIRMADO',
-    25.00
-);
-
+-- ===================== AGENDAMENTO EXEMPLO =====================
+INSERT INTO agendamentos (owner_id, sitter_id, pet_id, sitter_servico_preco_id, data_inicio, data_fim, status)
+SELECT o.id, s.id, p.id, ssp.id, '2025-09-20 10:00:00', '2025-09-20 11:00:00', 'AGENDADO'
+FROM users o
+JOIN users s ON s.email = 'maria@petcare.com'
+JOIN pets p ON p.nome = 'Rex' AND p.owner_id = o.id
+JOIN sitter_servicos_precos ssp ON ssp.sitter_id = s.id
+JOIN servicos sv ON sv.id = ssp.servico_id AND sv.descricao = 'Passeio'
+WHERE o.email = 'carlos@petcare.com' AND NOT EXISTS (SELECT 1 FROM agendamentos a WHERE a.pet_id = p.id AND a.data_inicio = '2025-09-20 10:00:00');

@@ -1,11 +1,12 @@
 package com.petcare.sitter;
 
+import com.fasterxml.jackson.annotation.JsonBackReference; // <-- IMPORT NECESSÁRIO
 import com.petcare.servico.Servico;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
 
 @Entity
-@Table(name = "sitter_servicos_precos") // Define um nome claro para a tabela no banco de dados
+@Table(name = "sitter_servicos_precos")
 public class SitterServicoPreco {
 
     @Id
@@ -14,6 +15,7 @@ public class SitterServicoPreco {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "sitter_id", nullable = false)
+    @JsonBackReference("sitter-servicos") // <-- ANOTAÇÃO ADICIONADA
     private Sitter sitter;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -23,12 +25,11 @@ public class SitterServicoPreco {
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal valor;
 
-    // Construtor vazio (requerido pelo JPA)
+    // Construtor vazio
     public SitterServicoPreco() {
     }
 
-    // --- Getters e Setters ---
-
+    // Getters e Setters (sem alteração)
     public Long getId() {
         return id;
     }

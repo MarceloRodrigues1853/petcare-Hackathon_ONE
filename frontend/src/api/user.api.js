@@ -1,18 +1,12 @@
-// api/user.api.js
-import { get } from './http.js';
+// src/api/user.api.js
+import http from './http.js';
 
-/**
- * Lista todos os usuários. (Rota de Admin)
- * Endpoint: GET /api/users
- */
+// Lista todos os usuários (Admin)
 export function listAllUsers() {
-  return get('/api/users');
+  return http.get('/users');
 }
 
-/**
- * Busca os dados de um usuário pelo ID.
- * Endpoint: GET /api/users/{id}
- */
-export function getUserById(userId) {
-  return get(`/api/users/${userId}`);
+// Busca um usuário por id (para AuthContext e perfis)
+export function getUserById(id) {
+  return http.get(`/users/${id}`);
 }
