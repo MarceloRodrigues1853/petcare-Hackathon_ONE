@@ -6,12 +6,14 @@ import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import java.time.LocalDateTime;
+
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 @Repository
 public interface AgendamentoRepository extends JpaRepository<Agendamento, Long> {
-	// método para buscar conflitos de horário do Sitter
+// método para buscar conflitos de horário do Sitter
     @Query("SELECT a FROM Agendamento a " +
         "WHERE a.sitter.id = :sitterId " +
         "AND a.status = 'AGENDADO' " + 
@@ -19,11 +21,10 @@ public interface AgendamentoRepository extends JpaRepository<Agendamento, Long> 
         "AND a.dataFim > :dataInicio")
     List<Agendamento> findConflitos(Long sitterId, LocalDateTime dataInicio, LocalDateTime dataFim);
 
-	List<Agendamento> findByOwnerId(Long ownerId);
+    List<Agendamento> findByOwnerId(Long ownerId);
 	List<Agendamento> findBySitterId(Long sitterId);
 	List<Agendamento> findByStatus(Agendamento.Status status);
 
-	
     //Query para listar agendamento por ordem de data (mais recente primeiro)
     List<Agendamento> findAllByOrderByDataInicioDesc();
 

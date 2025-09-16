@@ -36,12 +36,22 @@ export default function Register() {
         role: role?.toUpperCase() || "OWNER",
       });
 
+<<<<<<< HEAD
       // login automático (a lógica continua perfeita)
       const session = await login(email, password);
       
       // 3. Usando nosso helper para não repetir código
       handleRedirectByRole(session, navigate);
 
+=======
+      // login automático
+      const session = await login(email, password);
+      const r = (session?.role || session?.user?.role || "").toUpperCase();
+      if (r === "OWNER") navigate("/owner/dashboard");
+      else if (r === "SITTER") navigate("/sitter/dashboard");
+      else if (r === "ADMIN") navigate("/admin/dashboard");
+      else navigate("/");
+>>>>>>> feature/admin-wip
     } catch (err) {
       setMsg(err?.message || "Erro ao cadastrar");
     } finally {
@@ -97,7 +107,11 @@ export default function Register() {
             onChange={(e) => setRole(e.target.value)}
             required
           >
+<<<<<<< HEAD
             <option value="OWNER">Dono de Pet</option>
+=======
+            <option value="OWNER">Dono</option>
+>>>>>>> feature/admin-wip
             <option value="SITTER">Cuidador(a)</option>
           </select>
 

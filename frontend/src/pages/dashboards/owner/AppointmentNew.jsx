@@ -182,7 +182,11 @@ export default function AppointmentNew() {
             disabled={isSubmitting}
             className="w-full bg-blue-600 text-white font-semibold py-3 px-4 rounded-lg hover:bg-blue-700 transition disabled:bg-blue-300"
           >
+<<<<<<< HEAD
             {isSubmitting ? "Agendando..." : "Confirmar Agendamento"}
+=======
+            Buscar Agendamento
+>>>>>>> feature/admin-wip
           </button>
         </form>
 

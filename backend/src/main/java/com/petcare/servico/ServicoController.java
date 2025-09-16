@@ -1,66 +1,56 @@
 package com.petcare.servico;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.validation.Valid;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/servicos")
 public class ServicoController {
 
-    @Autowired
-    private ServicoService servicoService;
+    private final ServicoService servicoService;
+
+    public ServicoController(ServicoService servicoService) {
+        this.servicoService = servicoService;
+    }
 
     // Listar todos os serviços
     @GetMapping
-    public List<ServicoResponse> listarTodos() {
-        return servicoService.listarTodos().stream()
-                .map(s -> new ServicoResponse(s.getId(), s.getDescricao()))
-                .collect(Collectors.toList());
+    public ResponseEntity<List<ServicoResponse>> listarTodos() {
+        List<ServicoResponse> responseList = servicoService.listarTodos();
+        return ResponseEntity.ok(responseList);
     }
 
-    // Obter serviço por ID
     @GetMapping("/{id}")
-    public ResponseEntity<ServicoResponse> obterPorId(@PathVariable Long id) {
-        return servicoService.buscarPorId(id)
-                .map(s -> new ServicoResponse(s.getId(), s.getDescricao()))
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
-    }
-
-    // Criar um novo serviço
-    @PostMapping
-    public ResponseEntity<ServicoResponse> criar(@Valid @RequestBody ServicoRequest request) {
-        Servico servico = new Servico();
-        servico.setDescricao(request.getDescricao());
-        Servico salvo = servicoService.criar(servico);
-
-        ServicoResponse response = new ServicoResponse(salvo.getId(), salvo.getDescricao());
+    public ResponseEntity<ServicoResponse> buscarPorId(@PathVariable Long id) {
+        ServicoResponse response = servicoService.buscarPorId(id);
         return ResponseEntity.ok(response);
     }
 
-    // Atualizar um serviço existente
-    @PutMapping("/{id}")
-    public ResponseEntity<ServicoResponse> atualizar(@PathVariable Long id,
-                                                     @Valid @RequestBody ServicoRequest request) {
-        // Cria um objeto Servico com os dados do request
-        Servico servicoAtualizado = new Servico();
-        servicoAtualizado.setDescricao(request.getDescricao());
+    @PostMapping
+    public ResponseEntity<ServicoResponse> criar(@Valid @RequestBody ServicoRequest request) {
+        ServicoResponse response = servicoService.criar(request);
+        // Retorna o status 201 Created
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
 
-        return servicoService.atualizar(id, servicoAtualizado)
-                .map(s -> new ServicoResponse(s.getId(), s.getDescricao()))
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+    @PutMapping("/{id}")
+    public ResponseEntity<ServicoResponse> atualizar(
+            @PathVariable Long id,
+            @Valid @RequestBody ServicoRequest request
+    ) {
+        ServicoResponse response = servicoService.atualizar(id, request);
+        return ResponseEntity.ok(response);
     }
 
     // Deletar um serviço
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deletar(@PathVariable Long id) {
-        boolean deletado = servicoService.deletar(id);
-        return deletado ? ResponseEntity.noContent().build() : ResponseEntity.notFound().build();
+        servicoService.deletar(id);
+        // Retorna o status 204 No Content
+        return ResponseEntity.noContent().build();
     }
 }

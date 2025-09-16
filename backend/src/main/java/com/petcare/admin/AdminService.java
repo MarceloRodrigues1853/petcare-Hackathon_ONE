@@ -1,6 +1,5 @@
 package com.petcare.admin;
 
-
 import com.petcare.agendamento.Agendamento;
 import com.petcare.agendamento.AgendamentoRepository;
 import com.petcare.agendamento.AgendamentoResponse;
@@ -8,7 +7,6 @@ import com.petcare.owner.Owner;
 import com.petcare.owner.OwnerRepository;
 import com.petcare.owner.OwnerResponse;
 import com.petcare.servico.ServicoService;
-import com.petcare.servico.Servico;
 import com.petcare.servico.ServicoRequest;
 import com.petcare.servico.ServicoResponse;
 import com.petcare.sitter.Sitter;
@@ -69,22 +67,14 @@ public class AdminService {
     //LISTAR TODOS OS SERVIÇOS CADASTRADOS
     @Transactional(readOnly = true)
     public List<ServicoResponse> getAllServices() {
-        List<Servico> servicos = servicoService.listarTodos();
-        
-        return servicos.stream()
-            .map(this::toServicoResponse)
-            .collect(Collectors.toList());
+        return servicoService.listarTodos();
     }
     
 
     //CRIA UM NOVO SERVIÇO - JÁ TEMOS OS 3 SERVIÇOS CADASTRADOS NO BD
     @Transactional
     public ServicoResponse createService(ServicoRequest serviceRequest) {
-        Servico novoServico = new Servico();
-        novoServico.setDescricao(serviceRequest.getDescricao());
-        Servico servicoSalvo = servicoService.criar(novoServico);
-
-        return toServicoResponse(servicoSalvo);
+        return servicoService.criar(serviceRequest);
     }
 
 
@@ -150,10 +140,6 @@ public class AdminService {
 
     private SitterProfileResponse toSitterProfileResponse(Sitter sitter) {
         return new SitterProfileResponse(sitter.getId(), sitter.getName(), sitter.getEmail());
-    }
-
-    private ServicoResponse toServicoResponse(Servico servico) {
-        return new ServicoResponse(servico.getId(), servico.getDescricao());
     }
 
     private AgendamentoResponse toAgendamentoResponse(Agendamento agendamento) {

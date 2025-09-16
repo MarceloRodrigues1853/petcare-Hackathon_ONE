@@ -9,13 +9,11 @@ import org.springframework.transaction.annotation.Transactional;
 import com.petcare.owner.Owner;
 import com.petcare.owner.OwnerRepository;
 
-
 @Service
 public class PetService {
 
     private final PetRepository petRepository;
     private final OwnerRepository ownerRepository;
-
 
     public PetService(PetRepository petRepository, OwnerRepository ownerRepository) {
         this.petRepository = petRepository;
@@ -24,14 +22,14 @@ public class PetService {
 
     public List<PetResponse> listarTodos() {
         return petRepository.findAll().stream()
-                .map(p -> new PetResponse(p.getId(), p.getNome(), p.getEspecie(), p.getIdade(), p.getOwner().getId()))
+                .map(PetResponse::new)
                 .collect(Collectors.toList());
     }
 
     public PetResponse buscarPorId(Long id) {
         Pet pet = petRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Pet não encontrado"));
-        return new PetResponse(pet.getId(), pet.getNome(), pet.getEspecie(), pet.getIdade(), pet.getOwner().getId());
+        return new PetResponse(pet);
     }
 
     @Transactional
@@ -40,9 +38,11 @@ public class PetService {
                 .orElseThrow(() -> new RuntimeException("Owner não encontrado"));
 
         Pet pet = new Pet(request.getNome(), request.getEspecie(), request.getIdade(), owner);
-        petRepository.save(pet);
 
-        return new PetResponse(pet.getId(), pet.getNome(), pet.getEspecie(), pet.getIdade(), owner.getId());
+        owner.addPet(pet);
+        ownerRepository.save(owner);
+
+        return new PetResponse(pet);
     }
 
     @Transactional
@@ -50,17 +50,13 @@ public class PetService {
         Pet pet = petRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Pet não encontrado"));
 
-        Owner owner = ownerRepository.findById(request.getOwnerId())
-                .orElseThrow(() -> new RuntimeException("Owner não encontrado"));
-
         pet.setNome(request.getNome());
         pet.setEspecie(request.getEspecie());
         pet.setIdade(request.getIdade());
-        pet.setOwner(owner);
 
         petRepository.save(pet);
 
-        return new PetResponse(pet.getId(), pet.getNome(), pet.getEspecie(), pet.getIdade(), owner.getId());
+        return new PetResponse(pet);
     }
 
     public void deletar(Long id) {

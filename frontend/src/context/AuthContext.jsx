@@ -1,6 +1,11 @@
 // src/context/AuthContext.jsx
+<<<<<<< HEAD
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { login as apiLogin, register as apiRegister, logout as apiLogout } from '../api/auth.api.js';
+=======
+import React, { createContext, useContext, useState } from 'react';
+import { postJson } from '../api/http.js';
+>>>>>>> feature/admin-wip
 
 const AuthContext = createContext(null);
 
