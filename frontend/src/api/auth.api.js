@@ -1,19 +1,15 @@
-// frontend/src/api/auth.api.js
+// src/api/auth.api.js
 import { post } from './http.js';
 
-export async function login({ email, password }) {
-  const data = await post('/auth/login', { email, password });
-  if (data?.token) localStorage.setItem('jwt', data.token);
-  return data;
+export function register(userData) {
+  return post("/api/auth/register", userData);
 }
 
-export async function register(payload) {
-  // payload: { name, email, password, role }
-  return post('/auth/register', payload);
+export function login(credentials) {
+  return post("/api/auth/login", credentials);
 }
 
-export async function logout() {
+export function logout() {
   localStorage.removeItem('jwt');
-  // se tiver logout no backend: await post('/auth/logout');
-  return { ok: true };
+  localStorage.removeItem('user'); // Garante que o usuário também é removido
 }

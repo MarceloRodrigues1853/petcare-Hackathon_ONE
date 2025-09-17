@@ -1,8 +1,8 @@
 -- Este ficheiro popula o banco com dados iniciais de forma segura (idempotente).
+-- Senhas: "senha123" para carlos/maria, "admin123" para admin.
 
 -- ===================== USUÁRIOS =====================
--- Senhas: "senha123" para carlos/maria, "admin123" para admin.
--- Adicionado o campo 'status' explicitamente para clareza.
+-- Usando o padrão INSERT ... SELECT ... WHERE NOT EXISTS para todos os inserts
 INSERT INTO users (user_type, name, email, password_hash, role, status)
 SELECT 'OWNER', 'Carlos Silva', 'carlos@petcare.com', '$2a$10$CnUrdUylE9QFftHgoSkH9.0wnY9IX/ovnm78XJo3UoR1XUmWJYp1a', 'OWNER', 'APPROVED'
 WHERE NOT EXISTS (SELECT 1 FROM users WHERE email = 'carlos@petcare.com');
@@ -12,7 +12,7 @@ SELECT 'SITTER', 'Maria Souza', 'maria@petcare.com', '$2a$10$CnUrdUylE9QFftHgoSk
 WHERE NOT EXISTS (SELECT 1 FROM users WHERE email = 'maria@petcare.com');
 
 INSERT INTO users (user_type, name, email, password_hash, role, status)
-SELECT 'ADMIN', 'Administrador', 'admin@petcare.com', '$2a$10$G5n3f.i5L9Q.V8Qz.A5f7uCLveIM081jH.02w5b.xV.t3Y8r.8/aW', 'ADMIN', 'APPROVED'
+SELECT 'ADMIN', 'Admin Principal', 'admin@petcare.com', '$2a$10$G5n3f.i5L9Q.V8Qz.A5f7uCLveIM081jH.02w5b.xV.t3Y8r.8/aW', 'ADMIN', 'APPROVED'
 WHERE NOT EXISTS (SELECT 1 FROM users WHERE email = 'admin@petcare.com');
 
 -- ===================== SERVIÇOS =====================

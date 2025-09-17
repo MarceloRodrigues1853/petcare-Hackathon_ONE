@@ -1,12 +1,14 @@
-import React from 'react';
 import { Navigate, Outlet } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '@/context/AuthContext';
 
 export default function RoleRoute({ allowed = [] }) {
-  const { user } = useAuth();
-  if (!user) return <Navigate to="/login" replace />;
+  const { profile } = useAuth();
 
-  const role = (user.role || '').toUpperCase();
-  const ok = allowed.length === 0 || allowed.includes(role);
-  return ok ? <Outlet /> : <Navigate to="/403" replace />;
+  // se ainda não tem profile (ex.: acabou de logar e só tem token), manda pra login
+  if (!profile) return <Navigate to="/login" replace />;
+
+  if (allowed.length && !allowed.includes(profile.role)) {
+    return <Navigate to="/403" replace />;
+  }
+  return <Outlet />;
 }

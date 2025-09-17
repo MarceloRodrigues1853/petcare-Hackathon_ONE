@@ -1,64 +1,54 @@
-// frontend/src/api/http.js
-const API = import.meta.env.VITE_API_BASE || '/api';
+// src/api/http.js
 
-function isJson(res) {
-  const ct = res.headers.get('content-type') || '';
-  return ct.includes('application/json');
+function getAuthHeader() {
+  // O seu token deve ser guardado como 'jwt'
+  const token = localStorage.getItem('jwt');
+  return token ? { 'Authorization': `Bearer ${token}` } : {};
 }
 
-function normalizeToken(raw) {
-  if (!raw) return null;
-  return raw.startsWith('Bearer ') ? raw.slice(7) : raw;
-}
+async function request(path, { method = 'GET', body, headers = {} } = {}) {
+  const fullPath = path.startsWith('/') ? path : `/${path}`;
 
-function authHeader() {
-  const stored = localStorage.getItem('jwt');
-  const token = normalizeToken(stored);
-  return token ? { Authorization: `Bearer ${token}` } : {};
-}
+  const finalHeaders = {
+    ...getAuthHeader(),
+    ...(!(body instanceof FormData) ? { 'Content-Type': 'application/json' } : {}),
+    ...headers,
+  };
 
-async function request(path, { method = 'GET', headers = {}, body } = {}) {
-  const hasFormData = body instanceof FormData;
-
-  const res = await fetch(`${API}${path}`, {
-    method,
-    // Se você não usa cookies de sessão, pode remover a próxima linha
-    credentials: 'include',
-    headers: {
-      Accept: 'application/json',
-      ...(hasFormData ? {} : { 'Content-Type': 'application/json' }),
-      ...authHeader(),
-      ...headers,
-    },
-    body: hasFormData ? body : (body ? JSON.stringify(body) : undefined),
-  });
-
-  let data;
+  let res;
   try {
-    data = isJson(res) ? await res.json() : await res.text();
-  } catch {
-    data = null;
+    // A chamada é feita para o próprio servidor do Vite (ex: /api/auth/login)
+    // O proxy do Vite irá redirecionar para o backend
+    res = await fetch(fullPath, {
+      method,
+      headers: finalHeaders,
+      body: body && !(body instanceof FormData) ? JSON.stringify(body) : body,
+    });
+  } catch (e) {
+    throw new Error('Falha de rede. Verifique a sua conexão.');
   }
 
   if (!res.ok) {
-    // repassa 401 de forma explícita (útil pro redirecionamento)
-    if (res.status === 401) throw new Error('HTTP 401');
-    const msg =
-      (data && typeof data === 'object' && (data.message || data.error)) ||
-      (typeof data === 'string' && data.slice(0, 200)) ||
-      `HTTP ${res.status}`;
-    throw new Error(msg);
+    let message = `Erro HTTP ${res.status}`;
+    try {
+      const data = await res.json();
+      message = data.message || data.error || `Erro HTTP ${res.status}`;
+    } catch {
+      // Ignora se a resposta de erro não for JSON
+    }
+    const err = new Error(message);
+    err.status = res.status;
+    throw err;
   }
 
-  return data;
+  if (res.status === 204) return null;
+  const contentType = res.headers.get('content-type');
+  return contentType && contentType.includes('application/json') ? res.json() : res.text();
 }
 
-// ===== Named exports esperados pelos outros módulos =====
-export const get  = (p, opts)        => request(p, { ...opts, method: 'GET' });
-export const post = (p, body, opts)  => request(p, { ...opts, method: 'POST', body });
-export const put  = (p, body, opts)  => request(p, { ...opts, method: 'PUT',  body });
-export const del  = (p, opts)        => request(p, { ...opts, method: 'DELETE' });
+export const get  = (url, opts) => request(url, { method: 'GET', ...opts });
+export const post = (url, body, opts) => request(url, { method: 'POST', body, ...opts });
+export const put  = (url, body, opts) => request(url, { method: 'PUT',  body, ...opts });
+export const del  = (url, opts) => request(url, { method: 'DELETE', ...opts });
 
-// ===== Default export opcional (caso alguém use) =====
-const http = { get, post, put, del };
-export default http;
+export default { get, post, put, del };

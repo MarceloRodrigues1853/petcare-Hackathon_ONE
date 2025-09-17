@@ -1,14 +1,10 @@
-// src/pages/Register.jsx
-
-import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
-import { handleRedirectByRole } from "../utils/navigation"; // <- Importando nosso helper
+import { useState } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
+import { useAuth } from '@/context/AuthContext';
 
 export default function Register() {
   const navigate = useNavigate();
-  // 1. Pegando a função 'register' do nosso contexto
-  const { login, register } = useAuth(); 
+  const { register, login } = useAuth(); // Pegamos a função 'register' do contexto
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -28,19 +24,25 @@ export default function Register() {
 
     setLoading(true);
     try {
-      // 2. Usando a função 'register' do contexto
+      // 1. Chama a função de registo do contexto
       await register({
         name,
         email,
         password,
-        role: role?.toUpperCase() || "OWNER",
+        role,
       });
 
-      // login automático (a lógica continua perfeita)
-      const session = await login(email, password);
-      
-      // 3. Usando nosso helper para não repetir código
-      handleRedirectByRole(session, navigate);
+      // 2. A lógica de login/redirect já está dentro do register/login do AuthContext.
+      //    O fluxo de navegação será tratado pelos nossos componentes de rota.
+      //    O ideal é que o PublicRoute nos redirecione automaticamente.
+      //    Mas para garantir, podemos fazer um redirect manual.
+      const loggedInUser = useAuth().user; // Pega o usuário que foi setado pelo login automático
+      const userRole = (loggedInUser?.role || "").toUpperCase();
+
+      if (userRole === "OWNER") navigate("/owner/dashboard", { replace: true });
+      else if (userRole === "SITTER") navigate("/sitter/dashboard", { replace: true });
+      else if (userRole === "ADMIN") navigate("/admin/dashboard", { replace: true });
+      else navigate("/", { replace: true });
 
     } catch (err) {
       setMsg(err?.message || "Erro ao cadastrar");
@@ -50,7 +52,6 @@ export default function Register() {
   }
 
   return (
-    // SEU JSX CONTINUA IGUAL, ELE JÁ ESTÁ PERFEITO
     <div className="center">
       <h1>Cadastro</h1>
       <div className="card">
@@ -62,7 +63,6 @@ export default function Register() {
             placeholder="Nome"
             required
           />
-
           <label>E-mail</label>
           <input
             type="email"
@@ -71,7 +71,6 @@ export default function Register() {
             placeholder="E-mail"
             required
           />
-
           <label>Senha</label>
           <input
             type="password"
@@ -80,7 +79,6 @@ export default function Register() {
             placeholder="Senha"
             required
           />
-
           <label>Confirmar senha</label>
           <input
             type="password"
@@ -89,7 +87,6 @@ export default function Register() {
             placeholder="Confirmar senha"
             required
           />
-
           <label>Tipo de usuário</label>
           <select
             className="role-select"
@@ -105,7 +102,6 @@ export default function Register() {
             {loading ? "Cadastrando..." : "Cadastrar"}
           </button>
         </form>
-
         {msg && <p className="msg">{msg}</p>}
 
         <p className="footer-link">

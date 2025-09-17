@@ -1,9 +1,10 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { CheckCircle, XCircle, ArrowLeft } from 'lucide-react';
+import { useAuth } from '@/context/AuthContext';
 
-// 1. Importando as funções de API reais para o Sitter
-import { listSitters, updateSitter, deleteSitter } from '../../../api/sitter.api.js';
+// 1. CORREÇÃO: Importando apenas as funções que existem em sitter.api.js
+import { listSitters, updateSitter } from '@/api/sitter.api.js';
 
 export default function Approvals() {
   const [pendingSitters, setPendingSitters] = useState([]);
@@ -15,14 +16,10 @@ export default function Approvals() {
     try {
       setLoading(true);
       setError(null);
-      // 2. Buscando a lista COMPLETA de sitters
       const allSitters = await listSitters();
-      
-      // 3. Filtrando no front-end para encontrar apenas os pendentes
-      //    (ASSUMINDO que o objeto Sitter tem um campo 'status')
+      // Assumindo que o objeto Sitter tem um campo 'status'
       const pending = allSitters.filter(s => s.status?.toUpperCase() === 'PENDING');
       setPendingSitters(pending);
-
     } catch (err) {
       console.error("Falha ao buscar sitters pendentes:", err);
       setError("Não foi possível carregar a lista de aprovações.");
@@ -35,35 +32,20 @@ export default function Approvals() {
     fetchPendingSitters();
   }, [fetchPendingSitters]);
   
-  const handleApprove = async (sitterId) => {
+  // Função unificada para alterar o status
+  const handleStatusChange = async (sitterId, newStatus) => {
     try {
-      const sitterToApprove = pendingSitters.find(s => s.id === sitterId);
-      if (!sitterToApprove) return;
+      const sitterToUpdate = pendingSitters.find(s => s.id === sitterId);
+      if (!sitterToUpdate) return;
 
-      // 4. Lógica de Aprovação:
-      //    ASSUMINDO que podemos mudar o status via PUT
-      const payload = { ...sitterToApprove, status: 'APPROVED' };
+      // Usando a API de update para alterar o status
+      const payload = { ...sitterToUpdate, status: newStatus };
       await updateSitter(sitterId, payload);
       
-      // Remove da lista local após o sucesso
+      // Remove da lista local após o sucesso da ação
       setPendingSitters(prev => prev.filter(s => s.id !== sitterId));
     } catch (err) {
-      setError(`Erro ao aprovar o sitter ${sitterId}.`);
-    }
-  };
-  
-  const handleReject = async (sitterId) => {
-    if (window.confirm('Tem a certeza que deseja rejeitar este registo? Esta ação não pode ser desfeita.')) {
-      try {
-        // 5. Lógica de Rejeição:
-        //    ASSUMINDO que rejeitar significa deletar o registro
-        await deleteSitter(sitterId);
-
-        // Remove da lista local após o sucesso
-        setPendingSitters(prev => prev.filter(s => s.id !== sitterId));
-      } catch (err) {
-        setError(`Erro ao rejeitar o sitter ${sitterId}.`);
-      }
+      setError(`Erro ao tentar ${newStatus === 'APPROVED' ? 'aprovar' : 'rejeitar'} o cuidador.`);
     }
   };
 
@@ -79,7 +61,15 @@ export default function Approvals() {
     <div className="bg-slate-50 min-h-screen p-4 sm:p-8">
       <div className="max-w-7xl mx-auto">
         <header className="mb-8">
-          {/* ... Seu header ... */}
+          <div className="flex items-center gap-4">
+            <button onClick={() => navigate(-1)} className="p-2 rounded-full hover:bg-gray-200 transition-colors">
+              <ArrowLeft size={24} className="text-gray-600" />
+            </button>
+            <div>
+              <h1 className="text-4xl font-bold text-gray-800">Aprovações Pendentes</h1>
+              <p className="text-gray-600 mt-2">Analise e aprove ou rejeite os novos sitters que se registaram.</p>
+            </div>
+          </div>
         </header>
 
         <div className="bg-white p-6 rounded-xl shadow-md">
@@ -100,15 +90,15 @@ export default function Approvals() {
                       <div className="text-sm text-gray-500">{sitter.email}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {/* 6. ASSUMINDO que a API retorna o campo 'registrationDate' */}
                       {sitter.registrationDate ? new Date(sitter.registrationDate).toLocaleDateString('pt-BR') : 'N/A'}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
                       <div className="flex justify-center items-center gap-4">
-                        <button onClick={() => handleApprove(sitter.id)} className="flex items-center gap-2 px-4 py-2 bg-green-100 text-green-800 rounded-lg hover:bg-green-200 transition-colors">
+                        {/* 2. CORREÇÃO: Ambas as ações agora chamam handleStatusChange */}
+                        <button onClick={() => handleStatusChange(sitter.id, 'APPROVED')} className="flex items-center gap-2 px-4 py-2 bg-green-100 text-green-800 rounded-lg hover:bg-green-200">
                           <CheckCircle size={18} /> Aprovar
                         </button>
-                        <button onClick={() => handleReject(sitter.id)} className="flex items-center gap-2 px-4 py-2 bg-red-100 text-red-800 rounded-lg hover:bg-red-200 transition-colors">
+                        <button onClick={() => handleStatusChange(sitter.id, 'REJECTED')} className="flex items-center gap-2 px-4 py-2 bg-red-100 text-red-800 rounded-lg hover:bg-red-200">
                           <XCircle size={18} /> Rejeitar
                         </button>
                       </div>
