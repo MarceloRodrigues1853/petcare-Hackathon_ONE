@@ -1,7 +1,8 @@
-// src/api/http.js
+// O proxy do Vite irá redirecionar os caminhos que começam com /api
+// para o seu backend. Portanto, não precisamos de uma URL base aqui.
 
 function getAuthHeader() {
-  // O seu token deve ser guardado como 'jwt'
+  // Garante que estamos a ler a chave 'jwt' que o AuthContext salva.
   const token = localStorage.getItem('jwt');
   return token ? { 'Authorization': `Bearer ${token}` } : {};
 }
@@ -17,8 +18,6 @@ async function request(path, { method = 'GET', body, headers = {} } = {}) {
 
   let res;
   try {
-    // A chamada é feita para o próprio servidor do Vite (ex: /api/auth/login)
-    // O proxy do Vite irá redirecionar para o backend
     res = await fetch(fullPath, {
       method,
       headers: finalHeaders,
@@ -34,7 +33,7 @@ async function request(path, { method = 'GET', body, headers = {} } = {}) {
       const data = await res.json();
       message = data.message || data.error || `Erro HTTP ${res.status}`;
     } catch {
-      // Ignora se a resposta de erro não for JSON
+      // Ignora se a resposta de erro não for JSON, pois pode ser um erro de servidor (HTML).
     }
     const err = new Error(message);
     err.status = res.status;

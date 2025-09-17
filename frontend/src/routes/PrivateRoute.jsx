@@ -1,21 +1,21 @@
-// src/routes/PrivateRoute.jsx
 import React from 'react';
 import { Navigate, Outlet } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 
-export default function PrivateRoute({ allowed }) {
-    const { isAuthenticated, user } = useAuth();
+export default function PrivateRoute() {
+    const { isAuthenticated, loading } = useAuth();
 
+    // Se o contexto ainda está a verificar a sessão, mostra uma mensagem de carregamento.
+    // Isto é crucial para evitar redirecionamentos incorretos em recargas de página.
+    if (loading) {
+        return <div className="p-8 text-center text-gray-500">A autenticar...</div>;
+    }
+
+    // Se a verificação terminou e o usuário NÃO está autenticado, redireciona para o login.
     if (!isAuthenticated) {
         return <Navigate to="/login" replace />;
     }
 
-    const userRole = (user?.role || "").toUpperCase();
-    if (allowed && !allowed.includes(userRole)) {
-        return <Navigate to="/403" replace />;
-    }
-    
-    // Se o `allowed` não for especificado, apenas verifica se está logado.
-    // Se for especificado e a role bater certo, renderiza a rota filha.
+    // Se estiver autenticado, permite o acesso às rotas filhas (que serão protegidas pelo RoleRoute).
     return <Outlet />;
 }

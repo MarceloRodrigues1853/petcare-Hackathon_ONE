@@ -2,8 +2,9 @@ import { useEffect, useState, useCallback } from "react";
 import { Link } from "react-router-dom";
 import { Dog, ArrowLeft } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
-import { createPet, deletePet } from "@/api/pet.api.js";
-import { getMyPets } from "@/api/owner.api.js"; // <-- Usando a nova função
+
+// 1. Importando as funções REAIS da nossa API de pets
+import { listPets, createPet, deletePet } from "@/api/pet.api.js";
 
 export default function PetForm() {
   const { user } = useAuth();
@@ -12,13 +13,16 @@ export default function PetForm() {
   const [feedback, setFeedback] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  // 2. A busca de pets agora chama a API real
   const fetchPets = useCallback(async () => {
-    if (!user?.id) return;
-
+    if (!user) {
+      setLoading(false);
+      return;
+    }
     try {
       setLoading(true);
-      const petsData = await getMyPets(user.id); // <-- Chamada corrigida
-      setPets(Array.isArray(petsData) ? petsData : []);
+      const data = await listPets();
+      setPets(Array.isArray(data) ? data : []);
     } catch (error) {
       setFeedback({ type: "error", message: "Falha ao carregar seus pets." });
     } finally {
@@ -38,32 +42,43 @@ export default function PetForm() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!user?.id) {
-      setFeedback({ type: "error", message: "Você precisa estar logado para salvar um pet." });
-      return;
+        setFeedback({ type: "error", message: "Usuário não encontrado. Faça login novamente." });
+        return;
     }
-    
     try {
+      setFeedback(null);
+      // 3. Montando o payload com os nomes que o backend espera
       const petPayload = {
         nome: newPet.name,
         especie: newPet.species,
         idade: parseInt(newPet.age, 10),
         ownerId: user.id,
       };
+
+      // 4. Chamando a função 'createPet' real da API
       const createdPet = await createPet(petPayload);
-      setPets((prevPets) => [...prevPets, createdPet]);
-      setFeedback({ type: "success", message: "Pet salvo com sucesso!" });
-      setNewPet({ name: "", species: "", age: "" });
+
+      // Atualiza a lista local com o pet retornado pelo backend (que tem o ID correto)
+      setPets((prev) => [...prev, createdPet]);
+      setFeedback({ type: "success", message: `"${createdPet.nome}" salvo com sucesso!` });
+      setNewPet({ name: "", species: "", age: "" }); // Limpa o formulário
+
     } catch (error) {
       setFeedback({ type: "error", message: error.message || "Erro ao salvar pet." });
     }
   };
 
-  const handleRemove = async (petIdToRemove) => {
-    if (!user?.id) return;
+  const handleRemove = async (id) => {
+    const petNameToRemove = pets.find(p => p.id === id)?.nome || 'O pet';
+    if (!window.confirm(`Tem certeza que deseja remover "${petNameToRemove}"?`)) {
+        return;
+    }
     try {
-      await deletePet(petIdToRemove);
-      setPets((prevPets) => prevPets.filter((pet) => pet.id !== petIdToRemove));
-      setFeedback({ type: "success", message: "Pet removido com sucesso." });
+      setFeedback(null);
+      // 5. Chamando a função 'deletePet' real da API
+      await deletePet(id);
+      setPets((prev) => prev.filter((pet) => pet.id !== id));
+      setFeedback({ type: "success", message: `"${petNameToRemove}" removido com sucesso.` });
     } catch (error) {
       setFeedback({ type: "error", message: error.message || "Erro ao remover pet." });
     }
@@ -101,15 +116,15 @@ export default function PetForm() {
         </form>
 
         {feedback && (
-          <div className={`mt-4 p-3 rounded-lg text-center font-medium ${ feedback.type === "success" ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}`}>
+          <div className={`mt-4 p-3 rounded-lg text-center font-medium ${ feedback.type === "success" ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800" }`}>
             {feedback.message}
           </div>
         )}
 
         <div className="mt-8">
-          <h3 className="text-xl font-bold text-gray-800 mb-3">Lista de Pets</h3>
+          <h3 className="text-xl font-bold text-gray-800 mb-3">Lista de Pets Cadastrados</h3>
           {loading ? (
-            <p>Carregando pets...</p>
+            <p className="text-gray-500">A carregar pets...</p>
           ) : pets.length === 0 ? (
             <p className="text-gray-600">Nenhum pet cadastrado.</p>
           ) : (
@@ -120,7 +135,10 @@ export default function PetForm() {
                     <div className="bg-green-100 text-green-700 p-2 rounded-full">
                       <Dog size={20} />
                     </div>
-                    <span>{pet.nome} - {pet.especie} ({pet.idade} anos)</span>
+                    <span>
+                      {/* 6. Usando os nomes de campo da API (nome, especie, idade) */}
+                      {pet.nome} - {pet.especie} ({pet.idade} anos)
+                    </span>
                   </div>
                   <button onClick={() => handleRemove(pet.id)} className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 transition">
                     Remover

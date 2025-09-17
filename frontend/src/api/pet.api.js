@@ -1,16 +1,41 @@
-// frontend/src/api/pet.api.js
-import { get, post, del } from './http.js';
+import { get, post, put, del } from './http.js';
 
-export function listPets(ownerId) {
-  const qs = ownerId ? `?ownerId=${ownerId}` : '';
-  return get(`/pets${qs}`);
+/**
+ * Lista os pets do usuário logado.
+ * Endpoint: GET /pets
+ */
+export function listPets() {
+  return get('/pets');
 }
 
-export function createPet(payload) {
-  // { nome, especie, idade, ownerId }
-  return post('/pets', payload);
+/**
+ * Busca um pet específico pelo ID.
+ * Endpoint: GET /pets/{id}
+ */
+export function getPetById(petId) {
+  return get(`/pets/${petId}`);
 }
 
-export function deletePet(id) {
-  return del(`/pets/${id}`);
+/**
+ * Cria um novo pet.
+ * Endpoint: POST /pets
+ */
+export function createPet(petData) {
+  return post('/pets', petData);
+}
+
+/**
+ * Atualiza um pet existente.
+ * Endpoint: PUT /pets/{id}
+ */
+export function updatePet(petId, petData) {
+  return put(`/pets/${petId}`, petData);
+}
+
+/**
+ * Deleta um pet.
+ * Endpoint: DELETE /pets/{id}
+ */
+export function deletePet(petId) {
+  return del(`/pets/${petId}`);
 }

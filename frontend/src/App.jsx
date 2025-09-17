@@ -5,7 +5,8 @@ import { Toaster } from 'sonner';
 import AuthProvider from '@/context/AuthContext.jsx';
 import Layout from '@/components/Layout.jsx';
 import PublicOnlyRoute from '@/components/PublicOnlyRoute.jsx';
-import PrivateRoute from '@/routes/PrivateRoute.jsx'; // Usando o seu componente do caminho correto
+import PrivateRoute from '@/routes/PrivateRoute.jsx';
+import RoleRoute from '@/routes/RoleRoute.jsx';
 
 // PÁGINAS PÚBLICAS
 import Home from '@/pages/Home.jsx';
@@ -46,35 +47,30 @@ function App() {
         <Routes>
           <Route path="/" element={<Layout />}>
             
-            {/* Rotas Públicas (visíveis apenas para usuários NÃO logados) */}
             <Route element={<PublicOnlyRoute />}>
               <Route path="login" element={<Login />} />
               <Route path="register" element={<Register />} />
             </Route>
 
-            {/* Outras Rotas Públicas (visíveis para todos) */}
             <Route index element={<Home />} />
             <Route path="about" element={<About />} />
             <Route path="services" element={<Services />} />
             <Route path="sitters" element={<SitterSearch />} />
             <Route path="403" element={<Forbidden />} />
-
-            {/* --- ROTAS PROTEGIDAS --- */}
-            {/* O primeiro PrivateRoute apenas verifica se o usuário está logado */}
+            
             <Route element={<PrivateRoute />}>
-
-              {/* Rotas de OWNER */}
-              {/* O segundo PrivateRoute verifica o perfil (role) */}
-              <Route element={<PrivateRoute allowed={['OWNER']} />}>
+              
+              <Route element={<RoleRoute allowedRoles={['OWNER']} />}>
                 <Route path="owner/dashboard" element={<OwnerDashboard />} />
-                <Route path="owner/pets" element={<PetForm />} />
+                <Route path="owner/pet/new" element={<PetForm />} />
+                <Route path="owner/pet/edit/:id" element={<PetForm />} />
+                {/* ======================================================= */}
                 <Route path="owner/appointments" element={<AppointmentsList />} />
                 <Route path="owner/appointments/new" element={<AppointmentNew />} />
                 <Route path="owner/profile/edit" element={<OwnerProfileEdit />} />
               </Route>
 
-              {/* Rotas de SITTER */}
-              <Route element={<PrivateRoute allowed={['SITTER']} />}>
+              <Route element={<RoleRoute allowedRoles={['SITTER']} />}>
                 <Route path="sitter/dashboard" element={<SitterDashboard />} />
                 <Route path="sitter/services" element={<ServicesForm />} />
                 <Route path="sitter/appointments" element={<SitterAppointments />} />
@@ -82,8 +78,7 @@ function App() {
                 <Route path="sitter/history" element={<SitterHistory />} />
               </Route>
 
-              {/* Rotas de ADMIN */}
-              <Route element={<PrivateRoute allowed={['ADMIN']} />}>
+              <Route element={<RoleRoute allowedRoles={['ADMIN']} />}>
                 <Route path="admin/dashboard" element={<AdminDashboard />} />
                 <Route path="admin/sitters" element={<SittersList />} />
                 <Route path="admin/owners" element={<OwnersList />} />
@@ -93,7 +88,6 @@ function App() {
               </Route>
             </Route>
 
-            {/* Rota para "não encontrado" */}
             <Route path="*" element={<Navigate to="/" replace />} />
           </Route>
         </Routes>
