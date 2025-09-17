@@ -1,8 +1,9 @@
 import { useEffect, useState, useCallback } from "react";
 import { Link } from "react-router-dom";
 import { Dog, ArrowLeft } from "lucide-react";
-import { useAuth } from "../../../context/AuthContext";
-import { listPets, createPet, deletePet } from "../../../api/pet.api.js";
+import { useAuth } from "@/context/AuthContext";
+import { createPet, deletePet } from "@/api/pet.api.js";
+import { getMyPets } from "@/api/owner.api.js"; // <-- Usando a nova função
 
 export default function PetForm() {
   const { user } = useAuth();
@@ -12,16 +13,18 @@ export default function PetForm() {
   const [loading, setLoading] = useState(true);
 
   const fetchPets = useCallback(async () => {
+    if (!user?.id) return;
+
     try {
       setLoading(true);
-      const petsData = await listPets();
-      setPets(petsData);
+      const petsData = await getMyPets(user.id); // <-- Chamada corrigida
+      setPets(Array.isArray(petsData) ? petsData : []);
     } catch (error) {
       setFeedback({ type: "error", message: "Falha ao carregar seus pets." });
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [user]);
 
   useEffect(() => {
     fetchPets();
@@ -46,9 +49,7 @@ export default function PetForm() {
         idade: parseInt(newPet.age, 10),
         ownerId: user.id,
       };
-
       const createdPet = await createPet(petPayload);
-
       setPets((prevPets) => [...prevPets, createdPet]);
       setFeedback({ type: "success", message: "Pet salvo com sucesso!" });
       setNewPet({ name: "", species: "", age: "" });
@@ -58,6 +59,7 @@ export default function PetForm() {
   };
 
   const handleRemove = async (petIdToRemove) => {
+    if (!user?.id) return;
     try {
       await deletePet(petIdToRemove);
       setPets((prevPets) => prevPets.filter((pet) => pet.id !== petIdToRemove));
@@ -68,14 +70,14 @@ export default function PetForm() {
   };
 
   return (
-    <div className="bg-slate-50 min-h-screen p-4 sm-p-8">
+    <div className="bg-slate-50 min-h-screen p-4 sm:p-8">
       <div className="max-w-3xl mx-auto">
         <header className="mb-8 relative flex items-center">
           <Link to="/owner/dashboard" className="mr-4 p-2 text-blue-600 hover:bg-gray-200 rounded-full transition-colors" title="Voltar">
             <ArrowLeft size={28} />
           </Link>
           <div>
-            <h1 className="text-4xl font-bold text-gray-800">Meu Pet</h1>
+            <h1 className="text-4xl font-bold text-gray-800">Meus Pets</h1>
             <p className="text-gray-600 mt-2">Cadastre e atualize os dados do(s) seu(s) pet(s)</p>
           </div>
         </header>
@@ -83,52 +85,23 @@ export default function PetForm() {
         <form onSubmit={handleSubmit} className="bg-white p-6 rounded-xl shadow-md space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700">Nome</label>
-            <input
-              name="name"
-              value={newPet.name}
-              onChange={handleChange}
-              className="mt-1 w-full border rounded-md px-3 py-2 shadow-sm focus:ring-blue-500 focus:border-blue-500"
-              required
-            />
+            <input name="name" value={newPet.name} onChange={handleChange} className="mt-1 w-full border rounded-md px-3 py-2 shadow-sm focus:ring-blue-500 focus:border-blue-500" required />
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700">Espécie</label>
-            <input
-              name="species"
-              value={newPet.species}
-              onChange={handleChange}
-              className="mt-1 w-full border rounded-md px-3 py-2 shadow-sm focus:ring-blue-500 focus:border-blue-500"
-              required
-            />
+            <input name="species" value={newPet.species} onChange={handleChange} className="mt-1 w-full border rounded-md px-3 py-2 shadow-sm focus:ring-blue-500 focus:border-blue-500" required />
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700">Idade</label>
-            <input
-              name="age"
-              type="number"
-              value={newPet.age}
-              onChange={handleChange}
-              className="mt-1 w-full border rounded-md px-3 py-2 shadow-sm focus:ring-blue-500 focus:border-blue-500"
-              required
-            />
+            <input name="age" type="number" value={newPet.age} onChange={handleChange} className="mt-1 w-full border rounded-md px-3 py-2 shadow-sm focus:ring-blue-500 focus:border-blue-500" required />
           </div>
-          <button
-            type="submit"
-            className="bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-blue-700 transition"
-          >
+          <button type="submit" className="bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-blue-700 transition">
             Salvar Pet
           </button>
         </form>
 
-        {/* --- Bloco de Feedback CORRIGIDO --- */}
         {feedback && (
-          <div
-            className={`mt-4 p-3 rounded-lg text-center font-medium ${
-              feedback.type === "success"
-                ? "bg-green-100 text-green-800"
-                : "bg-red-100 text-red-800"
-            }`}
-          >
+          <div className={`mt-4 p-3 rounded-lg text-center font-medium ${ feedback.type === "success" ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}`}>
             {feedback.message}
           </div>
         )}
@@ -147,14 +120,9 @@ export default function PetForm() {
                     <div className="bg-green-100 text-green-700 p-2 rounded-full">
                       <Dog size={20} />
                     </div>
-                    <span>
-                      {pet.nome} - {pet.especie} ({pet.idade} anos)
-                    </span>
+                    <span>{pet.nome} - {pet.especie} ({pet.idade} anos)</span>
                   </div>
-                  <button
-                    onClick={() => handleRemove(pet.id)}
-                    className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 transition"
-                  >
+                  <button onClick={() => handleRemove(pet.id)} className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 transition">
                     Remover
                   </button>
                 </li>

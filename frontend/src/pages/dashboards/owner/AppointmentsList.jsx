@@ -1,49 +1,46 @@
 import { ArrowLeft, Calendar, Dog } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useEffect, useState, useCallback } from "react";
-
-// 1. Importando as funções corretas do arquivo de API dedicado
-import { listAppointments, deleteAppointment } from "../../../api/appointment.api.js";
+import { useAuth } from "@/context/AuthContext";
+import { deleteAppointment } from "@/api/appointment.api.js";
+import { getMyAppointments } from "@/api/owner.api.js"; // <-- Usando a nova função
 
 export default function AppointmentsList() {
+  const { user } = useAuth();
   const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [feedback, setFeedback] = useState(null);
 
   const fetchAppointments = useCallback(async () => {
+    if (!user?.id) return;
     try {
       setLoading(true);
       setFeedback(null);
-      // 2. Chamando a função de API correta e atualizada
-      const data = await listAppointments();
-      setAppointments(data);
+      const data = await getMyAppointments(user.id); // <-- Chamada corrigida
+      setAppointments(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error("Erro ao carregar agendamentos", error);
       setFeedback({ type: "error", message: "Não foi possível carregar os agendamentos." });
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [user]);
 
   useEffect(() => {
     fetchAppointments();
   }, [fetchAppointments]);
 
   const handleCancel = async (id) => {
-    // Adicionando uma confirmação para melhorar a experiência do usuário
     if (!window.confirm("Tem certeza que deseja cancelar este agendamento?")) {
       return;
     }
-
     try {
-      // 3. Conectando com a função de delete real da API
       await deleteAppointment(id);
       setAppointments((prev) => prev.filter((appt) => appt.id !== id));
-      setFeedback({ type: "success", message: "Agendamento cancelado com sucesso!" });
+      setFeedback({ type: "success", message: "Agendamento cancelado!" });
     } catch (error) {
-      setFeedback({ type: "error", message: "Erro ao cancelar o agendamento." });
+      setFeedback({ type: "error", message: "Erro ao cancelar agendamento." });
     } finally {
-      // Esconde a mensagem de feedback após 3 segundos
       setTimeout(() => setFeedback(null), 3000);
     }
   };
@@ -52,11 +49,7 @@ export default function AppointmentsList() {
     <div className="bg-slate-50 min-h-screen p-4 sm:p-8">
       <div className="max-w-3xl mx-auto">
         <header className="mb-8 relative flex items-center">
-          <Link
-            to="/owner/dashboard"
-            className="mr-4 p-2 text-blue-600 hover:bg-gray-200 rounded-full transition-colors"
-            title="Voltar"
-          >
+          <Link to="/owner/dashboard" className="mr-4 p-2 text-blue-600 hover:bg-gray-200 rounded-full transition-colors" title="Voltar">
             <ArrowLeft size={28} />
           </Link>
           <div>
@@ -66,19 +59,13 @@ export default function AppointmentsList() {
         </header>
 
         {feedback && (
-          <div
-            className={`my-4 p-3 rounded-lg text-center font-medium ${
-              feedback.type === "success"
-                ? "bg-green-100 text-green-800"
-                : "bg-red-100 text-red-800"
-            }`}
-          >
+          <div className={`mt-4 p-3 rounded-lg text-center font-medium ${ feedback.type === "success" ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800" }`}>
             {feedback.message}
           </div>
         )}
 
         {loading ? (
-          <p className="text-center text-gray-500">Carregando agendamentos...</p>
+          <p>Carregando agendamentos...</p>
         ) : appointments.length === 0 ? (
           <div className="text-center bg-white p-8 rounded-lg shadow">
             <h2 className="text-xl font-semibold text-gray-700">Nenhum agendamento encontrado</h2>
@@ -90,28 +77,24 @@ export default function AppointmentsList() {
         ) : (
           <ul className="space-y-3">
             {appointments.map((appt) => (
-              <li
-                key={appt.id}
-                className="bg-white p-4 rounded-lg shadow-md flex flex-wrap justify-between items-center gap-4"
-              >
+              <li key={appt.id} className="bg-white p-4 rounded-lg shadow flex justify-between items-center">
                 <div className="flex items-center space-x-4">
-                  <div className="flex items-center space-x-1 text-gray-700" title="Data do serviço">
+                  <div className="flex items-center space-x-1 text-gray-700">
                     <Calendar size={16} />
-                    {/* 4. Corrigindo o acesso aos dados para bater com a API real */}
                     <span>{new Date(appt.dataInicio).toLocaleDateString("pt-BR")}</span>
                   </div>
-                  <div className="flex items-center space-x-1 text-gray-700" title="Pet">
+                  <div className="flex items-center space-x-1 text-gray-700">
                     <Dog size={16} />
-                    <span>{appt.pet?.nome || 'Não informado'}</span>
+                    <span>{appt.pet?.nome || 'Pet não informado'}</span>
                   </div>
                 </div>
                 <div className="flex items-center space-x-4">
-                  <span className="font-medium text-blue-600" title="Serviço">
-                    {appt.sitterServicoPreco?.servico?.descricao || 'Não informado'}
+                  <span className="font-medium text-blue-600">
+                    {appt.sitterServicoPreco?.servico?.descricao || 'Serviço não informado'}
                   </span>
                   <button
                     onClick={() => handleCancel(appt.id)}
-                    className="bg-red-500 text-white px-3 py-1 rounded-md hover:bg-red-600 transition-colors text-sm font-semibold"
+                    className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 transition"
                   >
                     Cancelar
                   </button>
