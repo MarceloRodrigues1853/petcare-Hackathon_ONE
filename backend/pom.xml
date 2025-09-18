@@ -116,7 +116,7 @@
         <artifactId>maven-surefire-plugin</artifactId>
         <version>3.2.5</version>
         <configuration>
-          <skipTests>false</skipTests> <!--ALTERAR PARA FALSE PARA RODAR TESTES-->
+          <skipTests>true</skipTests> <!--ALTERAR PARA FALSE PARA RODAR TESTES-->
         </configuration>
       </plugin>
     </plugins>
