@@ -4,9 +4,9 @@
 :root{
   --bg: #fff8ee;
   --text: #15232d;
-  --brand: #0E355C;   /* azul escuro */
+  --brand: #0E355C;
   --card: #ffffff;
-  --accent: #ef7b47;  /* laranja */
+  --accent: #ef7b47;
   --radius: 16px;
 }
 
@@ -162,7 +162,7 @@ body{
 
 .benefit-card {
   background: var(--card);
-  border-left: 6px solid var(--brand); /* azul escuro */
+  border-left: 6px solid var(--brand);
   padding: 1.5rem 1rem;
   border-radius: var(--radius);
   box-shadow: 0 6px 18px rgba(14,53,92,0.08);
@@ -306,7 +306,7 @@ input:focus{
   transition: all 0.2s;
 }
 .btn:hover { 
-  background: var(--brand); /* mantém azul escuro */
+  background: var(--brand);
   filter: brightness(0.9);
 }
 .btn:disabled{ opacity:.6; cursor:not-allowed; }
