@@ -73,7 +73,7 @@ export default function ServicesForm() {
           </Link>
           <div>
             <h1 className="text-4xl font-bold text-gray-800">Meus Serviços</h1>
-            <p className="text-gray-600 mt-2">Gira a sua disponibilidade e os serviços que você oferece.</p>
+            <p className="text-gray-600 mt-2">Diga a sua disponibilidade e os serviços que você oferece.</p>
           </div>
         </header>
 
@@ -106,7 +106,7 @@ export default function ServicesForm() {
             
             <div className="flex justify-end pt-4">
                 <button type="submit" className="bg-blue-600 text-white font-bold py-3 px-8 rounded-lg hover:bg-blue-700 transition-colors">
-                    Guardar Alterações
+                    Salvar Alterações
                 </button>
             </div>
         </form>

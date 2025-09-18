@@ -205,7 +205,7 @@ export default function SitterProfileEdit() {
 
           <div className="flex justify-end pt-4">
             <button type="submit" disabled={saving} className="bg-blue-600 text-white font-bold py-3 px-8 rounded-lg hover:bg-blue-700 transition-colors disabled:bg-blue-300">
-              {saving ? 'A guardar...' : 'Guardar Alterações'}
+              {saving ? 'Salvando...' : 'Salvar Alterações'}
             </button>
           </div>
         </form>

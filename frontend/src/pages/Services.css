@@ -168,7 +168,7 @@
 }
 
 .about-btn:hover {
-  background: #388e3c;
+  background: var(--accent);
 }
 
 /* Responsivo */

@@ -39,7 +39,7 @@ export default function SitterAppointments() {
     <div className="bg-slate-50 min-h-screen p-4 sm:p-8">
       <div className="max-w-4xl mx-auto">
         <header className="mb-8 relative flex items-center">
-          <Link to="/onwer/dashboard" className="mr-4 p-2 text-blue-600 hover:bg-gray-200 rounded-full transition-colors" title="Voltar">
+          <Link to="/sitter/dashboard" className="mr-4 p-2 text-blue-600 hover:bg-gray-200 rounded-full transition-colors" title="Voltar">
             <ArrowLeft size={28} />
           </Link>
           <div>
