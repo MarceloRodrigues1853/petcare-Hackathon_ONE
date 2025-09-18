@@ -7,6 +7,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -23,12 +24,15 @@ import java.util.List;
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
+@EnableMethodSecurity
 public class SecurityConfig {
 
     private final JwtAuthFilter jwtAuthFilter;
 
-    private static final String[] SWAGGER_WHITELIST = {
-            "/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs", "/v3/api-docs/**"
+    private static final String[] PUBLIC_ROUTES = {
+        "/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**",
+        "/api/auth/**", "/ping",
+        "/api/health/**", "/actuator/**"
     };
 
     @Bean
@@ -38,13 +42,21 @@ public class SecurityConfig {
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                // health públicos
-                .requestMatchers("/api/health", "/api/health/**", "/actuator/health", "/actuator/health/**").permitAll()
-                // auth públicos (com e sem /api por segurança)
-                .requestMatchers("/api/auth/**", "/auth/**").permitAll()
-                .requestMatchers("/ping").permitAll()
-                .requestMatchers(SWAGGER_WHITELIST).permitAll()
+                .requestMatchers(PUBLIC_ROUTES).permitAll()
+
+                // Pets: qualquer usuário autenticado pode listar/buscar;
+                // mutações restritas a OWNER/ADMIN (se quiser apertar depois, use regras por método)
+                .requestMatchers("/api/pets/**").authenticated()
+                .requestMatchers(HttpMethod.POST, "/api/pets/**").authenticated()   // ← temporário
+                .requestMatchers(HttpMethod.PUT,  "/api/pets/**").hasAnyRole("OWNER","ADMIN")
+                .requestMatchers(HttpMethod.DELETE,"/api/pets/**").hasAnyRole("OWNER","ADMIN")
+
+                .requestMatchers("/api/owners/**").hasAnyRole("OWNER", "ADMIN")
+                .requestMatchers("/api/sitters/**").hasAnyRole("SITTER", "ADMIN")
+                .requestMatchers("/api/agendamentos/**").authenticated()
+                .requestMatchers("/api/servicos/**").hasRole("ADMIN")
+                .requestMatchers("/api/users/**").hasRole("ADMIN")
+
                 .anyRequest().authenticated()
             )
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
@@ -66,9 +78,10 @@ public class SecurityConfig {
     CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration cfg = new CorsConfiguration();
         cfg.setAllowedOrigins(List.of("http://localhost:5173", "http://127.0.0.1:5173"));
-        cfg.setAllowedMethods(List.of("*"));
-        cfg.setAllowedHeaders(List.of("*"));
+        cfg.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        cfg.setAllowedHeaders(List.of("Authorization", "Content-Type", "Accept", "Origin", "Referer", "User-Agent", "Cache-Control", "Pragma", "Expires", "X-Requested-With"));
         cfg.setAllowCredentials(true);
+
         UrlBasedCorsConfigurationSource src = new UrlBasedCorsConfigurationSource();
         src.registerCorsConfiguration("/**", cfg);
         return src;

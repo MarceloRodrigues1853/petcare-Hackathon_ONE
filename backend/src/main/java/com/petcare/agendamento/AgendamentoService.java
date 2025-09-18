@@ -1,18 +1,37 @@
 package com.petcare.agendamento;
 
+import com.petcare.user.User;
+import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class AgendamentoService {
 
     private final AgendamentoRepository agendamentoRepository;
 
-    public AgendamentoService(AgendamentoRepository agendamentoRepository) {
-        this.agendamentoRepository = agendamentoRepository;
+    public List<Agendamento> listarAgendamentosDoUsuarioLogado() {
+        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        if (user.getRole() == User.Role.OWNER) {
+            return agendamentoRepository.findByOwnerId(user.getId());
+        } else if (user.getRole() == User.Role.SITTER) {
+            return agendamentoRepository.findBySitterId(user.getId());
+        }
+        
+        if (user.getRole() == User.Role.ADMIN) {
+            return agendamentoRepository.findAll();
+        }
+
+        return new ArrayList<>();
     }
 
+    @Transactional
     public Agendamento criar(Agendamento agendamento) {
         return agendamentoRepository.save(agendamento);
     }
@@ -22,10 +41,7 @@ public class AgendamentoService {
                 .orElseThrow(() -> new RuntimeException("Agendamento não encontrado com id " + id));
     }
 
-    public List<Agendamento> listarTodos() {
-        return agendamentoRepository.findAll();
-    }
-
+    @Transactional
     public Agendamento atualizar(Long id, Agendamento dadosAtualizados) {
         Agendamento existente = buscarPorId(id);
 
@@ -40,6 +56,7 @@ public class AgendamentoService {
         return agendamentoRepository.save(existente);
     }
 
+    @Transactional
     public void deletar(Long id) {
         if (!agendamentoRepository.existsById(id)) {
             throw new RuntimeException("Agendamento não encontrado com id " + id);

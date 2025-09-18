@@ -5,30 +5,17 @@ import path from 'path'
 export default defineConfig({
   plugins: [react()],
   resolve: {
-    alias: {
-      '@': path.resolve(__dirname, './src'),
-    },
+    alias: { '@': path.resolve(__dirname, './src') },
   },
   server: {
+    host: true,           // importante no Docker
     port: 5173,
-    // =======================================================
-    // A CORREÇÃO FINAL ESTÁ AQUI
-    // =======================================================
     proxy: {
-      // Mantém a regra existente para todos os endpoints /api
       '/api': {
         target: 'http://backend:8080',
         changeOrigin: true,
       },
-      // ADICIONA uma nova regra específica para o endpoint /pets
-      '/pets': {
-        target: 'http://backend:8080',
-        changeOrigin: true,
-      }
     },
-    // =======================================================
-    watch: {
-      usePolling: true,
-    },
+    watch: { usePolling: true },
   },
 })

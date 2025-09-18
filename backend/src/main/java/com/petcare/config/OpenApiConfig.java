@@ -1,12 +1,10 @@
 package com.petcare.config;
 
-
 import io.swagger.v3.oas.annotations.OpenAPIDefinition;
 import io.swagger.v3.oas.annotations.enums.SecuritySchemeType;
 import io.swagger.v3.oas.annotations.info.Info;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.security.SecurityScheme;
-
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
@@ -20,6 +18,4 @@ import org.springframework.context.annotation.Configuration;
     scheme = "bearer",
     bearerFormat = "JWT"
 )
-public class OpenApiConfig {
-    
-}
+public class OpenApiConfig { }

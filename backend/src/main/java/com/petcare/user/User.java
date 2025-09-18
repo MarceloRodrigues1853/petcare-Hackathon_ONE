@@ -8,14 +8,12 @@ import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
 @Entity
 @Table(name = "users")
-// CORREÇÃO: Estratégia de herança SINGLE_TABLE para corresponder ao seu banco de dados
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @DiscriminatorColumn(name = "user_type", discriminatorType = DiscriminatorType.STRING)
 @Getter
@@ -46,9 +44,8 @@ public class User implements UserDetails {
     private Role role;
 
     @Enumerated(EnumType.STRING)
-    private Status status = Status.PENDING;
+    private Status status = Status.APPROVED; // Padrão para novos usuários
 
-    // Relações
     @OneToMany(mappedBy = "owner", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference("owner-pets")
     private List<Pet> pets = new ArrayList<>();
@@ -69,22 +66,12 @@ public class User implements UserDetails {
     }
 
     // --- Implementação do UserDetails ---
-
     @Override
-    public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(new SimpleGrantedAuthority("ROLE_" + role.name()));
-    }
-
+    public Collection<? extends GrantedAuthority> getAuthorities() { return List.of(new SimpleGrantedAuthority("ROLE_" + role.name())); }
     @Override
-    public String getPassword() {
-        return passwordHash;
-    }
-
+    public String getPassword() { return passwordHash; }
     @Override
-    public String getUsername() {
-        return email;
-    }
-
+    public String getUsername() { return email; }
     @Override public boolean isAccountNonExpired() { return true; }
     @Override public boolean isAccountNonLocked() { return true; }
     @Override public boolean isCredentialsNonExpired() { return true; }

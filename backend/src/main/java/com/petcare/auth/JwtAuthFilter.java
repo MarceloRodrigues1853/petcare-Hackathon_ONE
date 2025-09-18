@@ -1,12 +1,14 @@
 package com.petcare.auth;
 
-import com.petcare.user.JwtService; // ajuste o pacote se necessário
+import com.petcare.user.JwtService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -16,6 +18,7 @@ import org.springframework.util.AntPathMatcher;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.List;
 
 @Component
@@ -28,7 +31,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     private static final AntPathMatcher PATH_MATCHER = new AntPathMatcher();
     private static final List<String> PUBLIC_PATHS = List.of(
         "/api/health/**",
-        "/actuator/health/**",
+        "/actuator/**",
         "/api/auth/**",
         "/auth/**",
         "/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs", "/v3/api-docs/**",
@@ -36,9 +39,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     );
 
     private boolean isPublic(String path) {
-        for (String p : PUBLIC_PATHS) {
-            if (PATH_MATCHER.match(p, path)) return true;
-        }
+        for (String p : PUBLIC_PATHS) if (PATH_MATCHER.match(p, path)) return true;
         return false;
     }
 
@@ -50,7 +51,6 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
         final String path = request.getServletPath();
 
-        // Endpoints públicos não exigem autenticação
         if (isPublic(path)) {
             filterChain.doFilter(request, response);
             return;
@@ -68,16 +68,20 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
                 UserDetails userDetails = userDetailsService.loadUserByUsername(username);
                 if (jwtService.isTokenValid(jwt, userDetails)) {
-                    UsernamePasswordAuthenticationToken authToken =
-                        new UsernamePasswordAuthenticationToken(
-                            userDetails, null, userDetails.getAuthorities()
-                        );
-                    authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                    SecurityContextHolder.getContext().setAuthentication(authToken);
+
+                    Collection<? extends GrantedAuthority> authorities = userDetails.getAuthorities();
+                    if (authorities == null || authorities.isEmpty()) {
+                        authorities = List.of(new SimpleGrantedAuthority("ROLE_OWNER"));
+                    }
+
+                    var auth = new UsernamePasswordAuthenticationToken(userDetails, null,
+                        userDetails.getAuthorities().isEmpty()
+                          ? List.of(new SimpleGrantedAuthority("ROLE_OWNER"))
+                          : userDetails.getAuthorities());
+                    SecurityContextHolder.getContext().setAuthentication(auth);
                 }
             }
         } catch (io.jsonwebtoken.JwtException | IllegalArgumentException ex) {
-            // IMPORTANTE: use a sobrecarga (mensagem, Throwable) do commons-logging
             logger.warn("Invalid JWT", ex);
         }
 

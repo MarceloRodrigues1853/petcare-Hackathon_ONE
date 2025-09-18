@@ -1,14 +1,24 @@
-// O proxy do Vite irá redirecionar os caminhos que começam com /api
-// para o seu backend. Portanto, não precisamos de uma URL base aqui.
+// frontend/src/api/http.js
+
+const API_BASE = (import.meta.env.VITE_API_BASE || '/api').replace(/\/+$/, '');
 
 function getAuthHeader() {
-  // Garante que estamos a ler a chave 'jwt' que o AuthContext salva.
-  const token = localStorage.getItem('jwt');
-  return token ? { 'Authorization': `Bearer ${token}` } : {};
+  const token = localStorage.getItem('jwt'); // mantém 'jwt' como chave padrão
+  return token ? { Authorization: `Bearer ${token}` } : {};
+}
+
+// monta URL final usando a base e evita duplicar /api
+function buildUrl(path) {
+  let p = path.startsWith('/') ? path : `/${path}`;
+  // Se API_BASE já termina com /api e o path também começa com /api, remove um
+  if (API_BASE.endsWith('/api') && p.startsWith('/api')) {
+    p = p.replace(/^\/api/, '');
+  }
+  return `${API_BASE}${p}`;
 }
 
 async function request(path, { method = 'GET', body, headers = {} } = {}) {
-  const fullPath = path.startsWith('/') ? path : `/${path}`;
+  const url = buildUrl(path);
 
   const finalHeaders = {
     ...getAuthHeader(),
@@ -18,12 +28,13 @@ async function request(path, { method = 'GET', body, headers = {} } = {}) {
 
   let res;
   try {
-    res = await fetch(fullPath, {
+    res = await fetch(url, {
       method,
       headers: finalHeaders,
       body: body && !(body instanceof FormData) ? JSON.stringify(body) : body,
+      credentials: 'include',
     });
-  } catch (e) {
+  } catch {
     throw new Error('Falha de rede. Verifique a sua conexão.');
   }
 
@@ -31,18 +42,16 @@ async function request(path, { method = 'GET', body, headers = {} } = {}) {
     let message = `Erro HTTP ${res.status}`;
     try {
       const data = await res.json();
-      message = data.message || data.error || `Erro HTTP ${res.status}`;
-    } catch {
-      // Ignora se a resposta de erro não for JSON, pois pode ser um erro de servidor (HTML).
-    }
+      message = data.message || data.error || message;
+    } catch {}
     const err = new Error(message);
     err.status = res.status;
     throw err;
   }
 
   if (res.status === 204) return null;
-  const contentType = res.headers.get('content-type');
-  return contentType && contentType.includes('application/json') ? res.json() : res.text();
+  const ct = res.headers.get('content-type') || '';
+  return ct.includes('application/json') ? res.json() : res.text();
 }
 
 export const get  = (url, opts) => request(url, { method: 'GET', ...opts });

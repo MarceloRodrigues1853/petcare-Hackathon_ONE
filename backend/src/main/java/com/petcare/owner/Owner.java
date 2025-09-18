@@ -6,11 +6,9 @@ import jakarta.persistence.Entity;
 import lombok.NoArgsConstructor;
 
 @Entity
-// CORREÇÃO: Sem @Table e com @DiscriminatorValue para a estratégia SINGLE_TABLE
 @DiscriminatorValue("OWNER")
 @NoArgsConstructor
 public class Owner extends User {
-
     public Owner(String name, String email, String passwordHash) {
         super(name, email, passwordHash, Role.OWNER);
     }

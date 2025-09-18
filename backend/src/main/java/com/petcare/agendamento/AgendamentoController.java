@@ -1,18 +1,22 @@
 package com.petcare.agendamento;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
-@RequestMapping("/agendamentos")
+@RequestMapping("/api/agendamentos") // Padronizado para usar /api
+@RequiredArgsConstructor
 public class AgendamentoController {
 
     private final AgendamentoService agendamentoService;
 
-    public AgendamentoController(AgendamentoService agendamentoService) {
-        this.agendamentoService = agendamentoService;
+    @GetMapping
+    public ResponseEntity<List<Agendamento>> listar() {
+        // CORREÇÃO: Chama o método que filtra os agendamentos pelo usuário logado
+        return ResponseEntity.ok(agendamentoService.listarAgendamentosDoUsuarioLogado());
     }
 
     @PostMapping
@@ -23,11 +27,6 @@ public class AgendamentoController {
     @GetMapping("/{id}")
     public ResponseEntity<Agendamento> buscarPorId(@PathVariable Long id) {
         return ResponseEntity.ok(agendamentoService.buscarPorId(id));
-    }
-
-    @GetMapping
-    public ResponseEntity<List<Agendamento>> listarTodos() {
-        return ResponseEntity.ok(agendamentoService.listarTodos());
     }
 
     @PutMapping("/{id}")
