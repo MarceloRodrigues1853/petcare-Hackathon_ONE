@@ -1,41 +1,52 @@
+//
+// CAMINHO: src/pages/Admin/Approvals.jsx
+//
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { CheckCircle, XCircle, ArrowLeft } from 'lucide-react';
-
-// Dados de exemplo - substitua por uma chamada à API
-const mockPendingSitters = [
-  { id: 3, name: 'Carlos Moura', email: 'carlos.m@teste.com', registrationDate: '2025-09-07' },
-  { id: 6, name: 'Patrícia Poeta', email: 'p.poeta@teste.com', registrationDate: '2025-09-08' },
-];
+import { getSitters, updateSitterStatus } from '../../api/admin';
 
 export default function Approvals() {
   const [sitters, setSitters] = useState([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    // TODO: Chamar API real para buscar sitters pendentes
-    setLoading(true);
-    setTimeout(() => {
-      setSitters(mockPendingSitters);
+  const fetchPendingSitters = async () => {
+    try {
+      setLoading(true);
+      const data = await getSitters({ status: 'PENDING' });
+      setSitters(data);
+    } catch (error) {
+      console.error("Erro ao buscar sitters pendentes:", error);
+      setSitters([]);
+    } finally {
       setLoading(false);
-    }, 500);
-  }, []);
-  
-  const handleApprove = (sitterId) => {
-    console.log(`Aprovar sitter ${sitterId}`);
-    // TODO: Chamar API para aprovar
-    setSitters(prev => prev.filter(s => s.id !== sitterId));
-  };
-  
-  const handleReject = (sitterId) => {
-    if (window.confirm('Tem a certeza que deseja rejeitar este registo?')) {
-        console.log(`Rejeitar sitter ${sitterId}`);
-        // TODO: Chamar API para rejeitar
-        setSitters(prev => prev.filter(s => s.id !== sitterId));
     }
   };
 
+  useEffect(() => {
+    fetchPendingSitters();
+  }, []);
+  
+  const handleApprove = async (sitterId) => {
+    try {
+      await updateSitterStatus(sitterId, 'APPROVED');
+      setSitters(prev => prev.filter(s => s.id !== sitterId));
+    } catch (error) {
+      alert("Falha ao aprovar sitter.");
+    }
+  };
+  
+  const handleReject = async (sitterId) => {
+    if (window.confirm('Tem a certeza que deseja rejeitar este registo?')) {
+      try {
+        await updateSitterStatus(sitterId, 'REJECTED');
+        setSitters(prev => prev.filter(s => s.id !== sitterId));
+      } catch (error) {
+        alert("Falha ao rejeitar sitter.");
+      }
+    }
+  };
 
   return (
     <div className="bg-slate-50 min-h-screen p-4 sm:p-8">
@@ -96,4 +107,3 @@ export default function Approvals() {
     </div>
   );
 }
-

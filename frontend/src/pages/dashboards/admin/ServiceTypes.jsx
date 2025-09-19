@@ -1,14 +1,10 @@
+//
+// CAMINHO: src/pages/Admin/ServiceTypes.jsx
+//
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Plus, MoreVertical, Edit, Trash2, ArrowLeft } from 'lucide-react';
-
-// Dados de exemplo - substitua por uma chamada à API
-const mockServiceTypes = [
-  { id: 1, description: 'Passeio', baseValue: 25.00, active: true },
-  { id: 2, description: 'Hospedagem', baseValue: 80.00, active: true },
-  { id: 3, description: 'Babá de Pet', baseValue: 60.00, active: true },
-  { id: 4, description: 'Banho e Tosa', baseValue: 75.00, active: false },
-];
+import { getServiceTypes, createServiceType, updateServiceType, deleteServiceType } from '../../api/admin';
 
 const ServiceFormModal = ({ service, onClose, onSave }) => {
     const [description, setDescription] = useState(service?.description || '');
@@ -28,24 +24,15 @@ const ServiceFormModal = ({ service, onClose, onSave }) => {
                         <div>
                             <label htmlFor="description" className="block text-sm font-medium text-gray-700">Descrição</label>
                             <input
-                                type="text"
-                                id="description"
-                                value={description}
-                                onChange={e => setDescription(e.target.value)}
-                                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                                required
+                                type="text" id="description" value={description} onChange={e => setDescription(e.target.value)}
+                                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" required
                             />
                         </div>
                         <div>
                             <label htmlFor="baseValue" className="block text-sm font-medium text-gray-700">Valor Base (R$)</label>
                             <input
-                                type="number"
-                                id="baseValue"
-                                step="0.01"
-                                value={baseValue}
-                                onChange={e => setBaseValue(e.target.value)}
-                                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                                required
+                                type="number" id="baseValue" step="0.01" value={baseValue} onChange={e => setBaseValue(e.target.value)}
+                                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" required
                             />
                         </div>
                     </div>
@@ -59,7 +46,6 @@ const ServiceFormModal = ({ service, onClose, onSave }) => {
     );
 };
 
-
 export default function ServiceTypes() {
   const [services, setServices] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -67,36 +53,58 @@ export default function ServiceTypes() {
   const [editingService, setEditingService] = useState(null);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    setLoading(true);
-    setTimeout(() => {
-      setServices(mockServiceTypes);
+  const fetchServices = async () => {
+    try {
+      setLoading(true);
+      const data = await getServiceTypes();
+      setServices(data);
+    } catch (error) {
+      console.error("Erro ao buscar tipos de serviço:", error);
+    } finally {
       setLoading(false);
-    }, 500);
-  }, []);
-  
-  const handleSaveService = (service) => {
-      if (service.id) {
-          // Lógica para atualizar
-          setServices(prev => prev.map(s => s.id === service.id ? service : s));
-      } else {
-          // Lógica para criar
-          setServices(prev => [...prev, { ...service, id: Date.now(), active: true }]);
-      }
-      setIsModalOpen(false);
-      setEditingService(null);
-  };
-  
-  const handleDelete = (serviceId) => {
-      if (window.confirm('Tem a certeza que deseja remover este tipo de serviço?')) {
-          setServices(prev => prev.filter(s => s.id !== serviceId));
-      }
-  };
-  
-  const handleToggleActive = (serviceId) => {
-      setServices(prev => prev.map(s => s.id === serviceId ? { ...s, active: !s.active } : s));
+    }
   };
 
+  useEffect(() => {
+    fetchServices();
+  }, []);
+  
+  const handleSaveService = async (service) => {
+    try {
+      if (service.id) {
+        await updateServiceType(service.id, service);
+      } else {
+        await createServiceType(service);
+      }
+      fetchServices(); // Recarrega a lista
+    } catch (error) {
+      alert("Falha ao salvar o serviço.");
+    } finally {
+      setIsModalOpen(false);
+      setEditingService(null);
+    }
+  };
+  
+  const handleDelete = async (serviceId) => {
+    if (window.confirm('Tem a certeza que deseja remover este tipo de serviço?')) {
+      try {
+        await deleteServiceType(serviceId);
+        fetchServices();
+      } catch (error) {
+        alert("Falha ao remover o serviço.");
+      }
+    }
+  };
+  
+  const handleToggleActive = async (service) => {
+    try {
+        const updatedService = { ...service, active: !service.active };
+        await updateServiceType(service.id, updatedService);
+        fetchServices();
+    } catch (error) {
+        alert("Falha ao alterar o status do serviço.");
+    }
+  };
 
   return (
     <div className="bg-slate-50 min-h-screen p-4 sm:p-8">
@@ -136,9 +144,9 @@ export default function ServiceTypes() {
                 ) : services.map(service => (
                   <tr key={service.id}>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{service.description}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">R$ {service.baseValue.toFixed(2)}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">R$ {Number(service.baseValue).toFixed(2)}</td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                        <button onClick={() => handleToggleActive(service.id)} className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${service.active ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
+                        <button onClick={() => handleToggleActive(service)} className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${service.active ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
                            {service.active ? 'Ativo' : 'Inativo'}
                         </button>
                     </td>
@@ -164,11 +172,9 @@ export default function ServiceTypes() {
               </tbody>
             </table>
           </div>
-
         </div>
       </div>
       {isModalOpen && <ServiceFormModal service={editingService} onClose={() => setIsModalOpen(false)} onSave={handleSaveService} />}
     </div>
   );
 }
-
