@@ -49,7 +49,7 @@ export default function OwnerDashboard() {
         ]);
         setAppointments(appointmentsData);
         setPets(petsData);
-        setOwnerName(profileData.name.split(" ")[0]); // Pega o primeiro nome
+        // setOwnerName(profileData.name.split(" ")[0]); // Pega o primeiro nome
       } catch (error) {
         console.error("Erro ao carregar dados do dashboard:", error);
       } finally {
@@ -69,7 +69,7 @@ export default function OwnerDashboard() {
     <div className="bg-slate-50 min-h-screen p-4 sm:p-8">
       <div className="max-w-7xl mx-auto">
         <header className="mb-8">
-          <h1 className="text-4xl font-bold text-gray-800">Olá, {ownerName}!</h1>
+          <h1 className="text-4xl font-bold text-gray-800">Olá, Owner!</h1>
           <p className="text-gray-600 mt-2">
             Bem-vindo(a) ao seu painel. Aqui está um resumo dos seus pets e agendamentos.
           </p>
