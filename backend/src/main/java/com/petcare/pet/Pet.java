@@ -1,15 +1,12 @@
 package com.petcare.pet;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.petcare.owner.Owner;
+import jakarta.persistence.*;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "pets")
@@ -20,39 +17,93 @@ public class Pet {
     private Long id;
 
     @Column(nullable = false)
-    private String nome;
+    private String name;
 
-    @Column(nullable = false)
+    @Column
     private String especie;
 
-    private Integer idade;
+    @Column
+    private Integer idade; // Usar Integer é um pouco mais flexível que int
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "owner_id", nullable = false)
+    @JsonBackReference
     private Owner owner;
 
-    public Pet() {}
+    @CreationTimestamp
+    @Column(name = "created_at", updatable = false)
+    private LocalDateTime createdAt;
 
-    public Pet(String nome, String especie, Integer idade, Owner owner) {
-        this.nome = nome;
+    @UpdateTimestamp
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
+
+    // <<< CORREÇÃO: Construtor vazio obrigatório para o JPA >>>
+    public Pet() {
+    }
+
+    // <<< CORREÇÃO: Construtor com parâmetros que o PetService está tentando usar >>>
+    public Pet(String name, String especie, Integer idade, Owner owner) {
+        this.name = name;
         this.especie = especie;
         this.idade = idade;
         this.owner = owner;
     }
 
-    // Getters e Setters
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
+    // <<< CORREÇÃO: Getters e Setters que estavam faltando >>>
+    public Long getId() {
+        return id;
+    }
 
-    public String getNome() { return nome; }
-    public void setNome(String nome) { this.nome = nome; }
+    public void setId(Long id) {
+        this.id = id;
+    }
 
-    public String getEspecie() { return especie; }
-    public void setEspecie(String especie) { this.especie = especie; }
+    public String getName() {
+        return name;
+    }
 
-    public Integer getIdade() { return idade; }
-    public void setIdade(Integer idade) { this.idade = idade; }
+    public void setName(String name) {
+        this.name = name;
+    }
 
-    public Owner getOwner() { return owner; }
-    public void setOwner(Owner owner) { this.owner = owner; }
+    public String getEspecie() {
+        return especie;
+    }
+
+    public void setEspecie(String especie) {
+        this.especie = especie;
+    }
+
+    public Integer getIdade() {
+        return idade;
+    }
+
+    public void setIdade(Integer idade) {
+        this.idade = idade;
+    }
+
+    public Owner getOwner() {
+        return owner;
+    }
+
+    public void setOwner(Owner owner) {
+        this.owner = owner;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(LocalDateTime updatedAt) {
+        this.updatedAt = updatedAt;
+    }
 }

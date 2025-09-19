@@ -1,22 +1,22 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
+import path from 'path'
 
-// https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react()],
+  resolve: {
+    alias: {
+      '@': path.resolve(__dirname, 'src'), // <-- aqui define o @ para apontar para /src
+    },
+  },
   server: {
-    // A sua configuração de porta
     port: 5173,
-    
-    // A sua configuração de proxy (mantida)
     proxy: {
       '/api': {
         target: 'http://localhost:8080',
         changeOrigin: true,
       },
     },
-
-    // A nova configuração para forçar o hot-reloading no Docker
     watch: {
       usePolling: true,
     },

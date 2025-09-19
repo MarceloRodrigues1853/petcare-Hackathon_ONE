@@ -1,84 +1,147 @@
 package com.petcare.sitter;
 
-import com.petcare.servico.Servico; // Supondo que você tenha uma entidade Servico
-import com.petcare.servico.ServicoRepository; // Supondo que você tenha um repositório para Servico
+import com.petcare.agendamento.Agendamento;
+import com.petcare.agendamento.AgendamentoRepository;
+import com.petcare.config.exception.ResourceNotFoundException;
+import com.petcare.servico.Servico;
+import com.petcare.servico.ServicoRepository;
+import com.petcare.sitter.dto.*;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.YearMonth;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class SitterService {
 
     private final SitterRepository sitterRepository;
     private final SitterServicoPrecoRepository sitterServicoPrecoRepository;
-    private final ServicoRepository servicoRepository; // Dependência para buscar os tipos de serviço
+    private final ServicoRepository servicoRepository;
+    private final AgendamentoRepository agendamentoRepository;
 
-    // Construtor unificado com todas as dependências necessárias
-    public SitterService(SitterRepository sitterRepository,
-                         SitterServicoPrecoRepository sitterServicoPrecoRepository,
-                         ServicoRepository servicoRepository) {
+    public SitterService(
+            SitterRepository sitterRepository,
+            SitterServicoPrecoRepository sitterServicoPrecoRepository,
+            ServicoRepository servicoRepository,
+            AgendamentoRepository agendamentoRepository
+    ) {
         this.sitterRepository = sitterRepository;
         this.sitterServicoPrecoRepository = sitterServicoPrecoRepository;
         this.servicoRepository = servicoRepository;
+        this.agendamentoRepository = agendamentoRepository;
     }
 
-    // --- MÉTODOS PARA GERENCIAR O PERFIL DO SITTER ---
+    private Sitter getByEmailOrThrow(String email) {
+        return sitterRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("Sitter não encontrado para email: " + email));
+    }
+
+    private SitterAppointmentResponse toAppointmentResponse(Agendamento a) {
+        // <<< CORREÇÃO: Conversão explícita de BigDecimal para Double para o DTO >>>
+        Double valor = (a.getSitterServicoPreco().getValor() != null)
+                ? a.getSitterServicoPreco().getValor().doubleValue()
+                : null;
+
+        return new SitterAppointmentResponse(
+                a.getId(),
+                a.getOwner().getName(),
+                a.getPet().getName(), // <<< CORREÇÃO: Usando getName() pois Pet é uma classe normal
+                a.getSitterServicoPreco().getServico().getDescricao(),
+                a.getDataInicio(),
+                a.getDataFim(),
+                a.getStatus() != null ? a.getStatus().name() : null,
+                valor
+        );
+    }
 
     @Transactional(readOnly = true)
-    public Sitter getSitterProfile(Long sitterId) {
-        return sitterRepository.findById(sitterId)
-                .orElseThrow(() -> new RuntimeException("Sitter com ID " + sitterId + " não encontrado."));
+    public SitterDashboardResponse getDashboardForEmail(String email) {
+        Sitter s = getByEmailOrThrow(email);
+        long totalAppointments = agendamentoRepository.countBySitterId(s.getId());
+        YearMonth currentMonth = YearMonth.now();
+        LocalDate startOfMonth = currentMonth.atDay(1);
+        LocalDate endOfMonth = currentMonth.atEndOfMonth();
+        BigDecimal monthlyRevenue = agendamentoRepository
+                .calculateMonthlyRevenue(s.getId(), Agendamento.Status.CONCLUIDO, startOfMonth, endOfMonth)
+                .orElse(BigDecimal.ZERO);
+        double rating = 4.8; // Valor fixo por enquanto
+        return new SitterDashboardResponse(totalAppointments, monthlyRevenue.doubleValue(), rating);
     }
-
-    @Transactional
-    public Sitter updateSitterProfile(Long sitterId, SitterProfileRequest request) {
-        Sitter sitter = getSitterProfile(sitterId);
-        sitter.setName(request.name());
-        sitter.setEmail(request.email());
-        // Adicione outros campos que podem ser atualizados (bio, telefone, etc.)
-        return sitterRepository.save(sitter);
-    }
-
-    // --- MÉTODOS PARA GERENCIAR OS SERVIÇOS E PREÇOS DO SITTER (LÓGICA DO ANTIGO PrecoPorSitterService) ---
 
     @Transactional(readOnly = true)
-    public List<SitterServicoPreco> getServicosDoSitter(Long sitterId) {
-        // Garante que o sitter existe antes de buscar os serviços
-        if (!sitterRepository.existsById(sitterId)) {
-            throw new RuntimeException("Sitter com ID " + sitterId + " não encontrado.");
-        }
-        return sitterServicoPrecoRepository.findBySitterId(sitterId);
+    public SitterProfileResponse getProfileByEmail(String email) {
+        Sitter s = getByEmailOrThrow(email);
+        // <<< CORREÇÃO: Usando o construtor de 3 argumentos correto para o DTO
+        return new SitterProfileResponse(s.getId(), s.getName(), s.getEmail());
+    }
+
+    @Transactional(readOnly = true)
+    public SitterProfileResponse getProfileById(Long sitterId) {
+        Sitter s = sitterRepository.findById(sitterId)
+                .orElseThrow(() -> new ResourceNotFoundException("Sitter não encontrado com id: " + sitterId));
+        // <<< CORREÇÃO: Usando o construtor de 3 argumentos correto para o DTO
+        return new SitterProfileResponse(s.getId(), s.getName(), s.getEmail());
     }
 
     @Transactional
-    public SitterServicoPreco addServicoParaSitter(Long sitterId, SitterServicoRequest request) {
-        Sitter sitter = getSitterProfile(sitterId);
+    public SitterProfileResponse updateProfileByEmail(String email, SitterProfileRequest req) {
+        Sitter s = getByEmailOrThrow(email);
+        if (req.name() != null) s.setName(req.name());
+        if (req.email() != null) s.setEmail(req.email());
+        sitterRepository.save(s);
+        // <<< CORREÇÃO: Usando o construtor de 3 argumentos correto para o DTO
+        return new SitterProfileResponse(s.getId(), s.getName(), s.getEmail());
+    }
 
-        // Busca o tipo de serviço (ex: Passeio, Hospedagem) pelo ID
-        Servico servico = servicoRepository.findById(request.servicoId())
-                .orElseThrow(() -> new RuntimeException("Tipo de Serviço com ID " + request.servicoId() + " não encontrado."));
-
-        // Verifica se o sitter já oferece este serviço para evitar duplicatas
-        boolean jaExiste = sitterServicoPrecoRepository.existsBySitterAndServico(sitter, servico);
-        if (jaExiste) {
-            throw new RuntimeException("Este Sitter já oferece o serviço de '" + servico.getDescricao() + "'.");
-        }
-
-        SitterServicoPreco novoServicoPreco = new SitterServicoPreco();
-        novoServicoPreco.setSitter(sitter);
-        novoServicoPreco.setServico(servico);
-        novoServicoPreco.setValor(request.valor());
-
-        return sitterServicoPrecoRepository.save(novoServicoPreco);
+    @Transactional(readOnly = true)
+    public List<SitterServiceItem> getServicesForEmail(String email) {
+        Sitter s = getByEmailOrThrow(email);
+        List<SitterServicoPreco> list = sitterServicoPrecoRepository.findBySitterId(s.getId());
+        return list.stream()
+                .map(x -> new SitterServiceItem(
+                        x.getId(),
+                        x.getServico().getId(),
+                        x.getServico().getDescricao(),
+                        x.getValor() != null ? x.getValor().doubleValue() : 0.0
+                ))
+                .collect(Collectors.toList());
     }
 
     @Transactional
-    public void deleteServicoDoSitter(Long sitterId, Long servicoPrecoId) {
-        SitterServicoPreco servicoPreco = sitterServicoPrecoRepository.findByIdAndSitterId(servicoPrecoId, sitterId)
-                .orElseThrow(() -> new RuntimeException("Serviço com ID " + servicoPrecoId + " não encontrado para o Sitter ID " + sitterId));
-        
-        sitterServicoPrecoRepository.delete(servicoPreco);
+    public void saveServicesForEmail(String email, SitterServicesRequest req) {
+        Sitter s = getByEmailOrThrow(email);
+        sitterServicoPrecoRepository.deleteBySitterId(s.getId());
+        List<SitterServicoPreco> newPrices = req.items().stream().map(item -> {
+            Servico servico = servicoRepository.findById(item.servicoId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Serviço não encontrado: " + item.servicoId()));
+            SitterServicoPreco n = new SitterServicoPreco();
+            n.setSitter(s);
+            n.setServico(servico);
+            n.setValor(BigDecimal.valueOf(item.valor() != null ? item.valor() : 0.0));
+            return n;
+        }).collect(Collectors.toList());
+        sitterServicoPrecoRepository.saveAll(newPrices);
+    }
+
+    @Transactional(readOnly = true)
+    public List<SitterAppointmentResponse> getUpcomingAppointmentsForEmail(String email, int limit) {
+        Sitter s = getByEmailOrThrow(email);
+        Pageable pageable = PageRequest.of(0, limit);
+        List<Agendamento> appointments = agendamentoRepository.findUpcomingBySitterId(s.getId(), pageable);
+        return appointments.stream().map(this::toAppointmentResponse).collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public List<SitterAppointmentResponse> getAppointmentsForEmail(String email, String status, Boolean future) {
+        Sitter s = getByEmailOrThrow(email);
+        Agendamento.Status statusEnum = (status != null) ? Agendamento.Status.valueOf(status.toUpperCase()) : null;
+        List<Agendamento> appointments = agendamentoRepository.findAppointmentsByCriteria(s.getId(), statusEnum, future, LocalDate.now());
+        return appointments.stream().map(this::toAppointmentResponse).collect(Collectors.toList());
     }
 }
-

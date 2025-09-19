@@ -16,6 +16,8 @@ import java.time.LocalDateTime;
 public class Agendamento {
 
     public enum Status {
+        PENDENTE,    // Adicionado
+        CONFIRMADO,  // Adicionado
         AGENDADO,
         EM_ANDAMENTO,
         CONCLUIDO,

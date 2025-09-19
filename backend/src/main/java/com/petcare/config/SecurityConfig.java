@@ -46,6 +46,9 @@ public class SecurityConfig {
             .requestMatchers(SWAGGER_WHITELIST).permitAll()
             .requestMatchers("/api/auth/**", "/auth/**").permitAll()
             .requestMatchers("/ping").permitAll() // rota de sanity check
+            .requestMatchers("/api/owners/**").hasAnyRole("OWNER","ADMIN")
+            .requestMatchers("/api/sitters/**").hasAnyRole("SITTER","ADMIN")
+            
             .anyRequest().authenticated()
         )
         .exceptionHandling(e -> e
