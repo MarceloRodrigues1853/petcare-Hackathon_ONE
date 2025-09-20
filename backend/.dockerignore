@@ -1,8 +1,9 @@
-target
-.git
+target/
+.git/
 .gitignore
-.idea
-.vscode
+.idea/
+.vscode/
+node_modules/
 *.iml
 senhas.env
 *.log

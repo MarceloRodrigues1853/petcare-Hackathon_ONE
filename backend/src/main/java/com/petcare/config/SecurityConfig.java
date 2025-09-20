@@ -42,13 +42,18 @@ public class SecurityConfig {
         .cors(cors -> {})
         .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
         .authorizeHttpRequests(auth -> auth
+            // pré-voo e públicos
             .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
             .requestMatchers(SWAGGER_WHITELIST).permitAll()
             .requestMatchers("/api/auth/**", "/auth/**").permitAll()
-            .requestMatchers("/ping").permitAll() // rota de sanity check
-            .requestMatchers("/api/owners/**").hasAnyRole("OWNER","ADMIN")
-            .requestMatchers("/api/sitters/**").hasAnyRole("SITTER","ADMIN")
-            
+            .requestMatchers("/ping", "/error").permitAll()
+
+            // áreas protegidas por autoridade (sem prefixo ROLE_)
+            .requestMatchers("/api/admin/**").hasAuthority("ADMIN")
+            .requestMatchers("/api/owners/**").hasAnyAuthority("OWNER", "ADMIN")
+            .requestMatchers("/api/sitters/**").hasAnyAuthority("SITTER", "ADMIN")
+
+            // qualquer outra rota precisa estar autenticada
             .anyRequest().authenticated()
         )
         .exceptionHandling(e -> e
@@ -68,13 +73,13 @@ public class SecurityConfig {
   @Bean
   CorsConfigurationSource corsConfigurationSource() {
     CorsConfiguration cfg = new CorsConfiguration();
-    cfg.setAllowedOrigins(List.of("http://localhost:5173","http://127.0.0.1:5173"));
+    // Ajuste os origins conforme necessário
+    cfg.setAllowedOrigins(List.of("http://localhost:5173", "http://127.0.0.1:5173"));
     cfg.setAllowedMethods(List.of("GET","POST","PUT","DELETE","PATCH","OPTIONS"));
-    cfg.setAllowedHeaders(List.of("*"));
+    cfg.setAllowedHeaders(List.of("Authorization","Content-Type","Accept","Origin","X-Requested-With"));
     cfg.setAllowCredentials(true);
     UrlBasedCorsConfigurationSource src = new UrlBasedCorsConfigurationSource();
     src.registerCorsConfiguration("/**", cfg);
     return src;
   }
 }
-

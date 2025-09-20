@@ -1,16 +1,11 @@
+// src/main/java/com/petcare/dto/RegisterRequest.java
 package com.petcare.dto;
 
-import com.petcare.user.User;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import com.petcare.user.Role;
 
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
-public class RegisterRequest {
-    private String name;
-    private String email;
-    private String password;
-    private User.Role role; // OWNER / SITTER / ADMIN
-}
+public record RegisterRequest(
+        String name,
+        String email,
+        String password,
+        Role role // OWNER / SITTER / ADMIN
+) {}
