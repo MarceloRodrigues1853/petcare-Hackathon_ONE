@@ -1,40 +1,39 @@
 // src/api/sitter.js
-import { getJson, postJson, putJson } from './http';
+import http from "./http";
 
-// Painel (cards)
-export function getSitterStats() {
-  // -> GET /api/sitters/me/dashboard
-  return getJson('/sitters/me/dashboard');
-}
-
-// Próximos agendamentos (cards + lista)
-export function getUpcomingAppointments(limit = 5) {
-  // -> GET /api/sitters/me/appointments?future=true&limit=5
-  return getJson(`/sitters/me/appointments?future=true&limit=${limit}`);
+/**
+ * Perfil do Sitter
+ * GET /api/sitters/me/profile -> { id, name, email }
+ * PUT /api/sitters/me/profile -> { id, name, email }
+ */
+export async function getSitterProfile() {
+  const { data } = await http.get("/api/sitters/me/profile");
+  return data;
 }
 
-// Lista geral de agendamentos do sitter (com filtros)
-export function getAppointments(params = {}) {
-  const qs = new URLSearchParams(params).toString();
-  return getJson(`/sitters/me/appointments${qs ? `?${qs}` : ''}`);
+export async function updateSitterProfile(payload) {
+  const { data } = await http.put("/api/sitters/me/profile", payload);
+  return data;
 }
 
-// Serviços do sitter
-export function getMyServices() {
-  // -> GET /api/sitters/me/services
-  return getJson('/sitters/me/services');
-}
-export function saveMyServices(services) {
-  // -> POST /api/sitters/me/services  (payload: { walking:{active,price}, ... })
-  return postJson('/sitters/me/services', services);
+/**
+ * Dashboard do Sitter
+ * GET /api/sitters/me/dashboard -> { totalAgendamentos, receitaDoMes, suaAvaliacao }
+ */
+export async function getSitterDashboard() {
+  const { data } = await http.get("/api/sitters/me/dashboard");
+  return data;
 }
 
-// Perfil do sitter
-export function getProfile() {
-  // -> GET /api/sitters/me/profile
-  return getJson('/sitters/me/profile');
-}
-export function updateProfile(payload) {
-  // -> PUT /api/sitters/me/profile
-  return putJson('/sitters/me/profile', payload);
+/**
+ * Agendamentos do Sitter
+ * GET /api/sitters/me/appointments?status=CONFIRMADO&future=true&limit=5
+ */
+export async function getSitterAppointments({ status, future, limit } = {}) {
+  const params = {};
+  if (status) params.status = status;
+  if (future !== undefined) params.future = future;
+  if (limit) params.limit = limit;
+  const { data } = await http.get("/api/sitters/me/appointments", { params });
+  return data;
 }

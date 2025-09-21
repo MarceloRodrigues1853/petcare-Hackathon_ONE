@@ -1,35 +1,33 @@
 // src/api/http.js
-const API = import.meta.env.VITE_API_BASE;
+import axios from "axios";
 
-function authHeader() {
-  const t = localStorage.getItem('jwt');
-  return t ? { Authorization: `Bearer ${t}` } : {};
-}
+export const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:8080";
 
-async function request(method, path, body, opts = {}) {
-  const res = await fetch(`${API}${path}`, {
-    method,
-    headers: {
-      ...(body ? { 'Content-Type': 'application/json' } : {}),
-      ...authHeader(),
-      ...(opts.headers || {}),
-    },
-    credentials: 'include',
-    body: body ? JSON.stringify(body) : undefined,
-  });
+const http = axios.create({
+  baseURL: API_BASE,
+  timeout: 15000,
+});
 
-  if (!res.ok) {
-    let msg = `HTTP ${res.status}`;
-    try { msg = (await res.json())?.message || msg; } catch {}
-    const err = new Error(msg);
-    err.status = res.status;
-    throw err;
+// anexa JWT quando existir
+http.interceptors.request.use((config) => {
+  const token = localStorage.getItem("authToken");
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
   }
-  return res.status === 204 ? null : res.json();
-}
+  return config;
+});
 
-export const getJson  = (p, o) => request('GET', p, null, o);
-export const postJson = (p, b, o) => request('POST', p, b, o);
-export const putJson  = (p, b, o) => request('PUT', p, b, o);
-export const delJson  = (p, o) => request('DELETE', p, null, o);
-export default { getJson, postJson, putJson, delJson };
+// trata 401/403 de forma centralizada (opcional)
+http.interceptors.response.use(
+  (r) => r,
+  (err) => {
+    if (err?.response?.status === 401) {
+      // opcional: fazer logout automático
+      // localStorage.removeItem("authToken");
+      // window.location.href = "/login";
+    }
+    return Promise.reject(err);
+  }
+);
+
+export default http;

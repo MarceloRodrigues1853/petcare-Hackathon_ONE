@@ -1,93 +1,51 @@
-// src/api/owner.js (MOCK)
+// src/api/owner.js
+import http from "./http";
 
-// --- Perfil do Owner ---
-export async function getProfile() {
-  await new Promise((resolve) => setTimeout(resolve, 500));
-  return {
-    name: "Maria Oliveira",
-    email: "maria.owner@example.com",
-    phone: "(11) 99999-8888",
-    imageUrl: null,
-    address: {
-      street: "Rua das Flores",
-      number: "123",
-      neighborhood: "Centro",
-      city: "São Paulo",
-      state: "SP",
-      zip: "01000-000",
-    },
-    socials: {
-      instagram: "maria_oliveira",
-      facebook: "maria.oliveira",
-    },
-  };
+/**
+ * Dashboard do Dono
+ * GET /api/owners/me/dashboard
+ * -> { totalPets, totalAgendamentos, valorAPagar, proximosAgendamentos:[{id, petName, serviceName, startDate, price}] }
+ */
+export async function getOwnerDashboard() {
+  const { data } = await http.get("/api/owners/me/dashboard");
+  return data;
 }
 
-export async function updateProfile(profileData) {
-  await new Promise((resolve) => setTimeout(resolve, 500));
-  console.log("API MOCK: Atualizando perfil do Owner...", profileData);
-  return { success: true, message: "Perfil atualizado com sucesso!" };
+/**
+ * Lista agendamentos do Dono (opcional status)
+ * GET /api/owners/me/appointments?status=CONFIRMADO
+ * -> [{ id, sitterName, petName, service, dataInicio, dataFim, status, valor }]
+ */
+export async function getAppointments(status) {
+  const params = {};
+  if (status) params.status = status;
+  const { data } = await http.get("/api/owners/me/appointments", { params });
+  return data;
 }
 
-// --- Pets (persistência simulada em memória) ---
-let petsDB = [
-  { id: 1, name: "Rex", species: "Cachorro", age: 3 },
-  { id: 2, name: "Mia", species: "Gato", age: 2 },
-];
-
-export async function getPets() {
-  await new Promise((resolve) => setTimeout(resolve, 300));
-  return [...petsDB];
+/**
+ * Pets do usuário logado
+ * GET /api/pets
+ * -> [{ id, nome, especie, idade, ownerId }]
+ */
+export async function listPets() {
+  const { data } = await http.get("/api/pets");
+  return data;
 }
 
-export async function savePet(petData) {
-  await new Promise((resolve) => setTimeout(resolve, 300));
-  const newPet = { ...petData, id: Date.now() };
-  petsDB.push(newPet);
-  console.log("API MOCK: Salvando pet...", newPet);
-  return { success: true, message: "Pet salvo com sucesso!" };
+/**
+ * (Opcional) Criar agendamento — quando você expor no backend,
+ * alinhe o body aqui com o seu controller.
+ * Deixei uma rota sugerida: POST /api/owners/appointments
+ */
+export async function createAppointment(payload) {
+  // Exemplo de corpo compatível com os nomes do front:
+  // payload = { petId, service, date }
+  try {
+    const { data } = await http.post("/api/owners/appointments", payload);
+    return data;
+  } catch (e) {
+    // Enquanto o endpoint não existir, damos um erro amigável
+    throw new Error("Endpoint de criação de agendamento ainda não disponível.");
+  }
 }
-
-export async function removePet(petId) {
-  await new Promise((resolve) => setTimeout(resolve, 300));
-  petsDB = petsDB.filter((pet) => pet.id !== petId);
-  console.log("API MOCK: Removendo pet...", petId);
-  return { success: true, message: "Pet removido com sucesso!" };
-}
-
-// --- Agendamentos ---
-let appointmentsDB = [
-  { id: 1, pet: "Rex", date: "2025-09-10", service: "Babá de Pets", price: 50 },
-  { id: 2, pet: "Mia", date: "2025-09-12", service: "Passeio", price: 55 },
-];
-
-export async function getAppointments() {
-  await new Promise((resolve) => setTimeout(resolve, 300));
-  return [...appointmentsDB];
-}
-
-export async function createAppointment(appointmentData) {
-  await new Promise((resolve) => setTimeout(resolve, 300));
-  const newAppointment = { ...appointmentData, id: Date.now() };
-  appointmentsDB.push(newAppointment);
-  console.log("API MOCK: Criando agendamento...", newAppointment);
-  return { success: true, message: "Agendamento criado com sucesso!" };
-}
-
-// --- Serviços disponíveis ---
-export const services = [
-  { name: "Babá de Pets", price: 50, unit: "/visita" },
-  { name: "Passeio", price: 55, unit: "/passeio" },
-  { name: "Hospedagem", price: 60, unit: "/dia" },
-];
-
-// // Exportando tudo junto para evitar erros de import
-// export {
-//   getProfile,
-//   updateProfile,
-//   getPets,
-//   savePet,
-//   removePet,
-//   getAppointments,
-//   createAppointment,
-// };
