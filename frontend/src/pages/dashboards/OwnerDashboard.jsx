@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { ClipboardList, User, Calendar, PawPrint, Dog } from "lucide-react";
-import { getAppointments, getPets, getProfile } from "../../api/owner.js";
+import { getOwnerDashboard, getPets } from "../../api/owner.js";
 
 function StatCard({ icon, title, value }) {
   return (
@@ -15,61 +15,49 @@ function StatCard({ icon, title, value }) {
   );
 }
 
-// Função utilitária para exibir datas no formato brasileiro
-function formatDateBR(dateString) {
-  const [year, month, day] = dateString.split("-");
-  return `${day}/${month}/${year}`;
-}
-
-// Função para calcular o valor total dos serviços agendados
-function calculateTotal(appointments) {
-  let total = 0;
-  appointments.forEach((apt) => {
-    if (apt.service === "Babá de Pets") total += 50;
-    else if (apt.service === "Passeio") total += 55;
-    else if (apt.service === "Hospedagem") total += 60;
-  });
-  return total;
-}
-
 export default function OwnerDashboard() {
-  const [appointments, setAppointments] = useState([]);
-  const [pets, setPets] = useState([]);
+  const [cards, setCards] = useState({ pets: 0, agend: 0, valor: 0 });
+  const [upcoming, setUpcoming] = useState([]);
+  const [ownerFirstName, setOwnerFirstName] = useState("Owner");
   const [loading, setLoading] = useState(true);
-  const [ownerName, setOwnerName] = useState("Owner");
 
   useEffect(() => {
-    async function fetchData() {
+    (async () => {
       try {
         setLoading(true);
-        const [appointmentsData, petsData, profileData] = await Promise.all([
-          getAppointments(),
-          getPets(),
-          getProfile(),
+        const [dash, petsList] = await Promise.all([
+          getOwnerDashboard(), // GET /owners/me/painel
+          getPets(),           // GET /pets
         ]);
-        setAppointments(appointmentsData);
-        setPets(petsData);
-        setOwnerName(profileData.name.split(" ")[0]); // Pega o primeiro nome
-      } catch (error) {
-        console.error("Erro ao carregar dados do dashboard:", error);
+
+        setCards({
+          pets: dash.totalPets ?? petsList.length ?? 0,
+          agend: dash.totalAgendamentos ?? 0,
+          valor: dash.valorAPagar ?? 0,
+        });
+        setUpcoming(dash.proximosAgendamentos ?? []);
+        if (dash?.ownerName) {
+          setOwnerFirstName(dash.ownerName.split(" ")[0]);
+        }
+      } catch (e) {
+        console.error("Erro ao carregar dashboard:", e);
       } finally {
         setLoading(false);
       }
-    }
-    fetchData();
+    })();
   }, []);
 
   if (loading) {
     return <div className="p-8 text-center text-gray-500">A carregar o seu painel...</div>;
   }
 
-  const totalToPay = calculateTotal(appointments);
+  const brl = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" });
 
   return (
     <div className="bg-slate-50 min-h-screen p-4 sm:p-8">
       <div className="max-w-7xl mx-auto">
         <header className="mb-8">
-          <h1 className="text-4xl font-bold text-gray-800">Olá, {ownerName}!</h1>
+          <h1 className="text-4xl font-bold text-gray-800">Olá, {ownerFirstName}!</h1>
           <p className="text-gray-600 mt-2">
             Bem-vindo(a) ao seu painel. Aqui está um resumo dos seus pets e agendamentos.
           </p>
@@ -77,9 +65,9 @@ export default function OwnerDashboard() {
 
         {/* Estatísticas */}
         <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-          <StatCard icon={<PawPrint size={24} />} title="Meus Pets" value={pets.length} />
-          <StatCard icon={<ClipboardList size={24} />} title="Agendamentos" value={appointments.length} />
-          <StatCard icon={<User size={24} />} title="Valor a Pagar" value={`R$ ${totalToPay}`} />
+          <StatCard icon={<PawPrint size={24} />} title="Meus Pets" value={cards.pets} />
+          <StatCard icon={<ClipboardList size={24} />} title="Agendamentos" value={cards.agend} />
+          <StatCard icon={<User size={24} />} title="Valor a Pagar" value={brl.format(cards.valor)} />
         </section>
 
         {/* Ações rápidas */}
@@ -117,23 +105,31 @@ export default function OwnerDashboard() {
           </div>
         </section>
 
-        {/* Próximos Agendamentos */}
+        {/* Próximos Agendamentos (do dashboard) */}
         <section className="bg-white p-6 rounded-xl shadow-md">
           <h2 className="text-2xl font-semibold text-gray-800 mb-4">Próximos Agendamentos</h2>
           <div className="space-y-4">
-            {appointments.map((apt) => (
-              <div key={apt.id} className="p-4 border rounded-lg flex items-center justify-between">
+            {upcoming.length === 0 && (
+              <p className="text-gray-500">Você ainda não tem agendamentos futuros.</p>
+            )}
+            {upcoming.map((a) => (
+              <div key={a.id} className="p-4 border rounded-lg flex items-center justify-between">
                 <div className="flex items-center space-x-4">
                   <div className="bg-green-100 text-green-700 p-3 rounded-full">
                     <Dog size={24} />
                   </div>
                   <div>
-                    <p className="font-bold text-gray-800">{apt.pet}</p>
-                    <p className="text-sm text-gray-500">{apt.service}</p>
+                    <p className="font-bold text-gray-800">{a.petName}</p>
+                    <p className="text-sm text-gray-500">{a.serviceName}</p>
                   </div>
                 </div>
                 <div className="text-right">
-                  <p className="font-semibold text-gray-700">{formatDateBR(apt.date)}</p>
+                  <p className="font-semibold text-gray-700">
+                    {new Date(a.startDate).toLocaleString("pt-BR")}
+                  </p>
+                  {a.price != null && (
+                    <p className="text-sm text-gray-500">{brl.format(a.price)}</p>
+                  )}
                 </div>
               </div>
             ))}

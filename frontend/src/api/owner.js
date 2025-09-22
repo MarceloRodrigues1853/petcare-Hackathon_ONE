@@ -1,51 +1,66 @@
-// src/api/owner.js
 import http from "./http";
 
-/**
- * Dashboard do Dono
- * GET /api/owners/me/dashboard
- * -> { totalPets, totalAgendamentos, valorAPagar, proximosAgendamentos:[{id, petName, serviceName, startDate, price}] }
- */
+/** DASHBOARD DO OWNER */
 export async function getOwnerDashboard() {
-  const { data } = await http.get("/api/owners/me/dashboard");
-  return data;
+  return await http.get("/owners/me/painel");
 }
 
-/**
- * Lista agendamentos do Dono (opcional status)
- * GET /api/owners/me/appointments?status=CONFIRMADO
- * -> [{ id, sitterName, petName, service, dataInicio, dataFim, status, valor }]
- */
-export async function getAppointments(status) {
+/** APPOINTMENTS DO OWNER */
+export async function getOwnerAppointments(status) {
   const params = {};
   if (status) params.status = status;
-  const { data } = await http.get("/api/owners/me/appointments", { params });
-  return data;
+  return await http.get("/owners/me/compromissos", { params });
 }
 
-/**
- * Pets do usuário logado
- * GET /api/pets
- * -> [{ id, nome, especie, idade, ownerId }]
- */
-export async function listPets() {
-  const { data } = await http.get("/api/pets");
-  return data;
+/** CRIAR APPOINTMENT */
+export async function createOwnerAppointment(payload) {
+  return await http.post("/owners/me/compromissos", payload);
 }
 
-/**
- * (Opcional) Criar agendamento — quando você expor no backend,
- * alinhe o body aqui com o seu controller.
- * Deixei uma rota sugerida: POST /api/owners/appointments
- */
-export async function createAppointment(payload) {
-  // Exemplo de corpo compatível com os nomes do front:
-  // payload = { petId, service, date }
-  try {
-    const { data } = await http.post("/api/owners/appointments", payload);
-    return data;
-  } catch (e) {
-    // Enquanto o endpoint não existir, damos um erro amigável
-    throw new Error("Endpoint de criação de agendamento ainda não disponível.");
-  }
+/** PERFIL DO OWNER */
+export async function getOwnerProfile() {
+  return await http.get("/owners/me/profile");
+}
+export async function updateOwnerProfile({ name, phone, bio }) {
+  return await http.put("/owners/me/profile", { name, phone, bio });
+}
+
+/** PETS (do owner) */
+export async function getPets() {
+  const data = await http.get("/pets");
+  // ⚠️ Checar backend: é `name` ou `nome`?
+  return (data || []).map((p) => ({
+    id: p.id,
+    name: p.name ?? p.nome,
+    species: p.especie ?? p.species,
+    age: p.idade ?? p.age,
+    ownerId: p.ownerId ?? null,
+  }));
+}
+export const listPets = getPets;
+
+export async function savePet({ name, species, age, ownerId }) {
+  // ⚠️ Se o backend agora usa `name`, envie `name`; se ainda for `nome`, mantenha:
+  const body = { name, especie: species, idade: Number(age), ownerId: ownerId ?? null };
+  const data = await http.post("/pets", body);
+  return {
+    id: data.id,
+    name: data.name ?? data.nome,
+    species: data.especie ?? data.species,
+    age: data.idade ?? data.age,
+    ownerId: data.ownerId ?? null,
+  };
+}
+
+export async function removePet(id) {
+  await http.delete(`/pets/${id}`);
+  return { ok: true, message: "Pet removido com sucesso." };
+}
+
+/** SITTERS E SERVIÇOS */
+export async function listSitters(status = "ACTIVE") {
+  return await http.get(`/sitters`, { params: { status } });
+}
+export async function listSitterServices(sitterId) {
+  return await http.get(`/sitters/${sitterId}/services`);
 }

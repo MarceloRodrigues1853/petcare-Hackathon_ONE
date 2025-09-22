@@ -1,7 +1,7 @@
 import { ArrowLeft, Calendar, Dog } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { getAppointments, createAppointment } from "../../../api/owner";
+import { getOwnerAppointments } from "../../../api/owner";
 
 export default function AppointmentsList() {
   const [appointments, setAppointments] = useState([]);
@@ -9,27 +9,26 @@ export default function AppointmentsList() {
   const [feedback, setFeedback] = useState(null);
 
   useEffect(() => {
-    async function fetchAppointments() {
+    (async () => {
       try {
         setLoading(true);
-        const data = await getAppointments();
-        setAppointments(data);
+        const data = await getOwnerAppointments(); // GET /api/owners/me/compromissos
+        setAppointments(data || []);
       } catch (error) {
         console.error("Erro ao carregar agendamentos", error);
       } finally {
         setLoading(false);
       }
-    }
-    fetchAppointments();
+    })();
   }, []);
 
   const handleCancel = async (id) => {
     try {
-      // Simula remoção no backend
-      await new Promise(resolve => setTimeout(resolve, 300));
+      // Quando existir, trocar por PATCH/POST de cancelamento
+      await new Promise((r) => setTimeout(r, 300));
       setAppointments((prev) => prev.filter((appt) => appt.id !== id));
       setFeedback({ type: "success", message: "Agendamento cancelado!" });
-    } catch (error) {
+    } catch {
       setFeedback({ type: "error", message: "Erro ao cancelar agendamento." });
     } finally {
       setTimeout(() => setFeedback(null), 3000);
@@ -39,7 +38,6 @@ export default function AppointmentsList() {
   return (
     <div className="bg-slate-50 min-h-screen p-4 sm:p-8">
       <div className="max-w-3xl mx-auto">
-        {/* Botão voltar */}
         <header className="mb-8 relative flex items-center">
           <Link
             to="/owner/dashboard"
@@ -50,11 +48,10 @@ export default function AppointmentsList() {
           </Link>
           <div>
             <h1 className="text-4xl font-bold text-gray-800">Meus Agendamentos</h1>
-            <p className="text-gray-600 mt-2">Confira o(s) agendamento(s) do(s) seu(s) pet(s)</p>
+            <p className="text-gray-600 mt-2">Confira os agendamentos dos seus pets</p>
           </div>
         </header>
 
-        {/* Feedback */}
         {feedback && (
           <div
             className={`mt-4 p-3 rounded-lg text-center font-medium ${
@@ -67,7 +64,6 @@ export default function AppointmentsList() {
           </div>
         )}
 
-        {/* Lista de agendamentos */}
         {loading ? (
           <p>Carregando agendamentos...</p>
         ) : appointments.length === 0 ? (
@@ -82,11 +78,15 @@ export default function AppointmentsList() {
                 <div className="flex items-center space-x-4">
                   <div className="flex items-center space-x-1 text-gray-700">
                     <Calendar size={16} />
-                    <span>{new Date(appt.date).toLocaleDateString("pt-BR")}</span>
+                    <span>
+                      {appt.dataInicio
+                        ? new Date(appt.dataInicio).toLocaleString("pt-BR")
+                        : "-"}
+                    </span>
                   </div>
                   <div className="flex items-center space-x-1 text-gray-700">
                     <Dog size={16} />
-                    <span>{appt.pet}</span>
+                    <span>{appt.petName}</span>
                   </div>
                 </div>
                 <div className="flex items-center space-x-4">

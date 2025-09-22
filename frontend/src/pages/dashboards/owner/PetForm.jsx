@@ -10,18 +10,17 @@ export default function PetForm() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    async function fetchPets() {
+    (async () => {
       try {
         setLoading(true);
-        const data = await getPets();
+        const data = await getPets(); // GET /pets
         setPets(data);
       } catch (error) {
         setFeedback({ type: "error", message: "Falha ao carregar pets." });
       } finally {
         setLoading(false);
       }
-    }
-    fetchPets();
+    })();
   }, []);
 
   const handleChange = (e) => {
@@ -32,10 +31,10 @@ export default function PetForm() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const res = await savePet(newPet); // salva no backend mock
-      setFeedback({ type: "success", message: res.message });
-      setPets((prev) => [...prev, { ...newPet, id: Date.now() }]); // adiciona na lista local
+      const created = await savePet(newPet); // POST /pets
+      setPets((prev) => [...prev, created]);
       setNewPet({ name: "", species: "", age: "" });
+      setFeedback({ type: "success", message: "Pet salvo com sucesso!" });
     } catch (error) {
       setFeedback({ type: "error", message: "Erro ao salvar pet." });
     }
@@ -43,9 +42,9 @@ export default function PetForm() {
 
   const handleRemove = async (id) => {
     try {
-      const res = await removePet(id); // remove do backend mock
-      setPets((prev) => prev.filter((pet) => pet.id !== id));
-      setFeedback({ type: "success", message: res.message });
+      await removePet(id); // DELETE /pets/{id}
+      setPets((prev) => prev.filter((p) => p.id !== id));
+      setFeedback({ type: "success", message: "Pet removido com sucesso." });
     } catch (error) {
       setFeedback({ type: "error", message: "Erro ao remover pet." });
     }
@@ -54,25 +53,25 @@ export default function PetForm() {
   return (
     <div className="bg-slate-50 min-h-screen p-4 sm:p-8">
       <div className="max-w-3xl mx-auto">
-        {/* Botão voltar */}
+        {/* Voltar */}
         <header className="mb-8 relative flex items-center">
-          <Link to="/owner/dashboard" className="mr-4 p-2 text-blue-600 hover:bg-gray-200 rounded-full transition-colors" title="Voltar">
+          <Link
+            to="/owner/dashboard"
+            className="mr-4 p-2 text-blue-600 hover:bg-gray-200 rounded-full transition-colors"
+            title="Voltar"
+          >
             <ArrowLeft size={28} />
           </Link>
           <div>
-            <h1 className="text-4xl font-bold text-gray-800">Meu Pet</h1>
-            <p className="text-gray-600 mt-2">Cadastre e atualize os dados do(s) seu(s) pet(s)</p>
+            <h1 className="text-4xl font-bold text-gray-800">Meus Pets</h1>
+            <p className="text-gray-600 mt-2">Cadastre e gerencie seus pets.</p>
           </div>
         </header>
-        
-        <form
-          onSubmit={handleSubmit}
-          className="bg-white p-6 rounded-xl shadow-md space-y-4"
-        >
+
+        {/* Formulário */}
+        <form onSubmit={handleSubmit} className="bg-white p-6 rounded-xl shadow-md space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700">
-              Nome
-            </label>
+            <label className="block text-sm font-medium text-gray-700">Nome</label>
             <input
               name="name"
               value={newPet.name}
@@ -82,9 +81,7 @@ export default function PetForm() {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700">
-              Espécie
-            </label>
+            <label className="block text-sm font-medium text-gray-700">Espécie</label>
             <input
               name="species"
               value={newPet.species}
@@ -94,9 +91,7 @@ export default function PetForm() {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700">
-              Idade
-            </label>
+            <label className="block text-sm font-medium text-gray-700">Idade</label>
             <input
               name="age"
               type="number"

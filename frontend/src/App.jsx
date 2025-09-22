@@ -1,37 +1,36 @@
-// App router (com dashboards e guardas)
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-// CORREÇÃO: Utilizando caminhos absolutos a partir da raiz do projeto ('/src') para garantir a resolução correta dos módulos.
-import AuthProvider from "/src/context/AuthContext.jsx";
-import Layout from "/src/components/Layout.jsx";
 
-import Home from "/src/pages/Home.jsx";
-import About from "/src/pages/About.jsx";
-import Services from "/src/pages/Services.jsx";
-import Login from "/src/pages/Login.jsx";
-import Register from "/src/pages/Register.jsx";
+import AuthProvider from "@/context/AuthContext.jsx";
+import Layout from "@/components/Layout.jsx";
 
-import ProtectedRoute from "/src/components/ProtectedRoute.jsx";
-import RoleRoute from "/src/components/RoleRoute.jsx";
+import Home from "@/pages/Home.jsx";
+import About from "@/pages/About.jsx";
+import Services from "@/pages/Services.jsx";
+import Login from "@/pages/Login.jsx";
+import Register from "@/pages/Register.jsx";
 
-import OwnerDashboard from "/src/pages/dashboards/OwnerDashboard.jsx";
-import SitterDashboard from "/src/pages/dashboards/SitterDashboard.jsx";
-import AdminDashboard from "/src/pages/dashboards/AdminDashboard.jsx";
+import ProtectedRoute from "@/components/ProtectedRoute.jsx";
+import RoleRoute from "@/components/RoleRoute.jsx";
 
-import SittersList from "/src/pages/dashboards/admin/SittersList.jsx";
-import OwnersList from "/src/pages/dashboards/admin/OwnersList.jsx";
-import AdminSchedule from "/src/pages/dashboards/admin/AdminSchedule.jsx";
+import OwnerDashboard from "@/pages/dashboards/OwnerDashboard.jsx";
+import SitterDashboard from "@/pages/dashboards/SitterDashboard.jsx";
+import AdminDashboard from "@/pages/dashboards/AdminDashboard.jsx";
 
-import PetForm from "/src/pages/dashboards/owner/PetForm.jsx";
-import AppointmentNew from "/src/pages/dashboards/owner/AppointmentNew.jsx";
-import AppointmentsList from "/src/pages/dashboards/owner/AppointmentsList.jsx";
-import OwnerProfileEdit from "/src/pages/dashboards/owner/OwnerProfileEdit.jsx";
+import SittersList from "@/pages/dashboards/admin/SittersList.jsx";
+import OwnersList from "@/pages/dashboards/admin/OwnersList.jsx";
+import AdminSchedule from "@/pages/dashboards/admin/AdminSchedule.jsx";
 
-import ServicesForm from "/src/pages/dashboards/sitter/ServicesForm.jsx";
-import SitterAppointments from "/src/pages/dashboards/sitter/SitterAppointments.jsx";
-import SitterProfileEdit from "/src/pages/dashboards/sitter/SitterProfileEdit.jsx";
-import SitterHistory from "/src/pages/dashboards/sitter/SitterHistory.jsx"; 
+import PetForm from "@/pages/dashboards/owner/PetForm.jsx";
+import AppointmentNew from "@/pages/dashboards/owner/AppointmentNew.jsx";
+import AppointmentsList from "@/pages/dashboards/owner/AppointmentsList.jsx";
+import OwnerProfileEdit from "@/pages/dashboards/owner/OwnerProfileEdit.jsx";
 
-import Forbidden from "/src/pages/Forbidden.jsx";
+import ServicesForm from "@/pages/dashboards/sitter/ServicesForm.jsx";
+import SitterAppointments from "@/pages/dashboards/sitter/SitterAppointments.jsx";
+import SitterProfileEdit from "@/pages/dashboards/sitter/SitterProfileEdit.jsx";
+import SitterHistory from "@/pages/dashboards/sitter/SitterHistory.jsx";
+
+import Forbidden from "@/pages/Forbidden.jsx";
 
 export default function App() {
   return (
@@ -84,4 +83,3 @@ export default function App() {
     </AuthProvider>
   );
 }
-

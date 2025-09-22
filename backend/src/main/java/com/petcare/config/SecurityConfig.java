@@ -42,18 +42,27 @@ public class SecurityConfig {
         .cors(cors -> {})
         .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
         .authorizeHttpRequests(auth -> auth
-            // pré-voo e públicos
+            // públicos
             .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
             .requestMatchers(SWAGGER_WHITELIST).permitAll()
             .requestMatchers("/api/auth/**", "/auth/**").permitAll()
             .requestMatchers("/ping", "/error").permitAll()
 
-            // áreas protegidas por autoridade (sem prefixo ROLE_)
+            // público: listagem de sitters e serviços por sitter
+            .requestMatchers(HttpMethod.GET, "/api/sitters").permitAll()
+            .requestMatchers(HttpMethod.GET, "/api/sitters/*/services").permitAll()
+
+            // áreas protegidas por AUTHORITY
             .requestMatchers("/api/admin/**").hasAuthority("ADMIN")
             .requestMatchers("/api/owners/**").hasAnyAuthority("OWNER", "ADMIN")
+
+            // sitter "me" só para SITTER
+            .requestMatchers("/api/sitters/me/**").hasAuthority("SITTER")
+
+            // demais endpoints de /api/sitters/** exigem SITTER ou ADMIN
             .requestMatchers("/api/sitters/**").hasAnyAuthority("SITTER", "ADMIN")
 
-            // qualquer outra rota precisa estar autenticada
+            // qualquer outra rota autenticada
             .anyRequest().authenticated()
         )
         .exceptionHandling(e -> e
@@ -73,7 +82,6 @@ public class SecurityConfig {
   @Bean
   CorsConfigurationSource corsConfigurationSource() {
     CorsConfiguration cfg = new CorsConfiguration();
-    // Ajuste os origins conforme necessário
     cfg.setAllowedOrigins(List.of("http://localhost:5173", "http://127.0.0.1:5173"));
     cfg.setAllowedMethods(List.of("GET","POST","PUT","DELETE","PATCH","OPTIONS"));
     cfg.setAllowedHeaders(List.of("Authorization","Content-Type","Accept","Origin","X-Requested-With"));

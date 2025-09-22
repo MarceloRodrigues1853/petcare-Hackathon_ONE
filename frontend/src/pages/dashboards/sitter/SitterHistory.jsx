@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { ArrowLeft, History, DollarSign } from "lucide-react";
-import { getAppointments } from "@/api/sitter.js";
+import { getAppointments } from "../../../api/sitter.js";
 
 export default function SitterHistory() {
   const [history, setHistory] = useState([]);

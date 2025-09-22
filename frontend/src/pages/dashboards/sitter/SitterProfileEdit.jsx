@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { ArrowLeft, UploadCloud, Instagram, Facebook } from "lucide-react";
 // O caminho da sua API simulada. Garanta que ela exporta 'getProfile' e 'updateProfile'.
-import { getProfile, updateProfile } from "@/api/sitter.js";
+import { getProfile, updateProfile } from "../../../api/sitter.js";
 
 // Componente para os botões de preferência de pet
 function PreferenceButton({ label, isActive, onClick }) {

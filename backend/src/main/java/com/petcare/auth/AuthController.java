@@ -8,10 +8,9 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.security.authentication.BadCredentialsException;
 
 import java.util.Map;
 
@@ -28,7 +27,6 @@ public class AuthController {
             RegisterResponse resp = auth.register(request);
             return ResponseEntity.ok(resp);
         } catch (IllegalArgumentException e) {
-            // exemplo: e-mail já em uso, payload inválido do ponto de vista de negócio, etc.
             return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
         }
     }
@@ -38,10 +36,8 @@ public class AuthController {
         try {
             LoginResponse resp = auth.login(request.getEmail(), request.getPassword());
             return ResponseEntity.ok(resp);
-        } catch (UsernameNotFoundException| BadCredentialsException e) {
-            // usuário não encontrado ou senha inválida
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(Map.of("message", e.getMessage()));
+        } catch (UsernameNotFoundException | BadCredentialsException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("message", e.getMessage()));
         }
     }
 }
